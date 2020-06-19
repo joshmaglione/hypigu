@@ -9,3 +9,4 @@ __version__ = 0.1
 from src.Braid import BraidArrangement
 from src.Coxeter import CoxeterArrangement
 from src.PosetOps import CharacteristicFunction
+from src.SmallCentral import _small_central

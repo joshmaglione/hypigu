@@ -69,8 +69,9 @@ def _recursive_crank(p, t, n, known=[]):
         return known[n]
 
 def BraidArrangement(n):
-    p = _var("p")
-    t = _var("t")
+    from Globals import __DEFAULT_p, __DEFAULT_t
+    p = _var(__DEFAULT_p)
+    t = _var(__DEFAULT_t)
     if n <= _TABLE_CUTOFF:
         return _Igusa_braid_table(p, t, n)
     return _recursive_crank(p, t, n)
