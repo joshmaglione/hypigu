@@ -41,23 +41,18 @@ def CoxeterArrangement(name, n=0):
 
     EXAMPLES:
 
-    This example illustrates ... ::
+    This example illustrates how to build a Coxeter arrangement ::
 
-        sage: A = ModuliSpace()
-        sage: A.point(2,3)
-        xxx
+        sage: A = CoxeterArrangement("B", 4)
+        sage: A
+        Arrangement of 16 hyperplanes of dimension 4 and rank 4
 
-    We now ... ::
+    We can also combine the rank into the string as follows ::
 
-        sage: B = A.point(5,6)
-        sage: xxx
+        sage: A = IA.CoxeterArrangement("B4")
+        sage: A
+        Arrangement of 16 hyperplanes of dimension 4 and rank 4
 
-    It is an error to ... ::
-
-        sage: C = A.point('x',7)
-        Traceback (most recent call last):
-        ...
-        TypeError: unable to convert 'r' to an integer
     """
     if not isinstance(name, str):
         raise TypeError("Expected ``name`` to be a string.")
