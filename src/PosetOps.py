@@ -92,4 +92,4 @@ def CharacteristicFunction(A):
         dims = map(lambda Y: A.dimension() - my_rank(Y), PX._elements)
         t = var('x')
         return reduce(lambda x, y: x + y[0]*t**y[1], zip(moebius, dims), 0)
-    return P, char_func
+    return char_func, P
