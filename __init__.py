@@ -8,5 +8,5 @@ __version__ = 0.1
 
 from src.Braid import BraidArrangement
 from src.Coxeter import CoxeterArrangement, LinialArrangement, ShiArrangement
-from src.PosetOps import CharacteristicFunction, Restriction, Deletion, PoincarePolynomial
+from src.PosetOps import CharacteristicFunction, PoincarePolynomial, CombinatorialSkeleton
 from src.SmallCentral import _small_central

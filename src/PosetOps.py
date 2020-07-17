@@ -97,17 +97,16 @@ def CharacteristicFunction(A):
 
 # The deletion method is coded well enough to allow for this kind of recursion. 
 # We need the new labels for a hyperplane though.
-def Deletion(A, X):
-    hypers = map(lambda i: A[i], X)
-    complement = filter(lambda H: not H in hypers, A)
+def _deletion(A, X, P):
+    H_to_str = lambda H: str(list(A).index(H))
+    complement = filter(lambda H: not P.le(H_to_str(H), X), A)
     B = reduce(lambda x, y: x.deletion(y), complement, A)
+    # A dictionary to convert old labels to new labels.
     def new_labels(k):
-        if k in X:
-            for i in range(len(B)):
-                if B[i] == A[k]:
-                    return i
-        else:
-            return -1
+        for i in range(len(B)):
+            if B[i] == A[k]:
+                return i
+        return -1
     return B, {str(k): str(new_labels(k)) for k in range(len(A))}
 
 # Turns an affine subspace U of Aff into a hyperplane in HA.
@@ -128,7 +127,7 @@ def _affine_to_hyperplane(Aff, U, HA):
 
 # The restriction method is short-sighted. Here is one that will restrict to 
 # anything in the intersection poset.
-def Restriction(A, X):
+def _restriction(A, X):
     # Pre-conditioning.
     from sage.all import HyperplaneArrangements, Matrix, QQ, Set, VectorSpace
     from sage.geometry.hyperplane_arrangement.affine_subspace import AffineSubspace
@@ -159,29 +158,50 @@ def PoincarePolynomial(A, F):
     from Globals import __DEFAULT_p as p
     from sage.all import var, ZZ
     p = var(p)
-    char_func, _ = CharacteristicFunction(A)
+    char_func, P = CharacteristicFunction(A)
     chi = char_func(F[-1])
     d = chi.degree(p)
     pi = ((-p)**d*chi.subs({p:-p**-1})).factor().simplify()
-    if F == '':
+    if F[-1] == '':
         return pi
-    X = map(lambda i: ZZ(i), F[-1].split(' '))
-    B, new_labels = Deletion(A, X)
-    ## Problem: build one map and then apply it. Nothing complex.
-    G_split = map(lambda X: map(lambda c: new_labels[c], X.split(' ')), F[-1]) 
-    G = map(
-        lambda X: reduce(lambda x, y: x + ' ' + str(y), X[1:], X[0]), 
-        G_split
-    )
+    # X = map(lambda i: ZZ(i), F[-1].split(' '))
+    X = F[-1]
+    B, new_labels = _deletion(A, X, P)
+    def update_str(Y):
+        if Y == '':
+            return Y 
+        L = Y.split(' ')
+        L_upd = map(lambda s: new_labels[s], L)
+        return reduce(lambda x, y: x + ' ' + y, L_upd[1:], L_upd[0])
+    G = map(update_str, F[:-1])
     return pi*PoincarePolynomial(B, G)
 
-# def CombinatorialSkeleton(A):
-#     char_func, P = CharacteristicFunction(A)
-#     central = A.is_central()
-#     if central: 
-#         prop = filter(lambda X: X != P.top() and X != '', P._elements)
-#     else: 
-#         prop = filter(lambda X: X != '', P._elements)
-#     P_prop = P.subposet(prop)
-#     skele = 0
-#     for C in P_prop.chains():
+def CombinatorialSkeleton(A, style="general"):
+    from sage.all import PolynomialRing, QQ, var
+    from Globals import __DEFAULT_t as t
+    if not style in ["general", "standard", "same"]:
+        raise ValueError("Unknown style.")
+    char_func, P = CharacteristicFunction(A)
+    central = A.is_central()
+    if central: 
+        prop = filter(lambda X: X != P.top() and X != '', P._elements)
+        n = len(prop) + 1
+    else: 
+        prop = filter(lambda X: X != '', P._elements)
+        n = len(prop) 
+    P_prop = P.subposet(prop)
+    if style == "general": 
+        X = PolynomialRing(QQ, 'X', n).gens()
+        Y = lambda Z: X[P._elements.index(Z) - 1]
+    if style == "same":
+        t = var(t)
+        Y = lambda Z: t
+    skele = 0
+    for C in P_prop.chains():
+        F = [''] + C 
+        pi = PoincarePolynomial(A, F)
+        Z_in = reduce(lambda x, y: x*Y(y), C, 1)
+        C_comp = filter(lambda z: not z in C, P_prop._elements)
+        Z_out = reduce(lambda x, y: x*(1 - Y(y)), C_comp, 1)
+        skele += pi*Z_in*Z_out
+    return skele/reduce(lambda x, y: x*(1 - Y(y)), P._elements[1:], 1)
