@@ -6,9 +6,8 @@
 
 def _my_intersection_poset(A):
     from sage.geometry.hyperplane_arrangement.affine_subspace import AffineSubspace
-    from sage.all import flatten, QQ, VectorSpace
+    from sage.all import flatten, QQ, VectorSpace, Poset
     K = A.base_ring()
-    from sage.geometry.hyperplane_arrangement.affine_subspace import AffineSubspace
     whole_space = AffineSubspace(0, VectorSpace(K, A.dimension()))
     L = [[whole_space]]
     label = [[[]]]
@@ -31,7 +30,7 @@ def _my_intersection_poset(A):
             L.append(new_level)
             label.append(new_label)
         codim += 1
-    from sage.misc.flatten import flatten
+    
     L = flatten(L)
     label = reduce(lambda x, y: x + y, label, [])
     t = {}
@@ -40,7 +39,7 @@ def _my_intersection_poset(A):
     cmp_fn = lambda p, q: t[q] < t[p]
     list_str = lambda L : reduce(lambda x, y: x + ' ' + str(y), L[1:], str(L[0]))
     elt_labels = [''] + list(map(list_str, label[1:]))
-    from sage.combinat.posets.posets import Poset
+    
     return Poset(
         (t, cmp_fn), 
         element_labels=elt_labels
@@ -85,11 +84,104 @@ def CharacteristicFunction(A):
             checked.add(x)
         return P.subposet([X] + list(S))
     def char_func(X):
+        from Globals import __DEFAULT_p as p
+        from sage.all import var
+        p = var(p)
         PX = upper_subposet(X)
         moebius = map(lambda Y: PX.moebius_function(X, Y), PX._elements)
         bot = P.bottom()
         my_rank = lambda Y: P.subposet(P.closed_interval(bot, Y)).height() - 1
         dims = map(lambda Y: A.dimension() - my_rank(Y), PX._elements)
-        t = var('x')
-        return reduce(lambda x, y: x + y[0]*t**y[1], zip(moebius, dims), 0)
+        return reduce(lambda x, y: x + y[0]*p**y[1], zip(moebius, dims), 0)
     return char_func, P
+
+# The deletion method is coded well enough to allow for this kind of recursion. 
+# We need the new labels for a hyperplane though.
+def Deletion(A, X):
+    hypers = map(lambda i: A[i], X)
+    complement = filter(lambda H: not H in hypers, A)
+    B = reduce(lambda x, y: x.deletion(y), complement, A)
+    def new_labels(k):
+        if k in X:
+            for i in range(len(B)):
+                if B[i] == A[k]:
+                    return i
+        else:
+            return -1
+    return B, {str(k): str(new_labels(k)) for k in range(len(A))}
+
+# Turns an affine subspace U of Aff into a hyperplane in HA.
+def _affine_to_hyperplane(Aff, U, HA):
+    from sage.geometry.hyperplane_arrangement.affine_subspace import AffineSubspace
+    amb_mat = Aff.linear_part().basis_matrix()
+    norm = Aff.intersection(AffineSubspace(
+        U.point(), 
+        U.linear_part().basis_matrix().transpose().kernel()
+        )
+    )
+    coeff = list(amb_mat.solve_left(norm.linear_part().basis_matrix()))[0]
+    trans = amb_mat.solve_left(U.point() - Aff.point())
+    merge = lambda x, y: x + y[0]*y[1]
+    const = reduce(merge, zip(trans, coeff), 0)
+    varbs = HA.gens()
+    return reduce(merge, zip(coeff, varbs), 0*HA.gen(0)) - const
+
+# The restriction method is short-sighted. Here is one that will restrict to 
+# anything in the intersection poset.
+def Restriction(A, X):
+    # Pre-conditioning.
+    from sage.all import HyperplaneArrangements, Matrix, QQ, Set, VectorSpace
+    from sage.geometry.hyperplane_arrangement.affine_subspace import AffineSubspace
+    d = A.dimension()
+    AA = AffineSubspace([0]*d, VectorSpace(QQ, A.dimension()))
+
+    # First we build the ambient affine space given by X.
+    affines = map(lambda x: (A[x])._affine_subspace(), X)
+    amb_space = reduce(lambda U, V: U.intersection(V), affines, AA)
+    if not amb_space:
+        raise ValueError("Subspace not contained in intersection poset.")
+    new_d = amb_space.dimension()
+    HA = HyperplaneArrangements(QQ, tuple(['x' + str(i) for i in range(new_d)]))
+
+    # Now we construct the intersections and build the appropriate hyperplanes.
+    all_affs = map(lambda H: H._affine_subspace(), A)
+    all_ints = filter(
+        lambda U: U and U != amb_space, 
+        map(lambda H: amb_space.intersection(H), all_affs)
+    )
+    all_ints = list(Set(all_ints))
+    if len(all_ints) == 0:
+        return HA()
+    
+    return HA(map(lambda U: _affine_to_hyperplane(amb_space, U, HA), all_ints))
+
+def PoincarePolynomial(A, F):
+    from Globals import __DEFAULT_p as p
+    from sage.all import var, ZZ
+    p = var(p)
+    char_func, _ = CharacteristicFunction(A)
+    chi = char_func(F[-1])
+    d = chi.degree(p)
+    pi = ((-p)**d*chi.subs({p:-p**-1})).factor().simplify()
+    if F == '':
+        return pi
+    X = map(lambda i: ZZ(i), F[-1].split(' '))
+    B, new_labels = Deletion(A, X)
+    ## Problem: build one map and then apply it. Nothing complex.
+    G_split = map(lambda X: map(lambda c: new_labels[c], X.split(' ')), F[-1]) 
+    G = map(
+        lambda X: reduce(lambda x, y: x + ' ' + str(y), X[1:], X[0]), 
+        G_split
+    )
+    return pi*PoincarePolynomial(B, G)
+
+# def CombinatorialSkeleton(A):
+#     char_func, P = CharacteristicFunction(A)
+#     central = A.is_central()
+#     if central: 
+#         prop = filter(lambda X: X != P.top() and X != '', P._elements)
+#     else: 
+#         prop = filter(lambda X: X != '', P._elements)
+#     P_prop = P.subposet(prop)
+#     skele = 0
+#     for C in P_prop.chains():

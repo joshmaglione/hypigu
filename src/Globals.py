@@ -4,5 +4,5 @@
 #   Distributed under MIT License
 #
 
-__DEFAULT_p = 'p'
+__DEFAULT_p = 'q'
 __DEFAULT_t = 't'
