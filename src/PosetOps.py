@@ -196,6 +196,12 @@ def CombinatorialSkeleton(A, style="general"):
     if style == "same":
         t = var(t)
         Y = lambda Z: t
+    if style == "standard":
+        t = var(t)
+        def Y(Z):
+            P_Z = P.subposet(P.closed_interval(P.bottom(), Z))
+            e = len(P_Z.level_sets()[1])
+            return t**e
     skele = 0
     for C in P_prop.chains():
         F = [''] + C 
