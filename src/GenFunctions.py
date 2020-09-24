@@ -30,11 +30,39 @@ def CombinatorialSkeleton(A):
     return skele/((1 - t)**n)
 
 def LocalIgusaZetaFunction(A):
-    pass
+    from sage.all import PolynomialRing, QQ, var
+    from PosetOps import CharacteristicFunction, PoincarePolynomial
+    from Globals import __DEFAULT_p, __DEFAULT_t
+    p = var(__DEFAULT_p)
+    t = var(__DEFAULT_t)
+    _, P = CharacteristicFunction(A)
+    central = A.is_central()
+    if central: 
+        prop = filter(lambda X: X != P.top() and X != '', P._elements)
+    else: 
+        prop = filter(lambda X: X != '', P._elements)
+    P_prop = P.subposet(prop)
+    hypers = list(filter(lambda x: P.covers('', x), P))
+    nHypers = lambda Z: len(list(filter(
+        lambda H: P.le(H, Z), hypers
+    )))
+    Y = lambda Z: p**(-len(Z.split(' ')))*t**nHypers(Z)
+    skele = 0
+    for C in P_prop.chains():
+        F = [''] + C 
+        pi = PoincarePolynomial(A, F)
+        Z_in = reduce(lambda x, y: x*Y(y), C, 1)
+        C_comp = filter(lambda z: not z in C, P_prop._elements)
+        Z_out = reduce(lambda x, y: x*(1 - Y(y)), C_comp, 1)
+        skele += pi.subs({p: -p**-1})*Z_in*Z_out
+    return skele/reduce(lambda x, y: x*(1 - Y(y)), P._elements[1:], 1)
 
 def UniversalGeneratingFunction(A, Map=False):
     from sage.all import PolynomialRing, QQ, var
     from PosetOps import CharacteristicFunction, PoincarePolynomial
+    from Globals import __DEFAULT_p
+    p = var(__DEFAULT_p)
+    Yvar = var('Y')
     _, P = CharacteristicFunction(A)
     central = A.is_central()
     if central: 
@@ -53,7 +81,7 @@ def UniversalGeneratingFunction(A, Map=False):
         Z_in = reduce(lambda x, y: x*Y(y), C, 1)
         C_comp = filter(lambda z: not z in C, P_prop._elements)
         Z_out = reduce(lambda x, y: x*(1 - Y(y)), C_comp, 1)
-        skele += pi*Z_in*Z_out
+        skele += pi.subs({p: Yvar})*Z_in*Z_out
     Skeleton = skele/reduce(lambda x, y: x*(1 - Y(y)), P._elements[1:], 1)
     if Map:
         from sage.all import ZZ

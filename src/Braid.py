@@ -7,7 +7,7 @@
 from sage.all import binomial as _binomial
 from sage.all import factorial as _factorial
 
-_TABLE_CUTOFF = 1
+_TABLE_CUTOFF = 3
 
 def _Igusa_braid_table(p, t, n, style="standard"):
     if n <= 0:
