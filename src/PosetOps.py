@@ -175,39 +175,3 @@ def PoincarePolynomial(A, F):
         return reduce(lambda x, y: x + ' ' + y, L_upd[1:], L_upd[0])
     G = map(update_str, F[:-1])
     return pi*PoincarePolynomial(B, G)
-
-def CombinatorialSkeleton(A, style="general"):
-    from sage.all import PolynomialRing, QQ, var
-    from Globals import __DEFAULT_t as t
-    if not style in ["general", "standard", "same"]:
-        raise ValueError("Unknown style.")
-    char_func, P = CharacteristicFunction(A)
-    central = A.is_central()
-    if central: 
-        prop = filter(lambda X: X != P.top() and X != '', P._elements)
-        n = len(prop) + 1
-    else: 
-        prop = filter(lambda X: X != '', P._elements)
-        n = len(prop) 
-    P_prop = P.subposet(prop)
-    if style == "general": 
-        X = PolynomialRing(QQ, 'X', n).gens()
-        Y = lambda Z: X[P._elements.index(Z) - 1]
-    if style == "same":
-        t = var(t)
-        Y = lambda Z: t
-    if style == "standard":
-        t = var(t)
-        def Y(Z):
-            P_Z = P.subposet(P.closed_interval(P.bottom(), Z))
-            e = len(P_Z.level_sets()[1])
-            return t**e
-    skele = 0
-    for C in P_prop.chains():
-        F = [''] + C 
-        pi = PoincarePolynomial(A, F)
-        Z_in = reduce(lambda x, y: x*Y(y), C, 1)
-        C_comp = filter(lambda z: not z in C, P_prop._elements)
-        Z_out = reduce(lambda x, y: x*(1 - Y(y)), C_comp, 1)
-        skele += pi*Z_in*Z_out
-    return skele/reduce(lambda x, y: x*(1 - Y(y)), P._elements[1:], 1)
