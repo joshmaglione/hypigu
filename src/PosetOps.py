@@ -175,3 +175,41 @@ def PoincarePolynomial(A, F):
         return reduce(lambda x, y: x + ' ' + y, L_upd[1:], L_upd[0])
     G = map(update_str, F[:-1])
     return pi*PoincarePolynomial(B, G)
+
+
+def _Coxeter_poset_data():
+    # Bell numbers: A000110
+    def A_poset(n):
+        from sage.all import binomial
+        S = [1, 1, 2, 5, 15, 52, 203]
+        while len(S) <= n+1:
+            m = len(S) - 1
+            S.append(reduce(
+                lambda x, y: x + y[0]*binomial(m, y[1]), zip(S, range(m+1)), 0
+            ))
+        return S[n+1]
+    def S(n, k, m):
+        if k > n or k < 0 : 
+            return 0
+        if n == 0 and k == 0: 
+            return 1
+        return S(n-1, k-1, m) + (m*(k+1)-1)*S(n-1, k, m)
+    def A007405(n): 
+        return add(S(n, k, 2) for k in (0..n)) # Peter Luschny, May 20 2013
+    # D analog of Bell numbers: A039764
+    Dlist = [1, 4, 15, 72, 403, 2546, 17867, 137528, 1149079, 10335766, 99425087, 1017259964, 11018905667, 125860969266, 1510764243699, 18999827156304, 249687992188015, 3420706820299374, 48751337014396167]
+    table = {
+        'A': {
+            'hyperplanes': lambda n: n*(n+1) // 2,
+            'poset': A_poset
+        },
+        'B': {
+            'hyperplanes': lambda n: n**2,
+            'poset': A007405
+        },
+        'D': {
+            'hyperplanes': lambda n: n**2 - n,
+            'poset': lambda n: Dlist[n]
+        }
+    }
+    return table
