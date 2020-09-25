@@ -7,6 +7,6 @@
 __version__ = 1.0
 
 from src.Braid import BraidArrangementIgusa
-from src.Coxeter import CoxeterArrangement, LinialArrangement, ShiArrangement
+from src.Constructors import CoxeterArrangement, LinialArrangement, ShiArrangement
 from src.PosetOps import CharacteristicFunction, PoincarePolynomial
 from src.GenFunctions import UniversalGeneratingFunction, LocalIgusaZetaFunction, CombinatorialSkeleton

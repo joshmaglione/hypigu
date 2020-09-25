@@ -213,3 +213,11 @@ def _Coxeter_poset_data():
         }
     }
     return table
+
+def _proper_part(P):
+    central = P.has_top()
+    if central: 
+        prop = filter(lambda X: X != P.top() and X != '', P._elements)
+    else: 
+        prop = filter(lambda X: X != '', P._elements)
+    return prop
