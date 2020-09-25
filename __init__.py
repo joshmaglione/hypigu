@@ -10,3 +10,4 @@ from src.Braid import BraidArrangementIgusa
 from src.Constructors import CoxeterArrangement, LinialArrangement, ShiArrangement
 from src.PosetOps import CharacteristicFunction, PoincarePolynomial
 from src.GenFunctions import UniversalGeneratingFunction, LocalIgusaZetaFunction, CombinatorialSkeleton
+from src.Database import internal_database

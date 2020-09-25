@@ -197,7 +197,7 @@ def _Coxeter_poset_data():
     def A007405(n): 
         return add(S(n, k, 2) for k in (0..n)) # Peter Luschny, May 20 2013
     # D analog of Bell numbers: A039764
-    Dlist = [1, 4, 15, 72, 403, 2546, 17867, 137528, 1149079, 10335766, 99425087, 1017259964, 11018905667, 125860969266, 1510764243699, 18999827156304, 249687992188015, 3420706820299374, 48751337014396167]
+    Dlist = [1, 1, 4, 15, 72, 403, 2546, 17867, 137528, 1149079, 10335766, 99425087, 1017259964, 11018905667, 125860969266, 1510764243699, 18999827156304, 249687992188015, 3420706820299374, 48751337014396167]
     table = {
         'A': {
             'hyperplanes': lambda n: n*(n+1) // 2,
@@ -214,10 +214,22 @@ def _Coxeter_poset_data():
     }
     return table
 
+def _possibly_Coxeter(P):
+    r = P.rank()
+    hypers = list(filter(lambda x: P.covers(P.bottom(), x), P))
+    m = len(hypers)
+    CPD = _Coxeter_poset_data()
+    for name in ['A', 'B', 'D']:
+        if CPD[name]['hyperplanes'](r) == m:
+            if CPD[name]['poset'](r) == len(P):
+                return [True, name]
+    return [False, None]
+
 def _proper_part(P):
     central = P.has_top()
     if central: 
         prop = filter(lambda X: X != P.top() and X != '', P._elements)
     else: 
         prop = filter(lambda X: X != '', P._elements)
-    return prop
+    return P.subposet(prop)
+
