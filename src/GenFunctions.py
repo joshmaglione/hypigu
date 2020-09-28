@@ -160,7 +160,7 @@ def _local_Igusa_recurse(A, DB=True):
         zeta = p**(-A.dimension())*zeta/(1 - p**(-A.rank())*t**len(A))
     else:
         zeta = p**(-A.dimension())*zeta 
-    if DB: 
+    if DB and A.rank() > 2: 
         _data.save_gen_func(P, 'Igusa', zeta)
     return zeta
 
@@ -193,7 +193,7 @@ def _comb_skele_recurse(A, DB=True):
         zeta = zeta/(1 - t)
     else:
         zeta = zeta 
-    if DB: 
+    if DB and A.rank() > 2: 
         _data.save_gen_func(P, 'skele', zeta)
     return zeta
 
