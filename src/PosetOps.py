@@ -4,46 +4,74 @@
 #   Distributed under MIT License
 #
 
-def _my_intersection_poset(A):
+
+# We expand on the function in sage, optimizing a little bit.
+def IntersectionPoset(A):
     from sage.geometry.hyperplane_arrangement.affine_subspace import AffineSubspace
-    from sage.all import flatten, QQ, VectorSpace, Poset
+    from sage.all import exists, flatten, Set, QQ, VectorSpace, Poset
+    import time 
     K = A.base_ring()
     whole_space = AffineSubspace(0, VectorSpace(K, A.dimension()))
-    L = [[whole_space]]
-    label = [[[]]]
+    L = [[whole_space], list(map(lambda H: H._affine_subspace(), A))]
+    label = [[[]], [[k] for k in range(len(A))]]
+    hyp_cont = [[Set([])], [Set([k]) for k in range(len(A))]]
     active = True
-    codim = 0
+    codim = 1
+    start = time.time()
     while active:
         active = False
         new_level = []
         new_label = []
+        new_hypcont = []
         for i in range(len(L[codim])):
             T = L[codim][i]
             for j in range(len(A)):
-                H = A[j]
-                I = H._affine_subspace().intersection(T)
-                if I is not None and I != T and I not in new_level:
-                    new_level.append(I)
-                    new_label.append(label[codim][i] + [j])
-                    active = True
+                if not j in hyp_cont[codim][i]: 
+                    H = A[j]
+                    I = H._affine_subspace().intersection(T)
+                    if I is not None:
+                        if I == T: 
+                            hyp_cont[codim][i] = hyp_cont[codim][i].union(Set([j]))
+                        else:
+                            is_in, ind = exists(
+                                range(len(new_level)), 
+                                lambda k: I == new_level[k]
+                            )
+                            if is_in:
+                                new_hypcont[ind] = new_hypcont[ind].union(Set([j]).union(hyp_cont[codim][i]))
+                            else:
+                                new_level.append(I)
+                                new_label.append(label[codim][i] + [j])
+                                new_hypcont.append(
+                                    hyp_cont[codim][i].union(Set([j]))
+                                )
+                                active = True
         if active:
             L.append(new_level)
             label.append(new_label)
+            hyp_cont.append(new_hypcont)
         codim += 1
     
-    L = flatten(L)
+    end = time.time()
+    print("Subspaces: %s" % (end - start))
+    start = time.time()
+    L = flatten(hyp_cont)
     label = reduce(lambda x, y: x + y, label, [])
     t = {}
     for i in range(len(L)):
         t[i] = L[i]
-    cmp_fn = lambda p, q: t[q] < t[p]
+    cmp_fn = lambda p, q: t[p].issubset(t[q])
     list_str = lambda L : reduce(lambda x, y: x + ' ' + str(y), L[1:], str(L[0]))
     elt_labels = [''] + list(map(list_str, label[1:]))
     
-    return Poset(
+    P = Poset(
         (t, cmp_fn), 
         element_labels=elt_labels
     )
+    end = time.time()
+    print("Poset: %s" % (end - start))
+    return P
+
 
 def CharacteristicFunction(A, poset=None):
     r"""
@@ -75,7 +103,7 @@ def CharacteristicFunction(A, poset=None):
     """
     from sage.all import var
     if not poset:
-        P = _my_intersection_poset(A)
+        P = IntersectionPoset(A)
     else:
         P = poset
     def upper_subposet(X):

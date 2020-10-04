@@ -73,8 +73,13 @@ def _Coxeter_check(X, n):
 
 # Parses the Coxeter type input and runs the check for good input. 
 def _parse_Coxeter_input(name, n):
+    from sage.all import ZZ
     if not isinstance(name, str):
-        raise TypeError("Expected ``name`` to be a string.")
+        try:
+            n = ZZ(name)
+            name = "A"
+        except:
+            raise TypeError("Expected ``name`` to be a string.")
     if len(name) >= 2 and n == 0:
         try:
             n = int(name[1:])
@@ -156,13 +161,17 @@ def ShiArrangement(name, n=0):
     return _arrangements_from_roots(X, n, shift=[0, 1])
 
 
-def LinialArrangement(n):
+def LinialArrangement(name, n=0):
     r"""
-    Return the Linial arrangement defined by the hyperplanes x_i - x_j = 1.
+    Return the Linial arrangement of the prescribed type.
 
     INPUT:
 
-    - ``n`` -- integer; the dimension of the ambient affine space.
+    - ``name`` -- string; the Coxeter group name. The string must include a 
+      letter from {A, B, C, D}, and it can also include an integer.
+
+    - ``n`` -- integer (default: `0`); the rank of the Coxeter group. This is 
+      not required if ``name`` includes the rank. 
 
     OUTPUT: the Linial arrangement given as a hyperplane arrangement.
 
@@ -176,6 +185,37 @@ def LinialArrangement(n):
 
     """
 
-    if n <= 0:
-        raise ValueError("Expected a positive dimension.")
-    return _arrangements_from_roots("A", n, shift=[1])
+    X, n = _parse_Coxeter_input(name, n)
+    if X in {'I', 'H'}:
+        return _non_Weyl_arrangements(X, n, shift=[1])
+    return _arrangements_from_roots(X, n, shift=[1])
+
+
+def CatalanArrangement(name, n=0):
+    r"""
+    Return the Catalan arrangement of the prescribed type.
+
+    INPUT:
+
+    - ``name`` -- string; the Coxeter group name. The string must include a 
+      letter from {A, B, C, D}, and it can also include an integer.
+
+    - ``n`` -- integer (default: `0`); the rank of the Coxeter group. This is 
+      not required if ``name`` includes the rank. 
+
+    OUTPUT: the Catalan arrangement given as a hyperplane arrangement.
+
+    EXAMPLES:
+
+    This example illustrates how to build a Catalan arrangement ::
+
+        sage: A = CatalanArrangement("D", 4)
+        sage: A
+        Arrangement of 36 hyperplanes of dimension 4 and rank 4
+
+    """
+
+    X, n = _parse_Coxeter_input(name, n)
+    if X in {'I', 'H'}:
+        return _non_Weyl_arrangements(X, n, shift=[-1, 0, 1])
+    return _arrangements_from_roots(X, n, shift=[-1, 0, 1])
