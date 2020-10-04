@@ -45,7 +45,7 @@ def _my_intersection_poset(A):
         element_labels=elt_labels
     )
 
-def CharacteristicFunction(A):
+def CharacteristicFunction(A, poset=None):
     r"""
     Given a hyperplane arrangement A, return a function chi on the elements of 
     the intersection poset of A such that chi(X) returns a polynomial in ``x``
@@ -74,7 +74,10 @@ def CharacteristicFunction(A):
 
     """
     from sage.all import var
-    P = _my_intersection_poset(A)
+    if not poset:
+        P = _my_intersection_poset(A)
+    else:
+        P = poset
     def upper_subposet(X):
         S = set(P.upper_covers(X))
         checked = set()

@@ -30,8 +30,8 @@ def _small_central(A, style):
 def _comb_skele_direct(A, DB=True):
     from sage.all import PolynomialRing, QQ, var
     from Globals import __DEFAULT_t, __DEFAULT_p
-    from PosetOps import CharacteristicFunction, PoincarePolynomial, _proper_part
-    _, P = CharacteristicFunction(A)
+    from PosetOps import CharacteristicFunction, PoincarePolynomial, _proper_part, _my_intersection_poset
+    P = _my_intersection_poset(A)
     if DB:
         zeta = _data.get_gen_func(P, 'skele')
         if zeta != None:
@@ -56,10 +56,10 @@ def _comb_skele_direct(A, DB=True):
 def _local_Igusa_direct(A, DB=True):
     from sage.all import PolynomialRing, QQ, var
     from Globals import __DEFAULT_t, __DEFAULT_p
-    from PosetOps import CharacteristicFunction, PoincarePolynomial, _proper_part, _Coxeter_poset_data
+    from PosetOps import CharacteristicFunction, PoincarePolynomial, _proper_part, _Coxeter_poset_data, _my_intersection_poset
     p = var(__DEFAULT_p)
     t = var(__DEFAULT_t)
-    _, P = CharacteristicFunction(A)
+    P = _my_intersection_poset(A)
     if DB:
         zeta = _data.get_gen_func(P, 'Igusa')
         if zeta != None:
@@ -126,10 +126,10 @@ def _universal_gen_func(A, MAP):
 def _local_Igusa_recurse(A, DB=True):
     from sage.all import PolynomialRing, QQ, var, ZZ
     from Globals import __DEFAULT_t, __DEFAULT_p
-    from PosetOps import CharacteristicFunction, PoincarePolynomial, _proper_part, _deletion, _Coxeter_poset_data
+    from PosetOps import CharacteristicFunction, PoincarePolynomial, _proper_part, _deletion, _Coxeter_poset_data, _my_intersection_poset
     p = var(__DEFAULT_p)
     t = var(__DEFAULT_t)
-    char_func, P = CharacteristicFunction(A)
+    P = _my_intersection_poset(A)
     if DB:
         zeta = _data.get_gen_func(P, 'Igusa')
         if zeta != None:
@@ -142,6 +142,7 @@ def _local_Igusa_recurse(A, DB=True):
             if P.is_isomorphic(B.intersection_poset()):
                 from Braid import BraidArrangementIgusa
                 return BraidArrangementIgusa(A.rank())
+    char_func, _ = CharacteristicFunction(A, poset=P)
     P_prop = _proper_part(P)
     hypers = list(filter(lambda x: P.covers('', x), P))
     nHypers = lambda Z: len(list(filter(lambda H: P.le(H, Z), hypers)))
@@ -167,14 +168,15 @@ def _local_Igusa_recurse(A, DB=True):
 def _comb_skele_recurse(A, DB=True):
     from sage.all import PolynomialRing, QQ, var, ZZ
     from Globals import __DEFAULT_t, __DEFAULT_p
-    from PosetOps import CharacteristicFunction, PoincarePolynomial, _proper_part, _deletion
+    from PosetOps import CharacteristicFunction, PoincarePolynomial, _proper_part, _deletion, _my_intersection_poset
     p = var(__DEFAULT_p)
     t = var(__DEFAULT_t)
-    char_func, P = CharacteristicFunction(A)
+    P = _my_intersection_poset(A)
     if DB:
         zeta = _data.get_gen_func(P, 'skele')
         if zeta != None:
             return zeta
+    char_func, _ = CharacteristicFunction(A, poset=P)
     P_prop = _proper_part(P)
     def poincare(x):
         chi = char_func(x)
