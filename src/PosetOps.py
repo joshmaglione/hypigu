@@ -9,7 +9,6 @@
 def IntersectionPoset(A):
     from sage.geometry.hyperplane_arrangement.affine_subspace import AffineSubspace
     from sage.all import exists, flatten, Set, QQ, VectorSpace, Poset
-    import time 
     K = A.base_ring()
     whole_space = AffineSubspace(0, VectorSpace(K, A.dimension()))
     L = [[whole_space], list(map(lambda H: H._affine_subspace(), A))]
@@ -17,7 +16,6 @@ def IntersectionPoset(A):
     hyp_cont = [[Set([])], [Set([k]) for k in range(len(A))]]
     active = True
     codim = 1
-    start = time.time()
     while active:
         active = False
         new_level = []
@@ -52,9 +50,6 @@ def IntersectionPoset(A):
             hyp_cont.append(new_hypcont)
         codim += 1
     
-    end = time.time()
-    print("Subspaces: %s" % (end - start))
-    start = time.time()
     L = flatten(hyp_cont)
     label = reduce(lambda x, y: x + y, label, [])
     t = {}
@@ -64,13 +59,10 @@ def IntersectionPoset(A):
     list_str = lambda L : reduce(lambda x, y: x + ' ' + str(y), L[1:], str(L[0]))
     elt_labels = [''] + list(map(list_str, label[1:]))
     
-    P = Poset(
+    return Poset(
         (t, cmp_fn), 
         element_labels=elt_labels
     )
-    end = time.time()
-    print("Poset: %s" % (end - start))
-    return P
 
 
 def CharacteristicFunction(A, poset=None):

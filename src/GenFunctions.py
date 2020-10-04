@@ -30,8 +30,8 @@ def _small_central(A, style):
 def _comb_skele_direct(A, DB=True):
     from sage.all import PolynomialRing, QQ, var
     from Globals import __DEFAULT_t, __DEFAULT_p
-    from PosetOps import CharacteristicFunction, PoincarePolynomial, _proper_part, _my_intersection_poset
-    P = _my_intersection_poset(A)
+    from PosetOps import CharacteristicFunction, PoincarePolynomial, _proper_part, IntersectionPoset
+    P = IntersectionPoset(A)
     if DB:
         zeta = _data.get_gen_func(P, 'skele')
         if zeta != None:
@@ -56,10 +56,10 @@ def _comb_skele_direct(A, DB=True):
 def _local_Igusa_direct(A, DB=True):
     from sage.all import PolynomialRing, QQ, var
     from Globals import __DEFAULT_t, __DEFAULT_p
-    from PosetOps import CharacteristicFunction, PoincarePolynomial, _proper_part, _Coxeter_poset_data, _my_intersection_poset
+    from PosetOps import CharacteristicFunction, PoincarePolynomial, _proper_part, _Coxeter_poset_data, IntersectionPoset
     p = var(__DEFAULT_p)
     t = var(__DEFAULT_t)
-    P = _my_intersection_poset(A)
+    P = IntersectionPoset(A)
     if DB:
         zeta = _data.get_gen_func(P, 'Igusa')
         if zeta != None:
@@ -126,10 +126,10 @@ def _universal_gen_func(A, MAP):
 def _local_Igusa_recurse(A, DB=True):
     from sage.all import PolynomialRing, QQ, var, ZZ
     from Globals import __DEFAULT_t, __DEFAULT_p
-    from PosetOps import CharacteristicFunction, PoincarePolynomial, _proper_part, _deletion, _Coxeter_poset_data, _my_intersection_poset
+    from PosetOps import CharacteristicFunction, PoincarePolynomial, _proper_part, _deletion, _Coxeter_poset_data, IntersectionPoset
     p = var(__DEFAULT_p)
     t = var(__DEFAULT_t)
-    P = _my_intersection_poset(A)
+    P = IntersectionPoset(A)
     if DB:
         zeta = _data.get_gen_func(P, 'Igusa')
         if zeta != None:
@@ -168,10 +168,10 @@ def _local_Igusa_recurse(A, DB=True):
 def _comb_skele_recurse(A, DB=True):
     from sage.all import PolynomialRing, QQ, var, ZZ
     from Globals import __DEFAULT_t, __DEFAULT_p
-    from PosetOps import CharacteristicFunction, PoincarePolynomial, _proper_part, _deletion, _my_intersection_poset
+    from PosetOps import CharacteristicFunction, PoincarePolynomial, _proper_part, _deletion, IntersectionPoset
     p = var(__DEFAULT_p)
     t = var(__DEFAULT_t)
-    P = _my_intersection_poset(A)
+    P = IntersectionPoset(A)
     if DB:
         zeta = _data.get_gen_func(P, 'skele')
         if zeta != None:
