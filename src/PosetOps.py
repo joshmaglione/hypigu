@@ -13,34 +13,10 @@ def _proper_part(P):
         prop = filter(lambda X: X != '', P._elements)
     return P.subposet(prop)
 
-# Labels the n coatoms of P with {0, ..., n-1}, and updates everything above.
-def _update_labels(P):
-    from sage.all import Poset, DiGraph, Set, exists
-    hyps = P.upper_covers('')
-    new_labels = [str(k) for k in range(len(hyps))]
-    hyp_dict = {hyps[i] : new_labels[i] for i in range(len(hyps))}
-
-    def update_elt(x):
-        if x == '':
-            return ''
-        if not ' ' in x:
-            return hyp_dict[x]
-        hyps_below = filter(lambda H: P.le(H, x), hyps)
-        new_x_labels = map(lambda H: hyp_dict[H], hyps_below)
-        return reduce(lambda u, v: u + v + ' ', new_x_labels, '')
-
-    digraph_dat = map(
-        lambda x: [update_elt(x[0]), update_elt(x[1])], 
-        P.cover_relations()
-    )
-    G = DiGraph(digraph_dat)
-    assert Poset(G).is_isomorphic(P)
-    return Poset(G)
-
 # Can return the deletion A_x or restriction A^x simply based on the function F
 # given. For deletion use 'lambda z: P.lower_covers(z)' and for restriction use
 # 'lambda z: P.upper_covers(z)'.
-def _subposet(P, x, F, update=False):
+def _subposet(P, x, F):
     from sage.all import Set, Poset, DiGraph
     elts = Set([])
     new_level = Set([x])
@@ -51,10 +27,7 @@ def _subposet(P, x, F, update=False):
             map(F, new_level), 
             []
         ))
-    new_P = Poset(DiGraph(P.subposet(elts).cover_relations()))
-    assert new_P.is_isomorphic(P.subposet(elts))
-    if update:
-        return _update_labels(new_P)
+    new_P = P.subposet(elts)
     return new_P
 
 # Two elements x, y of P are equivalent if A_x = A_y and A^x = A^y. We need only
@@ -69,7 +42,7 @@ def _equiv_elts(P):
     restrict = []
     while len(all_elts) > 0:
         x = all_elts[0]
-        del_x = _subposet(P, x, lambda z: P.lower_covers(z), update=True)
+        del_x = _subposet(P, x, lambda z: P.lower_covers(z))
         res_x = _subposet(P, x, lambda z: P.upper_covers(z))
         match = False
         i = 0
@@ -91,17 +64,20 @@ def _equiv_elts(P):
 
 # The deletion method is coded well enough to allow for this kind of recursion. 
 # We need the new labels for a hyperplane though.
-def _deletion(A, X, P):
-    H_to_str = lambda H: str(list(A).index(H))
+def _deletion(A, X, P, poset=True, OG=None):
+    if OG:
+        Ar = OG
+    else:
+        Ar = A
+    H_to_str = lambda H: str(list(Ar).index(H))
+    print(A)
+    print(list(map(H_to_str, A)))
     complement = filter(lambda H: not P.le(H_to_str(H), X), A)
     B = reduce(lambda x, y: x.deletion(y), complement, A)
-    # A dictionary to convert old labels to new labels.
-    def new_labels(k):
-        for i in range(len(B)):
-            if B[i] == A[k]:
-                return i
-        return -1
-    return B, {str(k): str(new_labels(k)) for k in range(len(A))}
+    if not poset:
+        return B
+    Q = _subposet(P, X, lambda z: P.lower_covers(z))
+    return B, Q
 
 
 # We expand on the function in sage, optimizing a little bit. This makes little
@@ -208,42 +184,29 @@ def CharacteristicFunction(A, poset=None):
         P = poset
     def upper_subposet(X):
         return _subposet(P, X, lambda z: P.upper_covers(z))
+    n = A.dimension()
     def char_func(X):
         from Globals import __DEFAULT_p as p
         p = var(p)
         PX = upper_subposet(X)
         moebius = map(lambda Y: PX.moebius_function(X, Y), PX._elements)
-        bot = P.bottom()
-        # my_rank = lambda Y: P.subposet(P.closed_interval(bot, Y)).height() - 1
-        dims = map(lambda Y: A.dimension() - P.rank(Y), PX._elements) # codim
+        dims = map(lambda Y: n - P.rank(Y), PX._elements) # codim
         return reduce(lambda x, y: x + y[0]*p**y[1], zip(moebius, dims), 0)
-    return char_func, P
-
+    return char_func
 
 def PoincarePolynomial(A, F=[''], poset=None):
     from Globals import __DEFAULT_p as p
     from sage.all import var, ZZ
     p = var(p)
-    char_func, P = CharacteristicFunction(A, poset=poset)
+    char_func= CharacteristicFunction(A, poset=poset)
     chi = char_func(F[-1])
     d = chi.degree(p)
     pi = ((-p)**d*chi.subs({p:-p**-1})).factor().simplify()
     if F[-1] == '':
         return pi
-    # X = map(lambda i: ZZ(i), F[-1].split(' '))
     X = F[-1]
-    B, new_labels = _deletion(A, X, P)
-    def update_str(Y):
-        if Y == '':
-            return Y 
-        L = Y.split(' ')
-        L_upd = map(lambda s: new_labels[s], L)
-        return reduce(lambda x, y: x + ' ' + y, L_upd[1:], L_upd[0])
-    G = map(update_str, F[:-1])
-    return pi*PoincarePolynomial(B, G)
-
-
-
+    B, Q = _deletion(A, X, P)
+    return pi*PoincarePolynomial(B, G, poset=Q)
 
 def _Coxeter_poset_data():
     # Bell numbers: A000110
