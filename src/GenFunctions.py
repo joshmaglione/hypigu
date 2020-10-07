@@ -165,6 +165,52 @@ def _local_Igusa_recurse(A, DB=True):
         _data.save_gen_func(P, 'Igusa', zeta)
     return zeta
 
+def _local_Igusa_BEST(A, DB=True, poset=None):
+    from sage.all import PolynomialRing, QQ, var, ZZ
+    from Globals import __DEFAULT_t, __DEFAULT_p
+    from PosetOps import CharacteristicFunction, PoincarePolynomial, _deletion, _Coxeter_poset_data, IntersectionPoset, _equiv_elts
+    from Constructors import CoxeterArrangement
+    from Braid import BraidArrangementIgusa
+    p = var(__DEFAULT_p)
+    t = var(__DEFAULT_t)
+    if poset:
+        P = poset
+    else:
+        P = IntersectionPoset(A)
+    if DB:
+        zeta = _data.get_gen_func(P, 'Igusa')
+        if zeta != None:
+            return zeta
+    # We check to see if we have a type A braid arrangement. 
+    if _Coxeter_poset_data()['A']['hyperplanes'](A.rank()) == len(A):
+        if _Coxeter_poset_data()['A']['poset'](A.rank()) == len(P):
+            B = CoxeterArrangement("A", n=A.rank())
+            if P.is_isomorphic(B.intersection_poset()):
+                return BraidArrangementIgusa(A.rank())
+    char_func, _ = CharacteristicFunction(A, poset=P)
+    hypers = list(filter(lambda x: P.covers('', x), P))
+    nHypers = lambda Z: len(list(filter(lambda H: P.le(H, Z), hypers)))
+    t_factor = lambda X: t**nHypers(X)
+    eq_elt_data = _equiv_elts(P)
+    factors = map(lambda x: x[1]*t_factor(x[0])*char_func(x[1]), eq_elt_data)
+    integrals = map(
+        lambda x: LocalIgusaZetaFunction(
+            _deletion(A, x[0], P)[0], 
+            method="BEST", 
+            database=DB,
+            int_poset=x[2]
+        ), 
+        eq_elt_data
+    )
+    zeta = reduce(lambda x, y: x + y[0]*y[1], zip(factors, integrals), 0) + char_func('')
+    if A.is_central():
+        zeta = p**(-A.dimension())*zeta/(1 - p**(-A.rank())*t**len(A))
+    else:
+        zeta = p**(-A.dimension())*zeta 
+    if DB and A.rank() > 2: 
+        _data.save_gen_func(P, 'Igusa', zeta)
+    return zeta
+
 def _comb_skele_recurse(A, DB=True):
     from sage.all import PolynomialRing, QQ, var, ZZ
     from Globals import __DEFAULT_t, __DEFAULT_p
@@ -200,7 +246,11 @@ def _comb_skele_recurse(A, DB=True):
     return zeta
 
 
-def CombinatorialSkeleton(A, method="recursive", database=True):
+def CombinatorialSkeleton(A, 
+    method="recursive", 
+    database=True, 
+    int_poset=None
+):
     if A.is_central() and A.rank() <= 2:
         return _small_central(A, 'skele')
     if method == "direct":
@@ -208,13 +258,22 @@ def CombinatorialSkeleton(A, method="recursive", database=True):
     else:
         return _comb_skele_recurse(A, DB=database)
 
-def LocalIgusaZetaFunction(A, method="recursive", database=True):
+def LocalIgusaZetaFunction(A, 
+    method="recursive", 
+    database=True, 
+    int_poset=None
+):
     if A.is_central() and A.rank() <= 2:
         return _small_central(A, 'Igusa')
     if method == "direct":
         return _local_Igusa_direct(A, DB=database)
-    else:
+    if method == "BEST":
+        return _local_Igusa_BEST(A, DB=database, poset=int_poset)
+    if method == "recursive":
         return _local_Igusa_recurse(A, DB=database)
 
-def UniversalGeneratingFunction(A, Map=False):
+def UniversalGeneratingFunction(A, 
+    Map=False, 
+    int_poset=None
+):
     return _universal_gen_func(A, Map)

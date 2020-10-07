@@ -4,6 +4,105 @@
 #   Distributed under MIT License
 #
 
+# Returns the proper part of a poset as a subposet.
+def _proper_part(P):
+    central = P.has_top()
+    if central: 
+        prop = filter(lambda X: X != P.top() and X != '', P._elements)
+    else: 
+        prop = filter(lambda X: X != '', P._elements)
+    return P.subposet(prop)
+
+# Labels the n coatoms of P with {0, ..., n-1}, and updates everything above.
+def _update_labels(P):
+    from sage.all import Poset, DiGraph, Set, exists
+    hyps = P.upper_covers('')
+    new_labels = [str(k) for k in range(len(hyps))]
+    hyp_dict = {hyps[i] : new_labels[i] for i in range(len(hyps))}
+
+    def update_elt(x):
+        if x == '':
+            return ''
+        if not ' ' in x:
+            return hyp_dict[x]
+        hyps_below = filter(lambda H: P.le(H, x), hyps)
+        new_x_labels = map(lambda H: hyp_dict[H], hyps_below)
+        return reduce(lambda u, v: u + v + ' ', new_x_labels, '')
+
+    digraph_dat = map(
+        lambda x: [update_elt(x[0]), update_elt(x[1])], 
+        P.cover_relations()
+    )
+    G = DiGraph(digraph_dat)
+    assert Poset(G).is_isomorphic(P)
+    return Poset(G)
+
+# Can return the deletion A_x or restriction A^x simply based on the function F
+# given. For deletion use 'lambda z: P.lower_covers(z)' and for restriction use
+# 'lambda z: P.upper_covers(z)'.
+def _subposet(P, x, F, update=False):
+    from sage.all import Set, Poset, DiGraph
+    elts = Set([])
+    new_level = Set([x])
+    while len(elts.union(new_level)) > len(elts):
+        elts = elts.union(new_level)
+        new_level = Set(reduce(
+            lambda x, y: x+y, 
+            map(F, new_level), 
+            []
+        ))
+    new_P = Poset(DiGraph(P.subposet(elts).cover_relations()))
+    assert new_P.is_isomorphic(P.subposet(elts))
+    if update:
+        return _update_labels(new_P)
+    return new_P
+
+# Two elements x, y of P are equivalent if A_x = A_y and A^x = A^y. We need only
+# a representative of each equivalence class and some other data. We return a
+# list of triples: a rep. elt, size of equiv. class, and the poset from A_x.
+def _equiv_elts(P):
+    P_prop = _proper_part(P)
+    all_elts = P_prop._elements
+    eq_elts = []
+    counts = []
+    deletion = []
+    restrict = []
+    while len(all_elts) > 0:
+        x = all_elts[0]
+        del_x = _subposet(P, x, lambda z: P.lower_covers(z), update=True)
+        res_x = _subposet(P, x, lambda z: P.upper_covers(z))
+        match = False
+        i = 0
+        while not match and i < len(eq_elts):
+            if del_x.is_isomorphic(deletion[i]) and res_x.is_isomorphic(restrict[i]):
+                match = True
+            else:
+                i += 1
+        if match:
+            counts[i] += 1
+        else:
+            eq_elts.append(x)
+            counts.append(1)
+            deletion.append(del_x)
+            restrict.append(res_x)
+        all_elts = all_elts[1:]
+    return zip(eq_elts, counts, deletion) 
+
+
+# The deletion method is coded well enough to allow for this kind of recursion. 
+# We need the new labels for a hyperplane though.
+def _deletion(A, X, P):
+    H_to_str = lambda H: str(list(A).index(H))
+    complement = filter(lambda H: not P.le(H_to_str(H), X), A)
+    B = reduce(lambda x, y: x.deletion(y), complement, A)
+    # A dictionary to convert old labels to new labels.
+    def new_labels(k):
+        for i in range(len(B)):
+            if B[i] == A[k]:
+                return i
+        return -1
+    return B, {str(k): str(new_labels(k)) for k in range(len(A))}
+
 
 # We expand on the function in sage, optimizing a little bit. This makes little
 # difference in small ranks but noticeable different in larger ranks. 
@@ -14,9 +113,6 @@ def IntersectionPoset(A):
     whole_space = AffineSubspace(0, VectorSpace(K, A.dimension()))
     # L is the ranked list of affine subspaces in L(A).
     L = [[whole_space], list(map(lambda H: H._affine_subspace(), A))]
-    # label is the ranked list of labels describing how to (minimally) build the
-    # intersection.
-    label = [[[]], [[k] for k in range(len(A))]]
     # hyp_cont is the ranked list describing which hyperplanes contain the
     # corresponding intersection. 
     hyp_cont = [[Set([])], [Set([k]) for k in range(len(A))]]
@@ -25,7 +121,7 @@ def IntersectionPoset(A):
     while active:
         active = False
         new_level = []
-        new_label = []
+        # new_label = []
         new_hypcont = []
         for i in range(len(L[codim])):
             T = L[codim][i]
@@ -57,25 +153,22 @@ def IntersectionPoset(A):
                             else:
                                 # We do not have it, so we update everything.
                                 new_level.append(I)
-                                new_label.append(label[codim][i] + [j])
                                 new_hypcont.append(
                                     hyp_cont[codim][i].union(Set([j]))
                                 )
                                 active = True
         if active:
             L.append(new_level)
-            label.append(new_label)
             hyp_cont.append(new_hypcont)
         codim += 1
     
     L = flatten(hyp_cont)
-    label = reduce(lambda x, y: x + y, label, [])
     t = {}
     for i in range(len(L)):
         t[i] = L[i]
     cmp_fn = lambda p, q: t[p].issubset(t[q])
     list_str = lambda L : reduce(lambda x, y: x+' '+str(y), L[1:], str(L[0]))
-    elt_labels = [''] + list(map(list_str, label[1:]))
+    elt_labels = [''] + list(map(list_str, L[1:]))
     
     return Poset((t, cmp_fn), element_labels=elt_labels)
 
@@ -114,89 +207,24 @@ def CharacteristicFunction(A, poset=None):
     else:
         P = poset
     def upper_subposet(X):
-        S = set(P.upper_covers(X))
-        checked = set()
-        while len(S - checked) > 0:
-            x = (S - checked).pop()
-            S = S.union(set(P.upper_covers(x)))
-            checked.add(x)
-        return P.subposet([X] + list(S))
+        return _subposet(P, X, lambda z: P.upper_covers(z))
     def char_func(X):
         from Globals import __DEFAULT_p as p
-        from sage.all import var
         p = var(p)
         PX = upper_subposet(X)
         moebius = map(lambda Y: PX.moebius_function(X, Y), PX._elements)
         bot = P.bottom()
-        my_rank = lambda Y: P.subposet(P.closed_interval(bot, Y)).height() - 1
-        dims = map(lambda Y: A.dimension() - my_rank(Y), PX._elements)
+        # my_rank = lambda Y: P.subposet(P.closed_interval(bot, Y)).height() - 1
+        dims = map(lambda Y: A.dimension() - P.rank(Y), PX._elements) # codim
         return reduce(lambda x, y: x + y[0]*p**y[1], zip(moebius, dims), 0)
     return char_func, P
 
-# The deletion method is coded well enough to allow for this kind of recursion. 
-# We need the new labels for a hyperplane though.
-def _deletion(A, X, P):
-    H_to_str = lambda H: str(list(A).index(H))
-    complement = filter(lambda H: not P.le(H_to_str(H), X), A)
-    B = reduce(lambda x, y: x.deletion(y), complement, A)
-    # A dictionary to convert old labels to new labels.
-    def new_labels(k):
-        for i in range(len(B)):
-            if B[i] == A[k]:
-                return i
-        return -1
-    return B, {str(k): str(new_labels(k)) for k in range(len(A))}
 
-# Turns an affine subspace U of Aff into a hyperplane in HA.
-def _affine_to_hyperplane(Aff, U, HA):
-    from sage.geometry.hyperplane_arrangement.affine_subspace import AffineSubspace
-    amb_mat = Aff.linear_part().basis_matrix()
-    norm = Aff.intersection(AffineSubspace(
-        U.point(), 
-        U.linear_part().basis_matrix().transpose().kernel()
-        )
-    )
-    coeff = list(amb_mat.solve_left(norm.linear_part().basis_matrix()))[0]
-    trans = amb_mat.solve_left(U.point() - Aff.point())
-    merge = lambda x, y: x + y[0]*y[1]
-    const = reduce(merge, zip(trans, coeff), 0)
-    varbs = HA.gens()
-    return reduce(merge, zip(coeff, varbs), 0*HA.gen(0)) - const
-
-# The restriction method is short-sighted. Here is one that will restrict to 
-# anything in the intersection poset.
-def _restriction(A, X):
-    # Pre-conditioning.
-    from sage.all import HyperplaneArrangements, Matrix, QQ, Set, VectorSpace
-    from sage.geometry.hyperplane_arrangement.affine_subspace import AffineSubspace
-    d = A.dimension()
-    AA = AffineSubspace([0]*d, VectorSpace(QQ, A.dimension()))
-
-    # First we build the ambient affine space given by X.
-    affines = map(lambda x: (A[x])._affine_subspace(), X)
-    amb_space = reduce(lambda U, V: U.intersection(V), affines, AA)
-    if not amb_space:
-        raise ValueError("Subspace not contained in intersection poset.")
-    new_d = amb_space.dimension()
-    HA = HyperplaneArrangements(QQ, tuple(['x' + str(i) for i in range(new_d)]))
-
-    # Now we construct the intersections and build the appropriate hyperplanes.
-    all_affs = map(lambda H: H._affine_subspace(), A)
-    all_ints = filter(
-        lambda U: U and U != amb_space, 
-        map(lambda H: amb_space.intersection(H), all_affs)
-    )
-    all_ints = list(Set(all_ints))
-    if len(all_ints) == 0:
-        return HA()
-    
-    return HA(map(lambda U: _affine_to_hyperplane(amb_space, U, HA), all_ints))
-
-def PoincarePolynomial(A, F):
+def PoincarePolynomial(A, F=[''], poset=None):
     from Globals import __DEFAULT_p as p
     from sage.all import var, ZZ
     p = var(p)
-    char_func, P = CharacteristicFunction(A)
+    char_func, P = CharacteristicFunction(A, poset=poset)
     chi = char_func(F[-1])
     d = chi.degree(p)
     pi = ((-p)**d*chi.subs({p:-p**-1})).factor().simplify()
@@ -213,6 +241,8 @@ def PoincarePolynomial(A, F):
         return reduce(lambda x, y: x + ' ' + y, L_upd[1:], L_upd[0])
     G = map(update_str, F[:-1])
     return pi*PoincarePolynomial(B, G)
+
+
 
 
 def _Coxeter_poset_data():
@@ -263,11 +293,4 @@ def _possibly_Coxeter(P):
                 return [True, name]
     return [False, None]
 
-def _proper_part(P):
-    central = P.has_top()
-    if central: 
-        prop = filter(lambda X: X != P.top() and X != '', P._elements)
-    else: 
-        prop = filter(lambda X: X != '', P._elements)
-    return P.subposet(prop)
 
