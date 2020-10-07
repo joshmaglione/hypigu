@@ -5,14 +5,20 @@
 #
 
 
-# We expand on the function in sage, optimizing a little bit.
+# We expand on the function in sage, optimizing a little bit. This makes little
+# difference in small ranks but noticeable different in larger ranks. 
 def IntersectionPoset(A):
     from sage.geometry.hyperplane_arrangement.affine_subspace import AffineSubspace
     from sage.all import exists, flatten, Set, QQ, VectorSpace, Poset
     K = A.base_ring()
     whole_space = AffineSubspace(0, VectorSpace(K, A.dimension()))
+    # L is the ranked list of affine subspaces in L(A).
     L = [[whole_space], list(map(lambda H: H._affine_subspace(), A))]
+    # label is the ranked list of labels describing how to (minimally) build the
+    # intersection.
     label = [[[]], [[k] for k in range(len(A))]]
+    # hyp_cont is the ranked list describing which hyperplanes contain the
+    # corresponding intersection. 
     hyp_cont = [[Set([])], [Set([k]) for k in range(len(A))]]
     active = True
     codim = 1
@@ -24,20 +30,32 @@ def IntersectionPoset(A):
         for i in range(len(L[codim])):
             T = L[codim][i]
             for j in range(len(A)):
+                # Skip the hyperplane already known to contain the intersection.
                 if not j in hyp_cont[codim][i]: 
                     H = A[j]
                     I = H._affine_subspace().intersection(T)
+                    # Check if the intersection is trivial.
                     if I is not None:
                         if I == T: 
-                            hyp_cont[codim][i] = hyp_cont[codim][i].union(Set([j]))
+                            # This case means that H cap T = T, so we should
+                            # record that H contains T.
+                            hyp_cont[codim][i] = hyp_cont[codim][i].union(
+                                Set([j])
+                            )
                         else:
+                            # Check if we have this intersection already. 
                             is_in, ind = exists(
                                 range(len(new_level)), 
                                 lambda k: I == new_level[k]
                             )
                             if is_in:
-                                new_hypcont[ind] = new_hypcont[ind].union(Set([j]).union(hyp_cont[codim][i]))
+                                # We have the intersection, so we update
+                                # containment info accordingly. 
+                                new_hypcont[ind] = new_hypcont[ind].union(
+                                    Set([j]).union(hyp_cont[codim][i])
+                                )
                             else:
+                                # We do not have it, so we update everything.
                                 new_level.append(I)
                                 new_label.append(label[codim][i] + [j])
                                 new_hypcont.append(
@@ -56,13 +74,10 @@ def IntersectionPoset(A):
     for i in range(len(L)):
         t[i] = L[i]
     cmp_fn = lambda p, q: t[p].issubset(t[q])
-    list_str = lambda L : reduce(lambda x, y: x + ' ' + str(y), L[1:], str(L[0]))
+    list_str = lambda L : reduce(lambda x, y: x+' '+str(y), L[1:], str(L[0]))
     elt_labels = [''] + list(map(list_str, label[1:]))
     
-    return Poset(
-        (t, cmp_fn), 
-        element_labels=elt_labels
-    )
+    return Poset((t, cmp_fn), element_labels=elt_labels)
 
 
 def CharacteristicFunction(A, poset=None):
