@@ -92,8 +92,6 @@ def _local_Igusa_BEST(A, DB=True, poset=None, OG=None):
         else:
             return len(X.split(' '))
     eq_elt_data = _equiv_elts(P)
-    print(P._elements)
-    print([x[0] for x in eq_elt_data])
     factors = map(lambda x: x[1]*t_factor(x[0])*char_func(x[0]), eq_elt_data)
     integrals = map(
         lambda x: _local_Igusa_BEST(
@@ -113,30 +111,38 @@ def _local_Igusa_BEST(A, DB=True, poset=None, OG=None):
         _data.save_gen_func(P, 'Igusa', zeta)
     return zeta
 
-def _comb_skele_recurse(A, DB=True):
+def _comb_skele_BEST(A, DB=True, poset=None, OG=None):
     from sage.all import PolynomialRing, QQ, var, ZZ
     from Globals import __DEFAULT_t, __DEFAULT_p
-    from PosetOps import CharacteristicFunction, PoincarePolynomial, _proper_part, _deletion, IntersectionPoset
+    from PosetOps import CharacteristicFunction, _deletion, IntersectionPoset, _equiv_elts
+
+    if A.is_central() and A.rank() <= 2:
+        return _small_central(A, 'skele')
     p = var(__DEFAULT_p)
     t = var(__DEFAULT_t)
-    P = IntersectionPoset(A)
+    if poset:
+        P = poset
+    else:
+        P = IntersectionPoset(A)
     if DB:
         zeta = _data.get_gen_func(P, 'skele')
         if zeta != None:
             return zeta
-    char_func, _ = CharacteristicFunction(A, poset=P)
-    P_prop = _proper_part(P)
+    char_func = CharacteristicFunction(A, poset=P)
     def poincare(x):
         chi = char_func(x)
         d = chi.degree(p)
         return (-p)**d*chi.subs({p: -p**-1})
-    elts = P_prop._elements
-    factors = map(lambda x: t*poincare(x), elts)
+    eq_elt_data = _equiv_elts(P)
+    factors = map(lambda x: x[1]*t*poincare(x[0]), eq_elt_data)
     integrals = map(
-        lambda x: CombinatorialSkeleton(
-            _deletion(A, x, P)[0], method="recursive", database=DB
+        lambda x: _comb_skele_BEST(
+            _deletion(A, x[0], P, poset=False, OG=OG), 
+            DB=DB,
+            poset=x[2],
+            OG=OG
         ), 
-        elts
+        eq_elt_data
     )
     zeta = reduce(lambda x, y: x + y[0]*y[1], zip(factors, integrals), 0) + poincare('')
     if A.is_central():
@@ -148,27 +154,12 @@ def _comb_skele_recurse(A, DB=True):
     return zeta
 
 
-def CombinatorialSkeleton(A, 
-    method="recursive", 
-    database=True, 
-    int_poset=None
-):
-    if A.is_central() and A.rank() <= 2:
-        return _small_central(A, 'skele')
-    if method == "direct":
-        return _comb_skele_direct(A, DB=database)
-    else:
-        return _comb_skele_recurse(A, DB=database)
 
-def LocalIgusaZetaFunction(A, 
-    method="recursive", 
-    database=True, 
-    int_poset=None
-):
+def CombinatorialSkeleton(A, database=True, int_poset=None):
+    return _comb_skele_BEST(A, DB=database, poset=int_poset, OG=A)
+
+def LocalIgusaZetaFunction(A, database=True, int_poset=None):
     return _local_Igusa_BEST(A, DB=database, poset=int_poset, OG=A)
 
-def UniversalGeneratingFunction(A, 
-    Map=False, 
-    int_poset=None
-):
+def UniversalGeneratingFunction(A, Map=False, int_poset=None):
     return _universal_gen_func(A, Map)

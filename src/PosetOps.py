@@ -70,8 +70,6 @@ def _deletion(A, X, P, poset=True, OG=None):
     else:
         Ar = A
     H_to_str = lambda H: str(list(Ar).index(H))
-    print(A)
-    print(list(map(H_to_str, A)))
     complement = filter(lambda H: not P.le(H_to_str(H), X), A)
     B = reduce(lambda x, y: x.deletion(y), complement, A)
     if not poset:
