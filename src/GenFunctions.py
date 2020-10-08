@@ -5,6 +5,7 @@
 #
 
 from Database import internal_database as _data
+from Globals import __PRINT as _print
 
 # The complete solutions for small central arrangements of rank <= 2.
 def _small_central(A, style):
@@ -111,7 +112,7 @@ def _local_Igusa_BEST(A, DB=True, poset=None, OG=None):
         _data.save_gen_func(P, 'Igusa', zeta)
     return zeta
 
-def _comb_skele_BEST(A, DB=True, poset=None, OG=None):
+def _comb_skele_BEST(A, DB=True, poset=None, OG=None, verbose=_print):
     from sage.all import PolynomialRing, QQ, var, ZZ
     from Globals import __DEFAULT_t, __DEFAULT_p
     from PosetOps import CharacteristicFunction, _deletion, IntersectionPoset, _equiv_elts
@@ -123,18 +124,33 @@ def _comb_skele_BEST(A, DB=True, poset=None, OG=None):
     if poset:
         P = poset
     else:
+        if verbose: 
+            print("Constructing intersection poset.")
         P = IntersectionPoset(A)
+        if verbose:
+            print("\tDone.")
     if DB:
+        if verbose:
+            print("Checking database.")
         zeta = _data.get_gen_func(P, 'skele')
         if zeta != None:
             return zeta
+        if verbose:
+            print("\tDone.")
     char_func = CharacteristicFunction(A, poset=P)
     def poincare(x):
         chi = char_func(x)
         d = chi.degree(p)
         return (-p)**d*chi.subs({p: -p**-1})
+    if verbose: 
+        print("Gleaning structure from poset.")
     eq_elt_data = _equiv_elts(P)
+    if verbose:
+        print("\tDone.")
+        print("Found the following basic structure:\n%s" % (eq_elt_data))
     factors = map(lambda x: x[1]*t*poincare(x[0]), eq_elt_data)
+    if verbose:
+        print("Recursing...")
     integrals = map(
         lambda x: _comb_skele_BEST(
             _deletion(A, x[0], P, poset=False, OG=OG), 
@@ -144,6 +160,8 @@ def _comb_skele_BEST(A, DB=True, poset=None, OG=None):
         ), 
         eq_elt_data
     )
+    if verbose:
+        print("Putting everything together...")
     zeta = reduce(lambda x, y: x + y[0]*y[1], zip(factors, integrals), 0) + poincare('')
     if A.is_central():
         zeta = zeta/(1 - t)

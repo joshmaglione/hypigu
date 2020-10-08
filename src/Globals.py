@@ -6,3 +6,4 @@
 
 __DEFAULT_p = 'q'
 __DEFAULT_t = 't'
+__PRINT = True
