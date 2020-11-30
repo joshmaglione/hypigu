@@ -6,6 +6,7 @@
 
 from sage.all import binomial as _binomial
 from sage.all import factorial as _factorial
+from functools import reduce as _reduce
 
 _TABLE_CUTOFF = 3
 
@@ -46,16 +47,16 @@ def _P(L):
             return _binomial(n, P[0])
         else:
             return _binomial(n, P[0]) * binom(n - P[0], P[1:])
-    n = reduce(lambda x, y: x + y, L)
+    n = _reduce(lambda x, y: x + y, L)
     count = lambda n: len(filter(lambda x: x == n, L))
     S = list(Set(list(L)))
-    d = reduce(lambda x, y: x*y, map(lambda z: _factorial(count(z)), S))
+    d = _reduce(lambda x, y: x*y, map(lambda z: _factorial(count(z)), S))
     return binom(n, L) // d
 
 # Counts the number of edges in a subgraph of the complete graph determined by L
 def _binom_sum(L):
     binomials = map(lambda z: _binomial(z, 2), L)
-    return reduce(lambda x, y: x + y, binomials)
+    return _reduce(lambda x, y: x + y, binomials)
 
 # Constructs the Poincare polynomial (in Y) of the braid arrangement in |L|-1
 # affine space.
@@ -63,7 +64,7 @@ def _Poincare(L):
     from sage.all import var
     Y = var('Y')
     factors= map(lambda z: 1 + z*Y, range(1, len(L)))
-    return reduce(lambda x, y: x*y, factors, 1)
+    return _reduce(lambda x, y: x*y, factors, 1)
 
 # Constructs the Igusa integral for the braid arrangement with little repetition
 # of work. 
@@ -80,11 +81,11 @@ def _recursive_crank(p, t, n, known=[], style="standard"):
                 L_factors = [_P(L), 1, t**(_binom_sum(L)), _factorial(len(L))]
             else:
                 L_factors = [
-                    _P(L), p**(1-reduce(lambda x, y: x + y - 1, L)), 
+                    _P(L), p**(1-_reduce(lambda x, y: x + y - 1, L)), 
                     t**(_binom_sum(L)), _Poincare(L)(Y=-p**-1)
                 ]
             lower_integrals = map(lambda z: known[z - 1], list(L))
-            L_term = reduce(lambda x, y: x*y, L_factors + lower_integrals, 1)
+            L_term = _reduce(lambda x, y: x*y, L_factors + lower_integrals, 1)
             Zk += L_term
     if style == "reduced":
         Zk = Zk/(1 - t**(_binomial(k, 2)))
@@ -119,7 +120,7 @@ def BraidArrangementIgusa(n, style="standard"):
 
     """
     from sage.all import var
-    from Globals import __DEFAULT_p, __DEFAULT_t
+    from .Globals import __DEFAULT_p, __DEFAULT_t
     if not isinstance(style, str):
         raise TypeError("Expected ``style`` to be a string.")
     if not style.lower() in {"standard", "reduced"}:

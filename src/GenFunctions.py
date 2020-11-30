@@ -4,15 +4,15 @@
 #   Distributed under MIT License
 #
 
-from Database import internal_database as _data
-from Globals import __PRINT as _print
+from .Database import internal_database as _data
+from .Globals import __PRINT as _print
+from functools import reduce as _reduce
 
 # The complete solutions for small central arrangements of rank <= 2.
 def _small_central(A, style):
-    from Globals import __DEFAULT_p, __DEFAULT_t 
+    from .Globals import __DEFAULT_p, __DEFAULT_t 
     from sage.all import var
-    assert A.is_central()
-    assert A.rank() <= 2
+
     p = var(__DEFAULT_p)
     t = var(__DEFAULT_t)
     if A.rank() == 1:
@@ -30,8 +30,8 @@ def _small_central(A, style):
 # The direct version of the universal generating function computation.
 def _universal_gen_func(A, MAP):
     from sage.all import PolynomialRing, QQ, var, ZZ
-    from Globals import __DEFAULT_t, __DEFAULT_p
-    from PosetOps import CharacteristicFunction, PoincarePolynomial, _proper_part
+    from .Globals import __DEFAULT_t, __DEFAULT_p
+    from .PosetOps import CharacteristicFunction, PoincarePolynomial, _proper_part
     p = var(__DEFAULT_p)
     Yvar = var('Y')
     _, P = CharacteristicFunction(A)
@@ -43,11 +43,11 @@ def _universal_gen_func(A, MAP):
     for C in P_prop.chains():
         F = [''] + C 
         pi = PoincarePolynomial(A, F)
-        Z_in = reduce(lambda x, y: x*Y(y), C, 1)
+        Z_in = _reduce(lambda x, y: x*Y(y), C, 1)
         C_comp = filter(lambda z: not z in C, P_prop._elements)
-        Z_out = reduce(lambda x, y: x*(1 - Y(y)), C_comp, 1)
+        Z_out = _reduce(lambda x, y: x*(1 - Y(y)), C_comp, 1)
         skele += pi.subs({p: Yvar})*Z_in*Z_out
-    Skeleton = skele/reduce(lambda x, y: x*(1 - Y(y)), P._elements[1:], 1)
+    Skeleton = skele/_reduce(lambda x, y: x*(1 - Y(y)), P._elements[1:], 1)
     if MAP:
         def user_map(x):
             if x in X:
@@ -61,15 +61,13 @@ def _universal_gen_func(A, MAP):
         return Skeleton, user_map
     return Skeleton
 
-def _local_Igusa_BEST(A, DB=True, poset=None, OG=None):
+def _local_Igusa(A, DB=True, poset=None, OG=None):
     from sage.all import PolynomialRing, QQ, var, ZZ
-    from Globals import __DEFAULT_t, __DEFAULT_p
-    from PosetOps import CharacteristicFunction, PoincarePolynomial, _deletion, _Coxeter_poset_data, IntersectionPoset, _equiv_elts
-    from Constructors import CoxeterArrangement
-    from Braid import BraidArrangementIgusa
+    from .Globals import __DEFAULT_t, __DEFAULT_p
+    from .PosetOps import CharacteristicFunction, PoincarePolynomial, _deletion, _Coxeter_poset_data, IntersectionPoset, _equiv_elts
+    from .Constructors import CoxeterArrangement
+    from .Braid import BraidArrangementIgusa
 
-    if A.is_central() and A.rank() <= 2:
-        return _small_central(A, 'Igusa')
     p = var(__DEFAULT_p)
     t = var(__DEFAULT_t)
     if poset:
@@ -95,7 +93,7 @@ def _local_Igusa_BEST(A, DB=True, poset=None, OG=None):
     eq_elt_data = _equiv_elts(P)
     factors = map(lambda x: x[1]*t_factor(x[0])*char_func(x[0]), eq_elt_data)
     integrals = map(
-        lambda x: _local_Igusa_BEST(
+        lambda x: _local_Igusa(
             _deletion(A, x[0], P, poset=False, OG=OG), 
             DB=DB,
             poset=x[2],
@@ -103,7 +101,7 @@ def _local_Igusa_BEST(A, DB=True, poset=None, OG=None):
         ), 
         eq_elt_data
     )
-    zeta = reduce(lambda x, y: x + y[0]*y[1], zip(factors, integrals), 0) + char_func('')
+    zeta = _reduce(lambda x, y: x + y[0]*y[1], zip(factors, integrals), 0) + char_func('')
     if A.is_central():
         zeta = p**(-A.dimension())*zeta/(1 - p**(-A.rank())*t**len(A))
     else:
@@ -112,23 +110,21 @@ def _local_Igusa_BEST(A, DB=True, poset=None, OG=None):
         _data.save_gen_func(P, 'Igusa', zeta)
     return zeta
 
-def _comb_skele_BEST(A, DB=True, poset=None, OG=None, verbose=_print):
-    from sage.all import PolynomialRing, QQ, var, ZZ
-    from Globals import __DEFAULT_t, __DEFAULT_p
-    from PosetOps import CharacteristicFunction, _deletion, IntersectionPoset, _equiv_elts
 
-    if A.is_central() and A.rank() <= 2:
-        return _small_central(A, 'skele')
+def _comb_skele(P, DB=True, verbose=_print):
+    from sage.all import PolynomialRing, QQ, var, ZZ
+    from .Globals import __DEFAULT_t, __DEFAULT_p
+    from .PosetOps import PoincarePolynomial, _deletion, IntersectionPoset, _equiv_elts
+
     p = var(__DEFAULT_p)
     t = var(__DEFAULT_t)
-    if poset:
-        P = poset
-    else:
-        if verbose: 
-            print("Constructing intersection poset.")
-        P = IntersectionPoset(A)
-        if verbose:
-            print("\tDone.")
+
+    if P.has_top():
+        if P.rank() == 1:
+            return (1 + p)/(1 - t)
+        if P.rank() == 2:
+            m = len(P) - 2
+            return (1 + m*p + (m - 1)*p**2 + (m - 1 + m*p + p**2)*t)/(1 - t)**2
     if DB:
         if verbose:
             print("Checking database.")
@@ -137,11 +133,8 @@ def _comb_skele_BEST(A, DB=True, poset=None, OG=None, verbose=_print):
             return zeta
         if verbose:
             print("\tDone.")
-    char_func = CharacteristicFunction(A, poset=P)
-    def poincare(x):
-        chi = char_func(x)
-        d = chi.degree(p)
-        return (-p)**d*chi.subs({p: -p**-1})
+
+    poincare = lambda x: PoincarePolynomial(P, restrict=x)
     if verbose: 
         print("Gleaning structure from poset.")
     eq_elt_data = _equiv_elts(P)
@@ -151,33 +144,51 @@ def _comb_skele_BEST(A, DB=True, poset=None, OG=None, verbose=_print):
     factors = map(lambda x: x[1]*t*poincare(x[0]), eq_elt_data)
     if verbose:
         print("Recursing...")
-    integrals = map(
-        lambda x: _comb_skele_BEST(
-            _deletion(A, x[0], P, poset=False, OG=OG), 
-            DB=DB,
-            poset=x[2],
-            OG=OG
-        ), 
-        eq_elt_data
-    )
+    integrals = map(lambda x: _comb_skele(x[2], DB=DB), eq_elt_data)
     if verbose:
         print("Putting everything together...")
-    zeta = reduce(lambda x, y: x + y[0]*y[1], zip(factors, integrals), 0) + poincare('')
-    if A.is_central():
+    zeta = _reduce(lambda x, y: x + y[0]*y[1], zip(factors, integrals), 0) + PoincarePolynomial(P)
+    if P.has_top():
         zeta = zeta/(1 - t)
     else:
         zeta = zeta 
-    if DB and A.rank() > 2: 
+    if DB and P.rank() > 2: 
         _data.save_gen_func(P, 'skele', zeta)
+        
     return zeta
 
 
+def _parse_poset(P):
+    from sage.all import DiGraph, Poset 
+    from functools import reduce
+    CR = P.cover_relations()
+    atoms = P.upper_covers(P.bottom())
+    labs = map(lambda x: filter(lambda a: P.le(a, x), atoms), list(P._elements[1:]))
+    to_str = lambda S: reduce(lambda x, y: x + str(y) + ' ', S, '')[:-1]
+    elt_labels = [''] + list(map(to_str, labs))
+    return Poset(DiGraph(CR), element_labels=elt_labels)
 
-def CombinatorialSkeleton(A, database=True, int_poset=None):
-    return _comb_skele_BEST(A, DB=database, poset=int_poset, OG=A)
+
+def CombinatorialSkeleton(A, database=True, int_poset=None, verbose=_print):
+    from .PosetOps import IntersectionPoset
+
+    if A.is_central() and A.rank() <= 2:
+        return _small_central(A, 'skele')
+    if int_poset:
+        P = _parse_poset(int_poset)
+    else:
+        if verbose: 
+            print("Constructing intersection poset.")
+        P = IntersectionPoset(A)
+        if verbose:
+            print("\tDone.")
+    
+    return _comb_skele(P, DB=database)
 
 def LocalIgusaZetaFunction(A, database=True, int_poset=None):
-    return _local_Igusa_BEST(A, DB=database, poset=int_poset, OG=A)
+    if A.is_central() and A.rank() <= 2:
+        return _small_central(A, 'Igusa')
+    return _local_Igusa(A, DB=database, poset=int_poset, OG=A)
 
 def UniversalGeneratingFunction(A, Map=False, int_poset=None):
     return _universal_gen_func(A, Map)

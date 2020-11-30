@@ -4,6 +4,7 @@
 #   Distributed under MIT License
 #
 
+from functools import reduce as _reduce
 
 def _non_Weyl_arrangements(X, n, shift=[0]):
     from sage.all import HyperplaneArrangements, QQ 
@@ -25,7 +26,7 @@ def _non_Weyl_arrangements(X, n, shift=[0]):
             return _non_Weyl_arrangements("I", 5, shift=shift)
         print("Type H not yet implemented.")
         return None
-    aff_norms = reduce(lambda x, y: x+y, map(lambda x: add_shift(x), norms), [])
+    aff_norms = _reduce(lambda x, y: x+y, map(lambda x: add_shift(x), norms),[])
     return H(aff_norms)
     
 def _arrangements_from_roots(X, n, shift=[0]):
@@ -37,7 +38,7 @@ def _arrangements_from_roots(X, n, shift=[0]):
     def add_shift(x):
         norm = tuple(map(lambda i: QQ(i), x._vector_().list()))
         return list(map(lambda k: [norm, k], shift))
-    aff_norms = reduce(lambda x, y: x+y, map(lambda x: add_shift(x), norms), [])
+    aff_norms = _reduce(lambda x, y: x+y, map(lambda x: add_shift(x), norms),[])
     return H(aff_norms)
 
 # Verifies that the Coxeter-theoretic data is expected.
@@ -89,6 +90,17 @@ def _parse_Coxeter_input(name, n):
     _ = _Coxeter_check(X, n)
     return (X, n)
 
+# Builds the direct sum arrangement of arrangements A and B.
+def _direct_sum(A, B):
+    from sage.all import HyperplaneArrangements as HA
+    K = A.base_ring()
+    d = A.dimension() + B.dimension()
+    A_H = map(lambda H: H.coefficients(), A.hyperplanes())
+    B_H = map(lambda H: H.coefficients(), B.hyperplanes())
+    HH = HA(K, tuple(['x' + str(k) for k in range(d)]))
+    A_emb = map(lambda L: L + [0]*(B.dimension()), A_H)
+    B_emb = map(lambda L: L[0:1] + [0]*(A.dimension()) + L[1:], B_H)
+    return HH(list(A_emb) + list(B_emb))
 
 def CoxeterArrangement(name, n=0):
     r"""
@@ -122,6 +134,8 @@ def CoxeterArrangement(name, n=0):
     X, n = _parse_Coxeter_input(name, n)
     if X in {'I', 'H'}:
         return _non_Weyl_arrangements(X, n)
+    if [X, n] == ['D', 1]:
+        X, n = ('A', 1)
     return _arrangements_from_roots(X, n)
 
 
@@ -219,3 +233,14 @@ def CatalanArrangement(name, n=0):
     if X in {'I', 'H'}:
         return _non_Weyl_arrangements(X, n, shift=[-1, 0, 1])
     return _arrangements_from_roots(X, n, shift=[-1, 0, 1])
+
+def DirectSum(*args):
+    if len(args) == 1:
+        HPAs = args[0]
+    else:
+        HPAs = args
+    if len(HPAs) == 1: 
+        return HPAs[0]
+    else:
+        D = _direct_sum(HPAs[0], HPAs[1])
+        return _reduce(lambda A, B: _direct_sum(A, B), HPAs[2:], D)
