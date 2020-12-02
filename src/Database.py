@@ -4,6 +4,7 @@
 #   Distributed under MIT License
 #
 
+from .Globals import __TIME as _time
 
 # Given a list of posets L, a poset P, and an integer n, decide if L has a poset
 # isomorphic to P.

@@ -6,11 +6,9 @@
 
 from .Database import internal_database as _data
 from .Globals import __PRINT as _print
+from .Globals import __TIME as _time
 from functools import reduce as _reduce
-from datetime import datetime as _dt
 
-def _time(): 
-    return "[{0}] ".format(_dt.now().strftime("%H:%M:%S"))
 
 # The complete solutions for small central arrangements of rank <= 2.
 def _small_central(A, style):

@@ -16,13 +16,16 @@ def _proper_part(P):
     return P.subposet(prop)
 
 
-# Can return the deletion A_x or restriction A^x simply based on the function F
-# given. For deletion use 'lambda z: P.lower_covers(z)' and for restriction use
-# 'lambda z: P.upper_covers(z)'.
+# Can return the subarrangement A_x or restriction A^x simply based on the
+# function F given. For deletion use 'lambda z: P.lower_covers(z)' and for
+# restriction use 'lambda z: P.upper_covers(z)'.
 def _subposet(P, x, F):
     from sage.all import Set, Poset, DiGraph
     elts = Set([])
-    new_level = Set([x])
+    if type(x) == list:
+        new_level = Set(x)
+    else:
+        new_level = Set([x])
     while len(elts.union(new_level)) > len(elts):
         elts = elts.union(new_level)
         new_level = Set(_reduce(
@@ -33,6 +36,29 @@ def _subposet(P, x, F):
     new_P = P.subposet(elts)
     return new_P
 
+# Returns the characteristic polynomial of P -- using the fact that it comes
+# from a hyperplane arrangement. 
+# Copied from the Hyperplane Arrangement code in Sage 9.2.
+def char_poly(P, dim=0):
+    from sage.all import QQ
+    from sage.rings.polynomial.polynomial_ring import polygen
+
+    if dim == 0:
+        dim = P.rank() 
+    atoms = P.upper_covers(P.bottom())
+    X = polygen(QQ, 'X')
+    if P.rank() == 2 and len(atoms) == 2: 
+        return X**dim - 2*X**(dim - 1) + X**(dim - 2)
+    if P.rank() == 1:
+        return X**(dim - 1)*(X - len(atoms))
+    H = atoms[0]
+    R = _subposet(P, H, lambda z: P.upper_covers(z))
+    coatoms = P.lower_covers(P.top())
+    sub_coat = list(filter(lambda x: not P.le(H, x), coatoms))
+    D = P.subposet(list(_subposet(P, sub_coat, lambda z: P.lower_covers(z))._elements) + [P.top()])
+    charpoly_R = char_poly(R, dim=dim - 1)
+    charpoly_D = char_poly(D, dim=dim)
+    return charpoly_D - charpoly_R
 
 # Two elements x, y of P are equivalent if A_x = A_y and A^x = A^y. We need only
 # a representative of each equivalence class and some other data. We return a
