@@ -6,6 +6,40 @@
 
 from functools import reduce as _reduce
 
+def _parse_poset(P):
+    global POS, atoms, labs, int_at
+    from os import cpu_count
+    from sage.all import DiGraph, Poset 
+    import sage.parallel.decorate as para
+    
+    POS = P
+    N = cpu_count()
+    CR = POS.cover_relations()
+    atoms = POS.upper_covers(POS.bottom())
+    int_at = {x[0] : x[1] for x in zip(atoms, range(1, len(atoms) + 1))}
+
+    @para.parallel(N)
+    def atom_set(k, shift): 
+        S = list(POS._elements[1+shift::k])
+        return [list(
+            map(lambda a: int_at[a], filter(lambda a: POS.le(a, x), atoms))
+            ) for x in S]
+
+    labs = list(atom_set([(N, k) for k in range(N)]))
+    labs = _reduce(lambda x, y: x + y[1], labs, [])
+
+    @para.parallel(N)
+    def to_str(k, shift):
+        get_str = lambda S: _reduce(lambda x, y: x + str(y) + ' ', S, '')[:-1]
+        return [get_str(S) for S in labs[shift::k]]
+    
+    elt_labels = list(to_str([(N, k) for k in range(N)]))
+
+    elt_labels = [''] + _reduce(lambda x, y: x + y[1], elt_labels, [])
+
+    return Poset(DiGraph(CR), element_labels=elt_labels)
+
+
 # Returns the proper part of a poset as a subposet.
 def _proper_part(P):
     central = P.has_top()
@@ -17,15 +51,12 @@ def _proper_part(P):
 
 
 # Can return the subarrangement A_x or restriction A^x simply based on the
-# function F given. For deletion use 'lambda z: P.lower_covers(z)' and for
+# function F given. For subarrangement use 'lambda z: P.lower_covers(z)' and for
 # restriction use 'lambda z: P.upper_covers(z)'.
 def _subposet(P, x, F):
-    from sage.all import Set, Poset, DiGraph
+    from sage.all import Set, Poset
     elts = Set([])
-    if type(x) == list:
-        new_level = Set(x)
-    else:
-        new_level = Set([x])
+    new_level = Set([x])
     while len(elts.union(new_level)) > len(elts):
         elts = elts.union(new_level)
         new_level = Set(_reduce(
@@ -36,29 +67,56 @@ def _subposet(P, x, F):
     new_P = P.subposet(elts)
     return new_P
 
+# Like _subposet but we change labels as well.
+def _restriction(P, x):
+    new_P = _subposet(P, x, lambda z: P.upper_covers(z))
+    return _parse_poset(new_P)
+
+# Create the lattice of flats after removing the atom H from P. 
+def _del_H(P, H):
+    from sage.all import Set
+    coatoms = P.lower_covers(P.top())
+    m = len(P.upper_covers(P.bottom())) - 1
+
+    def check(C):
+        S = C.split(' ')
+        return bool(len(S) == m and not H in S)
+
+    new_top = list(filter(check, coatoms))
+    if len(new_top) == 1:
+        return _subposet(P, new_top[0], lambda z: P.lower_covers(z))
+
+    split_P = list(map(lambda X: Set(X.split(' ')), P._elements)) 
+    def good_flats(F):
+        S = F.split(' ')
+        if H in S:
+            S.remove(H)
+            return len(S) != 0 and not Set(S) in split_P
+        else:
+            return True
+    flats = list(filter(good_flats, P._elements))
+    new_P = P.subposet(flats)
+    return _parse_poset(new_P)
+
 # Returns the characteristic polynomial of P -- using the fact that it comes
 # from a hyperplane arrangement. 
 # Copied from the Hyperplane Arrangement code in Sage 9.2.
-def char_poly(P, dim=0):
+def char_poly(P):
     from sage.all import QQ
     from sage.rings.polynomial.polynomial_ring import polygen
 
-    if dim == 0:
-        dim = P.rank() 
     atoms = P.upper_covers(P.bottom())
     X = polygen(QQ, 'X')
-    if P.rank() == 2 and len(atoms) == 2: 
-        return X**dim - 2*X**(dim - 1) + X**(dim - 2)
     if P.rank() == 1:
-        return X**(dim - 1)*(X - len(atoms))
+        return X - len(atoms)
     H = atoms[0]
-    R = _subposet(P, H, lambda z: P.upper_covers(z))
-    coatoms = P.lower_covers(P.top())
-    sub_coat = list(filter(lambda x: not P.le(H, x), coatoms))
-    D = P.subposet(list(_subposet(P, sub_coat, lambda z: P.lower_covers(z))._elements) + [P.top()])
-    charpoly_R = char_poly(R, dim=dim - 1)
-    charpoly_D = char_poly(D, dim=dim)
-    return charpoly_D - charpoly_R
+    print(P)
+    R = _restriction(P, H)
+    D = _del_H(P, H)
+    print(D, R)
+    chi_D = char_poly(D)
+    chi_R = char_poly(R)
+    return chi_D - chi_R
 
 # Two elements x, y of P are equivalent if A_x = A_y and A^x = A^y. We need only
 # a representative of each equivalence class and some other data. We return a
@@ -70,23 +128,23 @@ def _equiv_elts(P):
 
     N = cpu_count()
     POS = P
-    P_elts = POS._elements[1:-1] # Proper part
+    P_elts = POS._elements.remove(POS.top()).remove(POS.bottom())
 
     @para.parallel(N)
     def match_elts(k, shift):
         all_elts = P_elts[shift::k]
         eq_elts = []
         counts = []
-        deletion = []
+        down = []
         restrict = []
         while len(all_elts) > 0:
             x = all_elts[0]
-            del_x = _subposet(POS, x, lambda z: POS.lower_covers(z))
+            dow_x = _subposet(POS, x, lambda z: POS.lower_covers(z))
             res_x = _subposet(POS, x, lambda z: POS.upper_covers(z))
             match = False
             i = 0
             while not match and i < len(eq_elts):
-                if del_x.is_isomorphic(deletion[i]) and res_x.is_isomorphic(restrict[i]):
+                if dow_x.is_isomorphic(down[i]) and res_x.is_isomorphic(restrict[i]):
                     match = True
                 else:
                     i += 1
@@ -95,10 +153,10 @@ def _equiv_elts(P):
             else:
                 eq_elts.append(x)
                 counts.append(1)
-                deletion.append(del_x)
+                down.append(dow_x)
                 restrict.append(res_x)
             all_elts = all_elts[1:]
-        return list(zip(eq_elts, counts, deletion, restrict))
+        return list(zip(eq_elts, counts, down, restrict))
 
     # Get the preliminary set of inequivalent elements
     prelim_elts = list(match_elts([(N, k) for k in range(N)]))

@@ -160,39 +160,10 @@ def _comb_skele(P, DB=True, verbose=_print):
     return zeta
 
 
-def _parse_poset(P):
-    global POS, atoms, labs
-    from os import cpu_count
-    from sage.all import DiGraph, Poset 
-    import sage.parallel.decorate as para
-    
-    POS = P
-    N = cpu_count()
-    CR = POS.cover_relations()
-    atoms = POS.upper_covers(POS.bottom())
-
-    @para.parallel(N)
-    def atom_set(k, shift): 
-        S = list(POS._elements[1+shift::k])
-        return [list(filter(lambda a: POS.le(a, x), atoms)) for x in S]
-
-    labs = list(atom_set([(N, k) for k in range(N)]))
-    labs = _reduce(lambda x, y: x + y[1], labs, [])
-
-    @para.parallel(N)
-    def to_str(k, shift):
-        get_str = lambda S: _reduce(lambda x, y: x + str(y) + ' ', S, '')[:-1]
-        return [get_str(S) for S in labs[shift::k]]
-    
-    elt_labels = list(to_str([(N, k) for k in range(N)]))
-
-    elt_labels = [''] + _reduce(lambda x, y: x + y[1], elt_labels, [])
-
-    return Poset(DiGraph(CR), element_labels=elt_labels)
 
 
 def CombinatorialSkeleton(A, database=True, int_poset=None, verbose=_print):
-    from .PosetOps import IntersectionPoset
+    from .PosetOps import IntersectionPoset, _parse_poset
 
     if A.is_central() and A.rank() <= 2:
         return _small_central(A, 'skele')
