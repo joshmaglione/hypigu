@@ -38,33 +38,63 @@ def _subposet(P, x, F):
 # a representative of each equivalence class and some other data. We return a
 # list of triples: a rep. elt, size of equiv. class, and the poset from A_x.
 def _equiv_elts(P):
-    P_prop = _proper_part(P)
-    all_elts = P_prop._elements
-    eq_elts = []
-    counts = []
-    deletion = []
-    restrict = []
-    while len(all_elts) > 0:
-        x = all_elts[0]
-        del_x = _subposet(P, x, lambda z: P.lower_covers(z))
-        res_x = _subposet(P, x, lambda z: P.upper_covers(z))
+    global POS, P_elts
+    from os import cpu_count
+    import sage.parallel.decorate as para
+
+    N = cpu_count()
+    POS = P
+    P_elts = POS._elements[1:-1] # Proper part
+
+    @para.parallel(N)
+    def match_elts(k, shift):
+        all_elts = P_elts[shift::k]
+        eq_elts = []
+        counts = []
+        deletion = []
+        restrict = []
+        while len(all_elts) > 0:
+            x = all_elts[0]
+            del_x = _subposet(POS, x, lambda z: POS.lower_covers(z))
+            res_x = _subposet(POS, x, lambda z: POS.upper_covers(z))
+            match = False
+            i = 0
+            while not match and i < len(eq_elts):
+                if del_x.is_isomorphic(deletion[i]) and res_x.is_isomorphic(restrict[i]):
+                    match = True
+                else:
+                    i += 1
+            if match:
+                counts[i] += 1
+            else:
+                eq_elts.append(x)
+                counts.append(1)
+                deletion.append(del_x)
+                restrict.append(res_x)
+            all_elts = all_elts[1:]
+        return list(zip(eq_elts, counts, deletion, restrict))
+
+    # Get the preliminary set of inequivalent elements
+    prelim_elts = list(match_elts([(N, k) for k in range(N)]))
+    prelim_elts = _reduce(lambda x, y: x + y[1], prelim_elts, [])
+
+    # Test further to minimize the size. 
+    equiv_elts = []
+    while len(prelim_elts) > 0:
+        x = prelim_elts[0]
         match = False
         i = 0
-        while not match and i < len(eq_elts):
-            if del_x.is_isomorphic(deletion[i]) and res_x.is_isomorphic(restrict[i]):
+        while not match and i < len(equiv_elts):
+            if x[2].is_isomorphic(equiv_elts[i][2]) and x[3].is_isomorphic(equiv_elts[i][3]):
                 match = True
             else:
                 i += 1
         if match:
-            counts[i] += 1
+            equiv_elts[i][1] += x[1]
         else:
-            eq_elts.append(x)
-            counts.append(1)
-            deletion.append(del_x)
-            restrict.append(res_x)
-        all_elts = all_elts[1:]
-    return list(zip(eq_elts, counts, deletion, restrict))
-
+            equiv_elts.append(list(x))
+        prelim_elts = prelim_elts[1:]
+    return equiv_elts
 
 # The deletion method is coded well enough to allow for this kind of recursion. 
 # We need the new labels for a hyperplane though.

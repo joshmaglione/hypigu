@@ -7,6 +7,10 @@
 from .Database import internal_database as _data
 from .Globals import __PRINT as _print
 from functools import reduce as _reduce
+from datetime import datetime as _dt
+
+def _time(): 
+    return "[{0}] ".format(_dt.now().strftime("%H:%M:%S"))
 
 # The complete solutions for small central arrangements of rank <= 2.
 def _small_central(A, style):
@@ -127,7 +131,7 @@ def _comb_skele(P, DB=True, verbose=_print):
             return (1 + m*p + (m - 1)*p**2 + (m - 1 + m*p + p**2)*t)/(1 - t)**2
     if DB:
         if verbose:
-            print("Checking database.")
+            print(_time() + "Checking database.")
         zeta = _data.get_gen_func(P, 'skele')
         if zeta != None:
             return zeta
@@ -136,17 +140,17 @@ def _comb_skele(P, DB=True, verbose=_print):
 
     poincare = lambda x: PoincarePolynomial(P, restrict=x)
     if verbose: 
-        print("Gleaning structure from poset.")
+        print(_time() + "Gleaning structure from poset.")
     eq_elt_data = _equiv_elts(P)
     if verbose:
         print("\tDone.")
-        print("Found the following basic structure:\n%s" % (eq_elt_data))
+        print(_time() + "Found the following basic structure:\n%s" % (eq_elt_data))
     factors = map(lambda x: x[1]*t*poincare(x[0]), eq_elt_data)
     if verbose:
-        print("Recursing...")
+        print(_time() + "Recursing...")
     integrals = map(lambda x: _comb_skele(x[2], DB=DB), eq_elt_data)
     if verbose:
-        print("Putting everything together...")
+        print(_time() + "Putting everything together...")
     zeta = _reduce(lambda x, y: x + y[0]*y[1], zip(factors, integrals), 0) + PoincarePolynomial(P)
     if P.has_top():
         zeta = zeta/(1 - t)
@@ -159,13 +163,33 @@ def _comb_skele(P, DB=True, verbose=_print):
 
 
 def _parse_poset(P):
+    global POS, atoms, labs
+    from os import cpu_count
     from sage.all import DiGraph, Poset 
-    from functools import reduce
-    CR = P.cover_relations()
-    atoms = P.upper_covers(P.bottom())
-    labs = map(lambda x: filter(lambda a: P.le(a, x), atoms), list(P._elements[1:]))
-    to_str = lambda S: reduce(lambda x, y: x + str(y) + ' ', S, '')[:-1]
-    elt_labels = [''] + list(map(to_str, labs))
+    import sage.parallel.decorate as para
+    
+    POS = P
+    N = cpu_count()
+    CR = POS.cover_relations()
+    atoms = POS.upper_covers(POS.bottom())
+
+    @para.parallel(N)
+    def atom_set(k, shift): 
+        S = list(POS._elements[1+shift::k])
+        return [list(filter(lambda a: POS.le(a, x), atoms)) for x in S]
+
+    labs = list(atom_set([(N, k) for k in range(N)]))
+    labs = _reduce(lambda x, y: x + y[1], labs, [])
+
+    @para.parallel(N)
+    def to_str(k, shift):
+        get_str = lambda S: _reduce(lambda x, y: x + str(y) + ' ', S, '')[:-1]
+        return [get_str(S) for S in labs[shift::k]]
+    
+    elt_labels = list(to_str([(N, k) for k in range(N)]))
+
+    elt_labels = [''] + _reduce(lambda x, y: x + y[1], elt_labels, [])
+
     return Poset(DiGraph(CR), element_labels=elt_labels)
 
 
@@ -175,10 +199,11 @@ def CombinatorialSkeleton(A, database=True, int_poset=None, verbose=_print):
     if A.is_central() and A.rank() <= 2:
         return _small_central(A, 'skele')
     if int_poset:
+        print(_time() + "Parsing the given poset.")
         P = _parse_poset(int_poset)
     else:
         if verbose: 
-            print("Constructing intersection poset.")
+            print(_time() + "Constructing intersection poset.")
         P = IntersectionPoset(A)
         if verbose:
             print("\tDone.")
