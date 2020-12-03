@@ -7,6 +7,21 @@
 from functools import reduce as _reduce
 from sage.misc.cachefunc import cached_method
 
+def _contract(M, rows):
+    from sage.all import Matrix
+    K = M.base_ring()
+    Q = [M[k] for k in rows] + [M[k] for k in range(M.nrows()) if not k in rows]
+    E = Matrix(K, Q).transpose().echelon_form()
+    rel_E = E[:, :len(rows)]
+    out_E = E[:, len(rows):]
+    rm = rel_E.pivot_rows()
+    A = [out_E[k] for k in range(E.nrows()) if not k in rm]
+    return Matrix(K, A[::-1]).transpose()
+
+# BUILD A WAY TO GET THE LABELS FROM THE CONTRACT MATRIX
+def _get_labels(M, x, rows):
+    pass
+
 def _parse_poset(P):
     global POS, atoms, labs, int_at
     from os import cpu_count
@@ -138,9 +153,8 @@ class LatticeOfFlats():
                 self.hyperplane_labels = HL
         if self.flat_labels == None and not lazy:
             self.flat_labels = _parse_poset(poset)
-            if hyperplane_labels == None and nature_hyperplane_label:
+            if self.hyperplane_arrangement != None and self.hyperplane_labels == None and nature_hyperplane_label:
                 self.hyperplane_labels = {i - 1 : A[i] for i in range(len(A))}
-
 
     def __repr__(self):
         if self.hyperplane_arrangement:
@@ -195,18 +209,22 @@ class LatticeOfFlats():
                 raise ValueError("No element labeled by:\n{0}".format(x))
     
     def restriction(self, x):
+        from sage.all import Matrix
         P = self.poset 
         if type(x) != set:
             assert x in P, "Expected element to be in poset."
             new_P = _subposet(P, x, lambda z: P.upper_covers(z))
-            A = None 
+            new_A = None 
             if self.hyperplane_arrangement and self.hyperplane_labels:
                 A = self.hyperplane_arrangement
-                HL = self.hyperplane_labels
-                if P.covers(P.bottom(), x):
-                    A = A.restriction(HL[x])
-                # How can we relabel hyperplanes? 
-            return LatticeOfFlats(A, poset=new_P)
+                hyp_coeffs = map(lambda H: H.coefficients(), A.hyperplanes())
+                M = Matrix(A.base_ring(), list(hyp_coeffs))
+                rows = list(map(
+                    lambda H: list(A).index(self.hyperplane_labels[H]), 
+                    self.flat_labels[x]
+                ))
+                new_M = _contract(M, rows)
+            return LatticeOfFlats(new_A, poset=new_P)
         else:
             L = self.flat_labels 
             X = list(filter(lambda y: L[y] == x, P._elements))
@@ -237,7 +255,7 @@ class LatticeOfFlats():
             # not really coatoms... but whatever
             coatoms = P.maximal_elements()
 
-        m = len(P.upper_covers(P.bottom())) - 1
+        m = len(self.atoms()) - 1
         def check(C):
             S = L[C]
             return bool(len(S) == m and not H in S)
@@ -245,7 +263,7 @@ class LatticeOfFlats():
 
         if len(new_top) == 1:
             new_P = _subposet(P, new_top[0], lambda z: P.lower_covers(z))
-            new_labels = {y : L[y] for y in new_P._elements}
+            new_FL = {y : L[y] for y in new_P._elements}
         else:
             def good_flats(F):
                 S = L[F]
@@ -256,15 +274,20 @@ class LatticeOfFlats():
                     return True
             flats = list(filter(good_flats, P._elements))
             new_P = P.subposet(flats)
-            new_labels = {y : L[y].difference(Set([H])) for y in flats}
+            new_FL = {y : L[y].difference(Set([H])) for y in flats}
 
         if self.hyperplane_arrangement:
             HPA = self.hyperplane_arrangement
-            HPA = HPA.parent()(HPA[:H-1] + HPA[H:])
+            HL = self.hyperplane_labels
+            A = list(HPA)
+            A.remove(HPA[H])
+            new_HPA = HPA.parent()(A)
+            new_HL = {x : HL[x] for x in new_P.upper_covers(new_P.bottom())}
         else:
-            HPA = None
+            new_HPA = None
+            new_HL = None
 
-        return LatticeOfFlats(HPA, poset=new_P, labels=new_labels)
+        return LatticeOfFlats(new_HPA, poset=new_P, flat_labels=new_FL, hyperplane_labels=new_HL)
 
     def lazy_restriction(self, H):
         HPA = self.hyperplane_arrangement
