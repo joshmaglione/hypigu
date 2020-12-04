@@ -19,8 +19,57 @@ def _contract(M, rows):
     return Matrix(K, A[::-1]).transpose()
 
 # BUILD A WAY TO GET THE LABELS FROM THE CONTRACT MATRIX
-def _get_labels(M, x, rows):
-    pass
+def _get_labels(M, x, rows, L):
+    from sage.all import VectorSpace, Set, Matrix
+
+    # Determine new hyperplanes and group like rows together.
+    V = VectorSpace(M.base_ring(), M.ncols())
+    lines = []
+    labels = []
+    for r in range(M.nrows()):
+        v = M[r] 
+        is_new = True 
+        i = 0
+        while i < len(lines) and is_new:
+            if v in V.subspace([lines[i]]):
+                is_new = False 
+                labels[i] = labels[i].union(Set([r]))
+            else:
+                i += 1
+        if is_new:
+            lines.append(v)
+            labels.append(Set([r]))
+
+    # Adjust the labels because we are missing rows.
+    fix_sets = lambda F: lambda S: Set(list(map(lambda s: F(s), S)))
+    for k in rows:
+        adjust = lambda i: i + (k <= i)*1
+        labels = list(map(fix_sets(adjust), labels))
+    labels = [Set(rows)] + labels 
+
+    # Adjust the row labels to hyperplane labels
+    HL = L.hyperplane_labels
+    A = L.hyperplane_arrangement
+    HL_lab = lambda i: list(filter(lambda j: HL[j] == A[i], HL.keys()))[0]
+    labels = list(map(fix_sets(HL_lab), labels))
+
+    # Get the new hyperplanes
+    FL = L.flat_labels
+    new_hyp = [labels[k].union(labels[0]) for k in range(1, len(labels))]
+    P = L.poset
+    flat = lambda S: list(filter(lambda j: FL[j] == S, P.upper_covers(x)))[0]
+    new_hyp = list(map(flat, new_hyp))
+
+    def last_adj(S):
+        l_hyp = labels[1:]
+        T = S.difference(labels[0])
+        new_T = Set([])
+        for k in range(len(l_hyp)):
+            if l_hyp[k].issubset(T):
+                new_T = new_T.union(Set([new_hyp[k]]))
+        return new_T
+
+    return Matrix(lines),last_adj,{new_hyp[i] : i for i in range(len(new_hyp))}
 
 def _parse_poset(P):
     global POS, atoms, labs, int_at
@@ -209,7 +258,7 @@ class LatticeOfFlats():
                 raise ValueError("No element labeled by:\n{0}".format(x))
     
     def restriction(self, x):
-        from sage.all import Matrix
+        from sage.all import Matrix, HyperplaneArrangements
         P = self.poset 
         if type(x) != set:
             assert x in P, "Expected element to be in poset."
@@ -224,7 +273,16 @@ class LatticeOfFlats():
                     self.flat_labels[x]
                 ))
                 new_M = _contract(M, rows)
-            return LatticeOfFlats(new_A, poset=new_P)
+                new_M, lab_func, hyp_dict = _get_labels(new_M, x, rows, self)
+                HH = HyperplaneArrangements(
+                    A.base_ring(), 
+                    A.parent().variable_names()[:new_M.ncols()-1]
+                )
+                new_A = HH(new_M)
+                FL = self.flat_labels
+                new_FL = {x : lab_func(FL[x]) for x in new_P._elements}
+                new_HL = {a : new_A[hyp_dict[a]] for a in new_P.upper_covers(new_P.bottom())}
+            return LatticeOfFlats(new_A, poset=new_P, flat_labels=new_FL, hyperplane_labels=new_HL)
         else:
             L = self.flat_labels 
             X = list(filter(lambda y: L[y] == x, P._elements))
