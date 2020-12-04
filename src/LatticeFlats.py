@@ -225,7 +225,10 @@ class LatticeOfFlats():
 
     def proper_part_poset(self):
         P = self.poset
-        return P.subposet(P._elements.remove(P.top()).remove(P.bottom()))
+        elts = list(P._elements)
+        elts.remove(P.top())
+        elts.remove(P.bottom())
+        return P.subposet(elts)
 
     def show(self):
         self.poset.show()
@@ -370,7 +373,6 @@ class LatticeOfFlats():
                 return QQ(1)
             if P.rank() == 1:
                 return QQ(1) + len(atoms)*X
-            H = atoms[0]
         else: 
             # Lazy 
             A = self.hyperplane_arrangement
@@ -379,9 +381,8 @@ class LatticeOfFlats():
                 return QQ(1)
             if A.rank() == 1:
                 return QQ(1) + len(A)*X
-            H = 1
-        D = self.lazy_deletion(H)
-        R = self.lazy_restriction(H)
+        D = self.lazy_deletion(1)
+        R = self.lazy_restriction(1)
         return D.Poincare_polynomial() + X*R.Poincare_polynomial()
         
     @cached_method
@@ -392,7 +393,7 @@ class LatticeOfFlats():
 
         N = cpu_count()
         POS = self.poset
-        P_elts = POS._elements.remove(POS.top()).remove(POS.bottom())
+        P_elts = self.proper_part_poset()._elements
 
         @para.parallel(N)
         def match_elts(k, shift):
@@ -403,12 +404,12 @@ class LatticeOfFlats():
             restrict = []
             while len(all_elts) > 0:
                 x = all_elts[0]
-                dow_x = _subposet(POS, x, lambda z: POS.lower_covers(z))
-                res_x = _subposet(POS, x, lambda z: POS.upper_covers(z))
+                dow_x = self.subarrangement(x)
+                res_x = self.restriction(x)
                 match = False
                 i = 0
                 while not match and i < len(eq_elts):
-                    if dow_x.is_isomorphic(down[i]) and res_x.is_isomorphic(restrict[i]):
+                    if dow_x.poset.is_isomorphic(down[i].poset) and res_x.poset.is_isomorphic(restrict[i].poset):
                         match = True
                     else:
                         i += 1
@@ -424,6 +425,7 @@ class LatticeOfFlats():
 
         # Get the preliminary set of inequivalent elements
         prelim_elts = list(match_elts([(N, k) for k in range(N)]))
+        print(prelim_elts)
         prelim_elts = _reduce(lambda x, y: x + y[1], prelim_elts, [])
 
         # Test further to minimize the size. 
@@ -433,7 +435,7 @@ class LatticeOfFlats():
             match = False
             i = 0
             while not match and i < len(equiv_elts):
-                if x[2].is_isomorphic(equiv_elts[i][2]) and x[3].is_isomorphic(equiv_elts[i][3]):
+                if x[2].poset.is_isomorphic(equiv_elts[i][2].poset) and x[3].poset.is_isomorphic(equiv_elts[i][3].poset):
                     match = True
                 else:
                     i += 1

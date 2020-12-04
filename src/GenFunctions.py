@@ -7,6 +7,7 @@
 from .Database import internal_database as _data
 from .Globals import __PRINT as _print
 from .Globals import __TIME as _time
+from .LatticeFlats import LatticeOfFlats as _LOF
 from functools import reduce as _reduce
 
 
@@ -113,11 +114,11 @@ def _local_Igusa(A, DB=True, poset=None, OG=None):
     return zeta
 
 
-def _comb_skele(P, DB=True, verbose=_print):
+def _comb_skele(L, DB=True, verbose=_print):
     from sage.all import PolynomialRing, QQ, var, ZZ
     from .Globals import __DEFAULT_t, __DEFAULT_p
-    from .PosetOps import PoincarePolynomial, _deletion, IntersectionPoset, _equiv_elts
 
+    P = L.poset
     p = var(__DEFAULT_p)
     t = var(__DEFAULT_t)
 
@@ -136,10 +137,12 @@ def _comb_skele(P, DB=True, verbose=_print):
         if verbose:
             print("\tDone.")
 
-    poincare = lambda x: PoincarePolynomial(P, restrict=x)
+    def poincare(x):
+        pi = L.restriction(x).Poincare_polynomial()
+        return pi.subs({pi.variables()[0] : p})
     if verbose: 
         print(_time() + "Gleaning structure from poset.")
-    eq_elt_data = _equiv_elts(P)
+    eq_elt_data = L._combinatorial_eq_elts()
     if verbose:
         print("\tDone.")
         print(_time() + "Found the following basic structure:\n%s" % (eq_elt_data))
@@ -149,7 +152,9 @@ def _comb_skele(P, DB=True, verbose=_print):
     integrals = map(lambda x: _comb_skele(x[2], DB=DB), eq_elt_data)
     if verbose:
         print(_time() + "Putting everything together...")
-    zeta = _reduce(lambda x, y: x + y[0]*y[1], zip(factors, integrals), 0) + PoincarePolynomial(P)
+    pi = L.Poincare_polynomial()
+    pi = pi.subs({pi.variables()[0] : p})
+    zeta = _reduce(lambda x, y: x + y[0]*y[1], zip(factors, integrals), 0) + pi
     if P.has_top():
         zeta = zeta/(1 - t)
     else:
@@ -163,21 +168,11 @@ def _comb_skele(P, DB=True, verbose=_print):
 
 
 def CombinatorialSkeleton(A, database=True, int_poset=None, verbose=_print):
-    from .PosetOps import IntersectionPoset, _parse_poset
-
     if A.is_central() and A.rank() <= 2:
         return _small_central(A, 'skele')
-    if int_poset:
-        print(_time() + "Parsing the given poset.")
-        P = _parse_poset(int_poset)
-    else:
-        if verbose: 
-            print(_time() + "Constructing intersection poset.")
-        P = IntersectionPoset(A)
-        if verbose:
-            print("\tDone.")
+    L = _LOF(A, poset=int_poset)
     
-    return _comb_skele(P, DB=database)
+    return _comb_skele(L, DB=database)
 
 def LocalIgusaZetaFunction(A, database=True, int_poset=None):
     if A.is_central() and A.rank() <= 2:
