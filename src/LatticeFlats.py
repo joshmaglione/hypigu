@@ -129,7 +129,6 @@ def _intersection_poset(A):
     while active:
         active = False
         new_level = []
-        # new_label = []
         new_hypcont = []
         for i in range(len(L[codim])):
             T = L[codim][i]
@@ -179,6 +178,76 @@ def _intersection_poset(A):
     hyp_dict = {i + 1 : A[i] for i in range(len(A))}
     
     return [Poset((t, cmp_fn)), label_dict, hyp_dict]
+
+
+# We expand on the function in sage, optimizing a little bit. This makes little
+# difference in small ranks but noticeable difference in larger ranks. This is
+# still quite slow. 
+def _para_intersection_poset(A):
+    from sage.geometry.hyperplane_arrangement.affine_subspace import AffineSubspace
+    from sage.all import exists, flatten, Set, QQ, VectorSpace, Poset
+    from os import cpu_count
+    import sage.parallel.decorate as para
+
+    K = A.base_ring()
+    whole_space = AffineSubspace(0, VectorSpace(K, A.dimension()))
+    # L is the ranked list of affine subspaces in L(A).
+    L = [[whole_space], list(map(lambda H: H._affine_subspace(), A))]
+    # hyp_cont is the ranked list describing which hyperplanes contain the
+    # corresponding intersection. 
+    hyp_cont = [[Set([])], [Set([k]) for k in range(len(A))]]
+    codim = 1
+    for r in range(2, A.rank()):
+        new_level = []
+        new_hypcont = []
+        for i in range(len(L[r - 1])):
+            T = L[r - 1][i]
+            for j in range(len(A)):
+                # Skip the hyperplane already known to contain the intersection.
+                if not j in hyp_cont[r - 1][i]: 
+                    H = A[j]
+                    I = H._affine_subspace().intersection(T)
+                    # Check if the intersection is trivial.
+                    if I is not None:
+                        if I == T: 
+                            # This case means that H cap T = T, so we should
+                            # record that H contains T.
+                            hyp_cont[r - 1][i] = hyp_cont[r - 1][i].union(
+                                Set([j])
+                            )
+                        else:
+                            # Check if we have this intersection already. 
+                            is_in, ind = exists(
+                                range(len(new_level)), 
+                                lambda k: I == new_level[k]
+                            )
+                            if is_in:
+                                # We have the intersection, so we update
+                                # containment info accordingly. 
+                                new_hypcont[ind] = new_hypcont[ind].union(
+                                    Set([j]).union(hyp_cont[r - 1][i])
+                                )
+                            else:
+                                # We do not have it, so we update everything.
+                                new_level.append(I)
+                                new_hypcont.append(
+                                    hyp_cont[r - 1][i].union(Set([j]))
+                                )
+        if active:
+            L.append(new_level)
+            hyp_cont.append(new_hypcont)
+        codim += 1
+    
+    L = flatten(hyp_cont)
+    t = {}
+    for i in range(len(L)):
+        t[i] = Set(list(map(lambda x: x+1, L[i])))
+    cmp_fn = lambda p, q: t[p].issubset(t[q])
+    label_dict = {i : t[i] for i in range(len(L))}
+    hyp_dict = {i + 1 : A[i] for i in range(len(A))}
+    
+    return [Poset((t, cmp_fn)), label_dict, hyp_dict]
+
 
 
 class LatticeOfFlats():
@@ -276,7 +345,6 @@ class LatticeOfFlats():
                     self.flat_labels[x]
                 )))
                 new_M = _contract(M, rows)
-                print(x, rows)
                 new_M, lab_func, hyp_dict = _get_labels(new_M, x, rows, self)
                 HH = HyperplaneArrangements(
                     A.base_ring(), 
@@ -405,7 +473,6 @@ class LatticeOfFlats():
             restrict = []
             while len(all_elts) > 0:
                 x = all_elts[0]
-                print("Construct down and up sets for {0}".format(x))
                 dow_x = self.subarrangement(x)
                 res_x = self.restriction(x)
                 match = False
@@ -427,7 +494,6 @@ class LatticeOfFlats():
 
         # Get the preliminary set of inequivalent elements
         prelim_elts = list(match_elts([(N, k) for k in range(N)]))
-        print(prelim_elts)
         prelim_elts = _reduce(lambda x, y: x + y[1], prelim_elts, [])
 
         # Test further to minimize the size. 
