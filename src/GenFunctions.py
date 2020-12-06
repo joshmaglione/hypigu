@@ -167,11 +167,14 @@ def _comb_skele(L, DB=True, verbose=_print):
 
 
 
-def CombinatorialSkeleton(A, database=True, int_poset=None, verbose=_print):
+def CombinatorialSkeleton(A, database=True, lattice_of_flats=None, int_poset=None, verbose=_print):
     if A.is_central() and A.rank() <= 2:
         return _small_central(A, 'skele')
-    L = _LOF(A, poset=int_poset)
-    
+    if lattice_of_flats == None:
+        L = _LOF(A, poset=int_poset)
+    else:
+        L = lattice_of_flats
+
     return _comb_skele(L, DB=database)
 
 def LocalIgusaZetaFunction(A, database=True, int_poset=None):
