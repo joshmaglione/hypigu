@@ -189,6 +189,7 @@ def _para_intersection_poset(A):
     from os import cpu_count
     import sage.parallel.decorate as para
 
+    N = cpu_count()
     K = A.base_ring()
     whole_space = AffineSubspace(0, VectorSpace(K, A.dimension()))
     # L is the ranked list of affine subspaces in L(A).
@@ -196,11 +197,13 @@ def _para_intersection_poset(A):
     # hyp_cont is the ranked list describing which hyperplanes contain the
     # corresponding intersection. 
     hyp_cont = [[Set([])], [Set([k]) for k in range(len(A))]]
-    codim = 1
-    for r in range(2, A.rank()):
+
+    # Parallel function to build the intersection lattice.
+    @para.parallel(N)
+    def build_next(S, r):
         new_level = []
         new_hypcont = []
-        for i in range(len(L[r - 1])):
+        for i in S:
             T = L[r - 1][i]
             for j in range(len(A)):
                 # Skip the hyperplane already known to contain the intersection.
@@ -233,11 +236,45 @@ def _para_intersection_poset(A):
                                 new_hypcont.append(
                                     hyp_cont[r - 1][i].union(Set([j]))
                                 )
-        if active:
-            L.append(new_level)
-            hyp_cont.append(new_hypcont)
-        codim += 1
+        return list(zip(new_level, new_hypcont))
     
+    c = A.is_central()*(-1)
+    for r in range(2, A.rank() + c + 1):
+        print("Working on elements of rank {0}".format(r))
+        m = len(L[r-1])
+        data = list(build_next(
+            [(range(k*(m//N), (k+1)*(m//N) + (k==N-1)*(m%N)), r) for k in range(N)]
+        ))
+        new_lev, new_hyp = list(zip(*_reduce(lambda x, y: x + y[1], data, [])))
+        new_lev = list(new_lev)
+        new_hyp = list(new_hyp)
+        i = 0
+        # Merge the lists down
+        while i < len(new_lev):
+            U = new_lev[i]
+            B1 = U.linear_part().basis_matrix()
+            p1 = U.point()
+            j = i + 1
+            while j < len(new_lev):
+                V = new_lev[j]
+                B2 = V.linear_part().basis_matrix()
+                p2 = V.point()
+                if B1 == B2 and p1 == p2:
+                    new_lev = new_lev[:j] + new_lev[j+1:]
+                    new_hyp[i] = new_hyp[i].union(new_hyp[j])
+                    new_hyp = new_hyp[:j] + new_hyp[j+1:]
+                else:
+                    j += 1
+            i += 1
+        L.append(new_lev)
+        hyp_cont.append(new_hyp)
+
+    # A silly optimization for centrals.
+    if A.is_central():
+        inter = lambda X, Y: X.intersection(Y._affine_subspace())
+        L.append([_reduce(inter, A[1:], A[0]._affine_subspace())])
+        hyp_cont.append([Set(list(range(len(A))))])
+
     L = flatten(hyp_cont)
     t = {}
     for i in range(len(L)):
@@ -265,7 +302,7 @@ class LatticeOfFlats():
             self.flat_labels = None
         else:
             if not lazy:
-                P, FL, HL = _intersection_poset(A)
+                P, FL, HL = _para_intersection_poset(A)
                 self.poset = P
                 self.flat_labels = FL
                 self.hyperplane_labels = HL
