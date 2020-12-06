@@ -271,11 +271,12 @@ class LatticeOfFlats():
                 A = self.hyperplane_arrangement
                 hyp_coeffs = map(lambda H: H.coefficients(), A.hyperplanes())
                 M = Matrix(A.base_ring(), list(hyp_coeffs))
-                rows = list(map(
+                rows = sorted(list(map(
                     lambda H: list(A).index(self.hyperplane_labels[H]), 
                     self.flat_labels[x]
-                ))
+                )))
                 new_M = _contract(M, rows)
+                print(x, rows)
                 new_M, lab_func, hyp_dict = _get_labels(new_M, x, rows, self)
                 HH = HyperplaneArrangements(
                     A.base_ring(), 
@@ -404,6 +405,7 @@ class LatticeOfFlats():
             restrict = []
             while len(all_elts) > 0:
                 x = all_elts[0]
+                print("Construct down and up sets for {0}".format(x))
                 dow_x = self.subarrangement(x)
                 res_x = self.restriction(x)
                 match = False
