@@ -6,6 +6,9 @@
 
 from functools import reduce as _reduce
 from sage.misc.cachefunc import cached_method
+from .Globals import __TIME as _time
+import sage.parallel.decorate as _para
+from os import cpu_count as _NCPUs
 
 def _contract(M, rows):
     from sage.all import Matrix
@@ -180,6 +183,48 @@ def _intersection_poset(A):
     return [Poset((t, cmp_fn)), label_dict, hyp_dict]
 
 
+
+# Parallel function to build the intersection lattice.
+# Moved to global to prevent accidentally carrying unnecessary data. 
+@_para.parallel(_NCPUs())
+def build_next(A, S, HYP, LIN):
+    from sage.all import exists, Set
+    new_level = []
+    new_hypcont = []
+    if len(S) > 0:
+        m = S[0]
+    for i in S:
+        T = LIN[i - m]
+        for j in range(len(A)):
+            # Skip the hyperplane already known to contain the intersection.
+            if not j in HYP[i - m]: 
+                H = A[j]
+                I = H._affine_subspace().intersection(T)
+                # Check if the intersection is trivial.
+                if I is not None:
+                    if I == T: 
+                        # This case means that H cap T = T, so we should
+                        # record that H contains T.
+                        HYP[i - m] = HYP[i - m].union(Set([j]))
+                    else:
+                        # Check if we have this intersection already. 
+                        is_in, ind = exists(
+                            range(len(new_level)), 
+                            lambda k: I == new_level[k]
+                        )
+                        if is_in:
+                            # We have the intersection, so we update
+                            # containment info accordingly. 
+                            new_hypcont[ind] = new_hypcont[ind].union(
+                                Set([j]).union(HYP[i - m])
+                            )
+                        else:
+                            # We do not have it, so we update everything.
+                            new_level.append(I)
+                            new_hypcont.append(HYP[i - m].union(Set([j])))
+    return [list(zip(new_level, new_hypcont)), HYP]
+
+
 # We expand on the function in sage, optimizing a little bit. This makes little
 # difference in small ranks but noticeable difference in larger ranks. This is
 # still quite slow. 
@@ -187,7 +232,6 @@ def _para_intersection_poset(A):
     from sage.geometry.hyperplane_arrangement.affine_subspace import AffineSubspace
     from sage.all import exists, flatten, Set, QQ, VectorSpace, Poset
     from os import cpu_count
-    import sage.parallel.decorate as para
 
     N = cpu_count()
     K = A.base_ring()
@@ -198,58 +242,27 @@ def _para_intersection_poset(A):
     # corresponding intersection. 
     hyp_cont = [[Set([])], [Set([k]) for k in range(len(A))]]
 
-    # Parallel function to build the intersection lattice.
-    @para.parallel(N)
-    def build_next(S, r):
-        new_level = []
-        new_hypcont = []
-        for i in S:
-            T = L[r - 1][i]
-            for j in range(len(A)):
-                # Skip the hyperplane already known to contain the intersection.
-                if not j in hyp_cont[r - 1][i]: 
-                    H = A[j]
-                    I = H._affine_subspace().intersection(T)
-                    # Check if the intersection is trivial.
-                    if I is not None:
-                        if I == T: 
-                            # This case means that H cap T = T, so we should
-                            # record that H contains T.
-                            hyp_cont[r - 1][i] = hyp_cont[r - 1][i].union(
-                                Set([j])
-                            )
-                        else:
-                            # Check if we have this intersection already. 
-                            is_in, ind = exists(
-                                range(len(new_level)), 
-                                lambda k: I == new_level[k]
-                            )
-                            if is_in:
-                                # We have the intersection, so we update
-                                # containment info accordingly. 
-                                new_hypcont[ind] = new_hypcont[ind].union(
-                                    Set([j]).union(hyp_cont[r - 1][i])
-                                )
-                            else:
-                                # We do not have it, so we update everything.
-                                new_level.append(I)
-                                new_hypcont.append(
-                                    hyp_cont[r - 1][i].union(Set([j]))
-                                )
-        return list(zip(new_level, new_hypcont))
-    
     c = A.is_central()*(-1)
     for r in range(2, A.rank() + c + 1):
-        print("Working on elements of rank {0}".format(r))
+        print("{1}Working on elements of rank {0}".format(r, _time()))
         m = len(L[r-1])
+        pmax = lambda k: (k+1)*(m//N) + (k==N-1)*(m%N)
+        pmin = lambda k: k*(m//N)
+        all_input = lambda k: tuple([
+            A, range(pmin(k), pmax(k)), 
+            hyp_cont[r - 1][pmin(k):pmax(k)], L[r - 1][pmin(k):pmax(k)]
+        ])
         data = list(build_next(
-            [(range(k*(m//N), (k+1)*(m//N) + (k==N-1)*(m%N)), r) for k in range(N)]
+            [all_input(k) for k in range(N) if pmin(k) != pmax(k)]
         ))
-        new_lev, new_hyp = list(zip(*_reduce(lambda x, y: x + y[1], data, [])))
+        data = _reduce(lambda x, y: x + y[1], data, [])
+        hyp_cont[r - 1] = _reduce(lambda x, y: x + y, data[1::2], [])
+        new_lev, new_hyp = list(zip(*_reduce(lambda x, y: x+y, data[::2], [])))
         new_lev = list(new_lev)
         new_hyp = list(new_hyp)
         i = 0
         # Merge the lists down
+        print("{0}Merging the lists from the {1} workers".format(_time(), N))
         while i < len(new_lev):
             U = new_lev[i]
             B1 = U.linear_part().basis_matrix()
