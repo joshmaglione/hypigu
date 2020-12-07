@@ -317,6 +317,33 @@ class LatticeOfFlats():
         else:
             return "The lattice of flats of some matroid given by:\n{0}".format(self.poset)
 
+    def _save(self, file, var_name='L'):
+        from sage.all import Matrix
+        HH = self.hyperplane_arrangement.parent()
+        A = Matrix(map(lambda H: H.coefficients(), self.hyperplane_arrangement.hyperplanes())).rows()
+        CR = tuple(map(lambda T: tuple(T), self.poset.cover_relations()))
+        FL = self.flat_labels
+        FL_tup = tuple([tuple([x, list(FL[x])]) for x in FL.keys()])
+        del FL 
+        dict_builder = "FL = {x[0] : Set(x[1]) for x in FL_tup}\n"
+        with open(file, "w") as F:
+            F.write("from sage.all import HyperplaneArrangements, QQ, Poset, Set\n")
+            F.write("import Linigu as LI\n")
+            F.write("H = HyperplaneArrangements(QQ, {0})\n".format(HH.variable_names()))
+            del HH
+            F.write("A = H({0})\n".format(A).replace("), ", "),\n"))
+            del A
+            F.write("CR = {0}\n".format(CR).replace("), ", "),\n"))
+            del CR
+            F.write("P = Poset([range({0}), CR], cover_relations=True)\n".format(len(self.poset._elements)))
+            F.write("FL_tup = {0}\n".format(FL_tup).replace("), ", "),\n"))
+            F.write(dict_builder)
+            F.write("del FL_tup\n")
+            F.write("{0} = LI.LatticeOfFlats(A, poset=P, flat_labels=FL)\n".format(var_name))
+            F.write("del H, A, CR, P, FL\n")
+            F.write("print('Loaded a lattice of flats. Variable name: {0}')".format(var_name))
+
+
     def atoms(self):
         return self.poset.upper_covers(self.poset.bottom())
 
