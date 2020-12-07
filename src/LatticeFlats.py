@@ -114,76 +114,6 @@ def _subposet(P, x, F):
     return new_P
 
 
-# We expand on the function in sage, optimizing a little bit. This makes little
-# difference in small ranks but noticeable difference in larger ranks. This is
-# still quite slow. 
-def _intersection_poset(A):
-    from sage.geometry.hyperplane_arrangement.affine_subspace import AffineSubspace
-    from sage.all import exists, flatten, Set, QQ, VectorSpace, Poset
-    K = A.base_ring()
-    whole_space = AffineSubspace(0, VectorSpace(K, A.dimension()))
-    # L is the ranked list of affine subspaces in L(A).
-    L = [[whole_space], list(map(lambda H: H._affine_subspace(), A))]
-    # hyp_cont is the ranked list describing which hyperplanes contain the
-    # corresponding intersection. 
-    hyp_cont = [[Set([])], [Set([k]) for k in range(len(A))]]
-    active = True
-    codim = 1
-    while active:
-        active = False
-        new_level = []
-        new_hypcont = []
-        for i in range(len(L[codim])):
-            T = L[codim][i]
-            for j in range(len(A)):
-                # Skip the hyperplane already known to contain the intersection.
-                if not j in hyp_cont[codim][i]: 
-                    H = A[j]
-                    I = H._affine_subspace().intersection(T)
-                    # Check if the intersection is trivial.
-                    if I is not None:
-                        if I == T: 
-                            # This case means that H cap T = T, so we should
-                            # record that H contains T.
-                            hyp_cont[codim][i] = hyp_cont[codim][i].union(
-                                Set([j])
-                            )
-                        else:
-                            # Check if we have this intersection already. 
-                            is_in, ind = exists(
-                                range(len(new_level)), 
-                                lambda k: I == new_level[k]
-                            )
-                            if is_in:
-                                # We have the intersection, so we update
-                                # containment info accordingly. 
-                                new_hypcont[ind] = new_hypcont[ind].union(
-                                    Set([j]).union(hyp_cont[codim][i])
-                                )
-                            else:
-                                # We do not have it, so we update everything.
-                                new_level.append(I)
-                                new_hypcont.append(
-                                    hyp_cont[codim][i].union(Set([j]))
-                                )
-                                active = True
-        if active:
-            L.append(new_level)
-            hyp_cont.append(new_hypcont)
-        codim += 1
-    
-    L = flatten(hyp_cont)
-    t = {}
-    for i in range(len(L)):
-        t[i] = Set(list(map(lambda x: x+1, L[i])))
-    cmp_fn = lambda p, q: t[p].issubset(t[q])
-    label_dict = {i : t[i] for i in range(len(L))}
-    hyp_dict = {i + 1 : A[i] for i in range(len(A))}
-    
-    return [Poset((t, cmp_fn)), label_dict, hyp_dict]
-
-
-
 # Parallel function to build the intersection lattice.
 # Moved to global to prevent accidentally carrying unnecessary data. 
 @_para.parallel(_NCPUs())
@@ -321,7 +251,7 @@ class LatticeOfFlats():
         if self.flat_labels == None and not lazy:
             self.flat_labels = _parse_poset(poset)
         if self.hyperplane_arrangement != None and self.hyperplane_labels == None and nature_hyperplane_label:
-            self.hyperplane_labels = {i - 1 : A[i] for i in range(len(A))}
+            self.hyperplane_labels = {i + 1 : A[i] for i in range(len(A))}
 
     def __repr__(self):
         if self.hyperplane_arrangement:
