@@ -299,7 +299,6 @@ class LatticeOfFlats():
             assert poset.has_bottom(), "Expected a unique minimal element in poset."
             assert poset.is_graded(), "Expected a graded poset."
             self.poset = poset
-            self.flat_labels = None
         else:
             if not lazy:
                 P, FL, HL = _para_intersection_poset(A)
@@ -308,8 +307,8 @@ class LatticeOfFlats():
                 self.hyperplane_labels = HL
         if self.flat_labels == None and not lazy:
             self.flat_labels = _parse_poset(poset)
-            if self.hyperplane_arrangement != None and self.hyperplane_labels == None and nature_hyperplane_label:
-                self.hyperplane_labels = {i - 1 : A[i] for i in range(len(A))}
+        if self.hyperplane_arrangement != None and self.hyperplane_labels == None and nature_hyperplane_label:
+            self.hyperplane_labels = {i - 1 : A[i] for i in range(len(A))}
 
     def __repr__(self):
         if self.hyperplane_arrangement:
