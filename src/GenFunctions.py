@@ -139,7 +139,10 @@ def _comb_skele(L, DB=True, verbose=_print):
 
     def poincare(x):
         pi = L.restriction(x).Poincare_polynomial()
-        return pi.subs({pi.variables()[0] : p})
+        try:
+            return pi.subs({pi.variables()[0] : p})
+        except AttributeError: # In case pi is a constant.
+            return pi
     if verbose: 
         print(_time() + "Gleaning structure from poset.")
     eq_elt_data = L._combinatorial_eq_elts()
