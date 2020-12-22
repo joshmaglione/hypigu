@@ -11,19 +11,30 @@ import sage.parallel.decorate as _para
 from os import cpu_count as _NCPUs
 
 def _contract(M, rows):
-    from sage.all import Matrix
+    from sage.all import Matrix, identity_matrix
     K = M.base_ring()
     Q = [M[k] for k in rows] + [M[k] for k in range(M.nrows()) if not k in rows]
-    E = Matrix(K, Q).transpose().echelon_form()
+    Q = Matrix(K, Q).transpose()
+    top = Q[0]
+    E = Q[1:, :].echelon_form()
     rel_E = E[:, :len(rows)]
     out_E = E[:, len(rows):]
     rm = rel_E.pivot_rows()
-    A = [out_E[k] for k in range(E.nrows()) if not k in rm]
-    return Matrix(K, A[::-1]).transpose()
+    # In case we have a non-central arrangement
+    for r in rm:
+        v = E[r]
+        i = list(v).index(1)
+        top = top - top[i]*v
+    A = [tuple(list(top)[len(rows):])] + [out_E[k] for k in range(E.nrows()) if not k in rm]
+    M_out = Matrix(K, A).transpose()
+    return M_out
 
 # BUILD A WAY TO GET THE LABELS FROM THE CONTRACT MATRIX
 def _get_labels(M, x, rows, L):
     from sage.all import VectorSpace, Set, Matrix
+
+    # If non-central, then this is true iff not intersecting.
+    not_e1 = lambda v: list(v)[1:] != [0]*(len(v)-1)
 
     # Determine new hyperplanes and group like rows together.
     V = VectorSpace(M.base_ring(), M.ncols())
@@ -31,7 +42,7 @@ def _get_labels(M, x, rows, L):
     labels = []
     for r in range(M.nrows()):
         v = M[r] 
-        is_new = True 
+        is_new = not_e1(v) 
         i = 0
         while i < len(lines) and is_new:
             if v in V.subspace([lines[i]]):
@@ -152,7 +163,7 @@ def build_next(A, S, HYP, LIN):
                             # We do not have it, so we update everything.
                             new_level.append(I)
                             new_hypcont.append(HYP[i - m].union(Set([j])))
-    return [list(zip(new_level, new_hypcont)), HYP]
+    return list(zip(new_level, new_hypcont))
 
 
 # We expand on the function in sage, optimizing a little bit. This makes little
@@ -186,14 +197,13 @@ def _para_intersection_poset(A):
             [all_input(k) for k in range(N) if pmin(k) != pmax(k)]
         ))
         data = _reduce(lambda x, y: x + y[1], data, [])
-        if r > 2: # Don't want to reorganize the hyperplanes!
-            hyp_cont[r - 1] = _reduce(lambda x, y: x + y, data[1::2], [])
-        new_lev, new_hyp = list(zip(*_reduce(lambda x, y: x+y, data[::2], [])))
+        new_lev, new_hyp = list(zip(*data))
         new_lev = list(new_lev)
         new_hyp = list(new_hyp)
         i = 0
         # Merge the lists down
         print("{0}Merging the lists from the {1} workers".format(_time(), N))
+        # First we check the affine spaces
         while i < len(new_lev):
             U = new_lev[i]
             B1 = U.linear_part().basis_matrix()
@@ -210,6 +220,17 @@ def _para_intersection_poset(A):
                 else:
                     j += 1
             i += 1
+        # Second we check the labels of intersection (don't want duplicates)
+        i = 0
+        while i < len(new_lev):
+            j = i + 1
+            while j < len(new_lev):
+                if new_hyp[i] == new_hyp[j]:
+                    new_lev = new_lev[:j] + new_lev[j+1:]
+                    new_hyp = new_hyp[:j] + new_hyp[j+1:]
+                else:
+                    j += 1
+            i += 1
         L.append(new_lev)
         hyp_cont.append(new_hyp)
 
@@ -219,12 +240,24 @@ def _para_intersection_poset(A):
         L.append([_reduce(inter, A[1:], A[0]._affine_subspace())])
         hyp_cont.append([Set(list(range(len(A))))])
 
-    L = _reduce(lambda x, y: x + y, hyp_cont, [])
+    L_flat = list(_reduce(lambda x, y: x + y, L, []))
+    hc_flat = list(_reduce(lambda x, y: x + y, hyp_cont, []))
+
+    # Sanity checks
+    assert len(L_flat) == len(hc_flat)
+    for i in range(len(hc_flat)):
+        for j in range(i+1, len(hc_flat)): 
+            assert hc_flat[i] != hc_flat[j], "{0} vs {1}".format(i, j)
+    for i in range(len(L_flat)):
+        I = list(map(lambda x: A[x], hc_flat[i]))
+        U = _reduce(lambda x, y: x.intersection(y._affine_subspace()), I, whole_space)
+        assert U == L_flat[i], "{0} vs {1}".format(U, L_flat[i])
+
     t = {}
-    for i in range(len(L)):
-        t[i] = Set(list(map(lambda x: x+1, L[i])))
+    for i in range(len(hc_flat)):
+        t[i] = Set(list(map(lambda x: x+1, hc_flat[i])))
     cmp_fn = lambda p, q: t[p].issubset(t[q])
-    label_dict = {i : t[i] for i in range(len(L))}
+    label_dict = {i : t[i] for i in range(len(hc_flat))}
     get_hyp = lambda i: A[label_dict[i].an_element() - 1]
     hyp_dict = {i + 1 : get_hyp(i + 1) for i in range(len(A))}
 
@@ -303,7 +336,8 @@ class LatticeOfFlats():
     def proper_part_poset(self):
         P = self.poset
         elts = list(P._elements)
-        elts.remove(P.top())
+        if P.has_top():
+            elts.remove(P.top())
         elts.remove(P.bottom())
         return P.subposet(elts)
 
