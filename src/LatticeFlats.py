@@ -186,7 +186,8 @@ def _para_intersection_poset(A):
             [all_input(k) for k in range(N) if pmin(k) != pmax(k)]
         ))
         data = _reduce(lambda x, y: x + y[1], data, [])
-        hyp_cont[r - 1] = _reduce(lambda x, y: x + y, data[1::2], [])
+        if r > 2: # Don't want to reorganize the hyperplanes!
+            hyp_cont[r - 1] = _reduce(lambda x, y: x + y, data[1::2], [])
         new_lev, new_hyp = list(zip(*_reduce(lambda x, y: x+y, data[::2], [])))
         new_lev = list(new_lev)
         new_hyp = list(new_hyp)
@@ -218,14 +219,15 @@ def _para_intersection_poset(A):
         L.append([_reduce(inter, A[1:], A[0]._affine_subspace())])
         hyp_cont.append([Set(list(range(len(A))))])
 
-    L = flatten(hyp_cont)
+    L = _reduce(lambda x, y: x + y, hyp_cont, [])
     t = {}
     for i in range(len(L)):
         t[i] = Set(list(map(lambda x: x+1, L[i])))
     cmp_fn = lambda p, q: t[p].issubset(t[q])
     label_dict = {i : t[i] for i in range(len(L))}
-    hyp_dict = {i + 1 : A[i] for i in range(len(A))}
-    
+    get_hyp = lambda i: A[label_dict[i].an_element() - 1]
+    hyp_dict = {i + 1 : get_hyp(i + 1) for i in range(len(A))}
+
     return [Poset((t, cmp_fn)), label_dict, hyp_dict]
 
 
