@@ -173,6 +173,7 @@ def _para_intersection_poset(A):
     from sage.geometry.hyperplane_arrangement.affine_subspace import AffineSubspace
     from sage.all import exists, flatten, Set, QQ, VectorSpace, Poset
     from os import cpu_count
+    from .Globals import __SANITY
 
     N = cpu_count()
     K = A.base_ring()
@@ -235,7 +236,7 @@ def _para_intersection_poset(A):
         hyp_cont.append(new_hyp)
 
     # A silly optimization for centrals.
-    if A.is_central():
+    if A.is_central() and len(A) > 1:
         inter = lambda X, Y: X.intersection(Y._affine_subspace())
         L.append([_reduce(inter, A[1:], A[0]._affine_subspace())])
         hyp_cont.append([Set(list(range(len(A))))])
@@ -244,15 +245,18 @@ def _para_intersection_poset(A):
     hc_flat = list(_reduce(lambda x, y: x + y, hyp_cont, []))
 
     # Sanity checks
-    assert len(L_flat) == len(hc_flat)
-    for i in range(len(hc_flat)):
-        for j in range(i+1, len(hc_flat)): 
-            assert hc_flat[i] != hc_flat[j], "{0} vs {1}".format(i, j)
-    for i in range(len(L_flat)):
-        I = list(map(lambda x: A[x], hc_flat[i]))
-        U = _reduce(lambda x, y: x.intersection(y._affine_subspace()), I, whole_space)
-        assert U == L_flat[i], "{0} vs {1}".format(U, L_flat[i])
+    if __SANITY:
+        print("{0}Running sanity check".format(_time()))
+        assert len(L_flat) == len(hc_flat)
+        for i in range(len(hc_flat)):
+            for j in range(i+1, len(hc_flat)): 
+                assert hc_flat[i] != hc_flat[j], "{0} vs {1}".format(i, j)
+        for i in range(len(L_flat)):
+            I = list(map(lambda x: A[x], hc_flat[i]))
+            U = _reduce(lambda x, y: x.intersection(y._affine_subspace()), I, whole_space)
+            assert U == L_flat[i], "{0} vs {1}".format(U, L_flat[i])
 
+    print("{0}Constructing lattice of flats".format(_time()))
     t = {}
     for i in range(len(hc_flat)):
         t[i] = Set(list(map(lambda x: x+1, hc_flat[i])))
@@ -627,7 +631,6 @@ def _possibly_Coxeter(P):
 # Compute the Poincare polynomial of either the chain F or the upper ideal of P
 # at restrict. 
 def PoincarePolynomial(P, F=None, restrict=None):
-    from .Globals import __DEFAULT_p as p
     from sage.all import var, ZZ
 
     # Setup the data
@@ -642,8 +645,8 @@ def PoincarePolynomial(P, F=None, restrict=None):
     P_up = _subposet(P, F[-1], lambda z: P.upper_covers(z))
     chi = P_up.characteristic_polynomial() 
     d = chi.degree()
-    p = var(p)
-    pi = ((-p)**d*chi(q=-p**(-1))).expand().simplify()
+    Y = var('Y')
+    pi = ((-Y)**d*chi(q=-Y**(-1))).expand().simplify().factor()
     if F[-1] == P.bottom() or restrict != None:
         return pi
     P_down = _subposet(P, F[-1], lambda z: P.lower_covers(z))

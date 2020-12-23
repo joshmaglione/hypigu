@@ -48,7 +48,7 @@ def _P(L):
         else:
             return _binomial(n, P[0]) * binom(n - P[0], P[1:])
     n = _reduce(lambda x, y: x + y, L)
-    count = lambda n: len(filter(lambda x: x == n, L))
+    count = lambda n: len(list(filter(lambda x: x == n, L)))
     S = list(Set(list(L)))
     d = _reduce(lambda x, y: x*y, map(lambda z: _factorial(count(z)), S))
     return binom(n, L) // d
@@ -84,7 +84,7 @@ def _recursive_crank(p, t, n, known=[], style="standard"):
                     _P(L), p**(1-_reduce(lambda x, y: x + y - 1, L)), 
                     t**(_binom_sum(L)), _Poincare(L)(Y=-p**-1)
                 ]
-            lower_integrals = map(lambda z: known[z - 1], list(L))
+            lower_integrals = list(map(lambda z: known[z - 1], list(L)))
             L_term = _reduce(lambda x, y: x*y, L_factors + lower_integrals, 1)
             Zk += L_term
     if style == "reduced":
@@ -97,7 +97,7 @@ def _recursive_crank(p, t, n, known=[], style="standard"):
     else:
         return known[n]
 
-def BraidArrangementIgusa(n, style="standard"):
+def BraidArrangementIgusa(n):
     r"""
     Return the rational function associated to the local Igusa zeta function for
     the n-dimensional essential braid arrangement.
@@ -105,8 +105,6 @@ def BraidArrangementIgusa(n, style="standard"):
     INPUT:
 
     - ``n`` -- integer; the dimension of the ambient affine space.
-
-    - ``style`` -- string (default: `standard`); the style of computation. 
 
     OUTPUT: A rational function in at most two variables.
 
@@ -120,14 +118,9 @@ def BraidArrangementIgusa(n, style="standard"):
 
     """
     from sage.all import var
-    from .Globals import __DEFAULT_p, __DEFAULT_t
-    if not isinstance(style, str):
-        raise TypeError("Expected ``style`` to be a string.")
-    if not style.lower() in {"standard", "reduced"}:
-        raise ValueError("Unknown style")
-    p = var(__DEFAULT_p)
-    t = var(__DEFAULT_t)
+    p = var('q')
+    t = var('t')
     if n <= _TABLE_CUTOFF:
-        return _Igusa_braid_table(p, t, n, style=style.lower())
-    return _recursive_crank(p, t, n, style=style)
+        return _Igusa_braid_table(p, t, n, style="standard")
+    return _recursive_crank(p, t, n, style="standard")
 

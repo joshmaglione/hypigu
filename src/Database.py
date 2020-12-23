@@ -57,10 +57,9 @@ class IADatabase():
 
 def _initialize_main_DB():
     from sage.all import DiGraph, Poset, var
-    from .Globals import __DEFAULT_p, __DEFAULT_t
     import Linigu.src.init_data as init_data
-    p = var(__DEFAULT_p)
-    t = var(__DEFAULT_t)
+    p = var('q')
+    t = var('t')
     DB = IADatabase()
 
     # A3 arrangement 

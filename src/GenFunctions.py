@@ -7,127 +7,151 @@
 from .Database import internal_database as _data
 from .Globals import __PRINT as _print
 from .Globals import __TIME as _time
-from .LatticeFlats import LatticeOfFlats as _LOF
 from functools import reduce as _reduce
 
+# A function to return a poincare function.
+def _Poincare_polynomial(L, sub=None):
+    from sage.all import var 
+    if sub == None:
+        sub = var('Y')
+    def poincare(x):
+        pi = L.restriction(x).Poincare_polynomial()
+        try:
+            return pi.subs({pi.variables()[0] : sub})
+        except AttributeError: # In case pi is a constant.
+            return pi
+    return poincare
 
 # The complete solutions for small central arrangements of rank <= 2.
 def _small_central(A, style):
-    from .Globals import __DEFAULT_p, __DEFAULT_t 
     from sage.all import var
 
-    p = var(__DEFAULT_p)
-    t = var(__DEFAULT_t)
+    p = var('q')
+    t = var('t')
+    Y = var('Y')
+    T = var('T')
     if A.rank() == 1:
         if style == 'Igusa':
             return (1 - p**-1)/(1 - p**-1*t)
         if style == 'skele':
-            return (1 + p)/(1 - t)
+            return (1 + Y)/(1 - T)
     # Now we assume the rank == 2.
     m = len(A)
     if style == 'Igusa':
         return (1 - p**-1)*(1 - (m - 1)*p**-1 + (m - 1)*p**-1*t - p**-2*t) / ((1 - p**-1*t)*(1 - p**-2*t**m))
     if style == 'skele':
-        return (1 + m*p + (m-1)*p**2 + (m-1 + m*p + p**2)*t)/((1 - t)**2)
+        return (1 + m*Y + (m-1)*Y**2 + (m-1 + m*Y + Y**2)*T)/((1 - T)**2)
 
 # The direct version of the universal generating function computation.
-def _universal_gen_func(A, MAP):
-    from sage.all import PolynomialRing, QQ, var, ZZ
-    from .Globals import __DEFAULT_t, __DEFAULT_p
-    from .PosetOps import CharacteristicFunction, PoincarePolynomial, _proper_part
-    p = var(__DEFAULT_p)
-    Yvar = var('Y')
-    _, P = CharacteristicFunction(A)
-    P_prop = _proper_part(P)
-    n = len(P_prop)
-    X = PolynomialRing(QQ, 'X', n).gens()
-    Y = lambda Z: X[P._elements.index(Z) - 1]
-    skele = 0
-    for C in P_prop.chains():
-        F = [''] + C 
-        pi = PoincarePolynomial(A, F)
-        Z_in = _reduce(lambda x, y: x*Y(y), C, 1)
-        C_comp = filter(lambda z: not z in C, P_prop._elements)
-        Z_out = _reduce(lambda x, y: x*(1 - Y(y)), C_comp, 1)
-        skele += pi.subs({p: Yvar})*Z_in*Z_out
-    Skeleton = skele/_reduce(lambda x, y: x*(1 - Y(y)), P._elements[1:], 1)
-    if MAP:
-        def user_map(x):
-            if x in X:
-                s = P._elements[X.index(x) + 1]
-            else:
-                try:
-                    s = P._elements[x + 1]
-                except TypeError:
-                    raise TypeError("Input must be an integer or variable.")
-            return list(map(lambda x: ZZ(int(x)), s.split(' ')))
-        return Skeleton, user_map
-    return Skeleton
+def _universal(L, anayltic=False, atom=False):
+    from sage.all import var
+    from .LatticeFlats import _subposet
 
-def _local_Igusa(A, DB=True, poset=None, OG=None):
-    from sage.all import PolynomialRing, QQ, var, ZZ
-    from .Globals import __DEFAULT_t, __DEFAULT_p
-    from .PosetOps import CharacteristicFunction, PoincarePolynomial, _deletion, _Coxeter_poset_data, IntersectionPoset, _equiv_elts
+    # Set up the potential substitutions for T -- as defined in Maglione--Voll.
+    if anayltic:
+        q = var('q')
+        Y = -q**(-1)
+        P = L.poset
+        t_name = lambda x: var("t" + str(x))
+        if atom:
+            atoms = P.upper_covers(P.bottom())
+            def T_data(x):
+                under_poset = _subposet(P, x, lambda z: P.lower_covers(z))
+                elts = filter(lambda y: y in under_poset, atoms)
+                ts = map(t_name, elts)
+                return _reduce(lambda x, y: x*y, ts, q**(-P.rank(x)))
+        else:
+            def T_data(x):
+                under_poset = _subposet(P, x, lambda z: P.lower_covers(z))
+                elts = list(under_poset._elements)
+                elts.remove(P.bottom())
+                ts = map(t_name, elts)
+                return _reduce(lambda x, y: x*y, ts, q**(-P.rank(x)))
+    else: 
+        T_data = lambda x: var("T" + str(x))
+        Y = var('Y')
+
+    T = {x : T_data(x) for x in L.poset._elements}
+    
+    # Base cases for recursion.
+    if L.poset.has_top() and L.poset.rank() == 2:
+        elts = L.proper_part_poset()._elements
+        merge = lambda x, y: x + (1 + Y)**2*T[y]/(1 - T[y])
+        one = L.poset.top()
+        return _reduce(merge, elts, (1 + Y)*(1 + (len(elts) - 1)*Y))/(1-T[one])
+    if L.poset.rank == 1:
+        elts = list(L.poset._elements).remove(L.poset.bottom())
+        merge = lambda x, y: x + (1 + Y)*T[y]/(1 - T[y])
+        return _reduce(merge, elts, 1 + len(elts)*Y)
+    
+    P = L.proper_part_poset()
+    poincare = _Poincare_polynomial(L, sub=Y)
+    recurse = lambda M: _universal(M, anayltic=anayltic, atom=atom)
+    num_dat = lambda x: poincare(x)*T[x]*recurse(L.subarrangement(x))
+    factors = map(num_dat, P._elements)
+    HP = _reduce(lambda x, y: x + y, factors, poincare(L.poset.bottom()))
+    if L.poset.has_top():
+        HP = HP/(1 - T[L.poset.top()])
+    return HP
+
+def _Igusa_zeta_function(L, DB=True, verbose=_print):
+    from sage.all import var
     from .Constructors import CoxeterArrangement
     from .Braid import BraidArrangementIgusa
+    from .LatticeFlats import LatticeOfFlats, _Coxeter_poset_data
 
-    p = var(__DEFAULT_p)
-    t = var(__DEFAULT_t)
-    if poset:
-        P = poset
-    else:
-        P = IntersectionPoset(A)
+    P = L.poset
+    q = var('q')
+    t = var('t')
+    A = L.hyperplane_arrangement
+
+    # Base cases for recursion.
+    if L.poset.has_top() and L.poset.rank() == 2:
+        m = len(L.poset) - 2
+        return (1 - q**-1)*(1 - (m-1)*q**-1 + m*(1 - q**-1)*q**-1*t/(1 - q**-1*t))/(1 - q**-2*t**m)
+    if L.poset.rank() == 1:
+        m = len(L.poset) - 1
+        return 1 - m*q**-1 + m*(1 - q**-1)*q**-1*t/(1 - q**-1*t)
+
     if DB:
         zeta = _data.get_gen_func(P, 'Igusa')
         if zeta != None:
             return zeta
     # We check to see if we have a type A braid arrangement. 
+    # We can compute these *extremely* quickly.
     if _Coxeter_poset_data()['A']['hyperplanes'](A.rank()) == len(A):
         if _Coxeter_poset_data()['A']['poset'](A.rank()) == len(P):
             B = CoxeterArrangement("A", n=A.rank())
-            if P.is_isomorphic(B.intersection_poset()):
+            if P.is_isomorphic(LatticeOfFlats(B).poset):
                 return BraidArrangementIgusa(A.rank())
-    char_func = CharacteristicFunction(A, poset=P)
-    def t_factor(X):
-        if X == '':
-            return 0
-        else:
-            return len(X.split(' '))
-    eq_elt_data = _equiv_elts(P)
-    factors = map(lambda x: x[1]*t_factor(x[0])*char_func(x[0]), eq_elt_data)
-    integrals = map(
-        lambda x: _local_Igusa(
-            _deletion(A, x[0], P, poset=False, OG=OG), 
-            DB=DB,
-            poset=x[2],
-            OG=OG
-        ), 
-        eq_elt_data
-    )
-    zeta = _reduce(lambda x, y: x + y[0]*y[1], zip(factors, integrals), 0) + char_func('')
-    if A.is_central():
-        zeta = p**(-A.dimension())*zeta/(1 - p**(-A.rank())*t**len(A))
-    else:
-        zeta = p**(-A.dimension())*zeta 
+
+    poincare = _Poincare_polynomial(L, sub=-q**(-1))
+    t_factor = lambda X: t**len(L.flat_labels[X])
+    x_factor = lambda x: poincare(x)*t_factor(x)*q**(-L.poset.rank(x))
+    eq_elt_data = L._combinatorial_eq_elts()
+    factors = map(lambda x: x[1]*x_factor(x[0]), eq_elt_data)
+    integrals = map(lambda x: _Igusa_zeta_function(x[2], DB=DB), eq_elt_data)
+    pi = poincare(L.poset.bottom())
+    zeta = _reduce(lambda x, y: x + y[0]*y[1], zip(factors, integrals), 0) + pi
+    if L.poset.has_top():
+        zeta = zeta/(1 - q**(-A.rank())*t**len(A))
     if DB and A.rank() > 2: 
         _data.save_gen_func(P, 'Igusa', zeta)
     return zeta
 
 
 def _comb_skele(L, DB=True, verbose=_print):
-    from sage.all import PolynomialRing, QQ, var, ZZ
-    from .Globals import __DEFAULT_t, __DEFAULT_p
-
+    from sage.all import var
     P = L.poset
-    p = var(__DEFAULT_p)
-    t = var(__DEFAULT_t)
+    Y = var('Y')
+    T = var('T')
 
     if P.has_top():
         if P.rank() == 1:
-            return (1 + p)/(1 - t)
+            return (1 + Y)/(1 - T)
         if P.rank() == 2:
             m = len(P) - 2
-            return (1 + m*p + (m - 1)*p**2 + (m - 1 + m*p + p**2)*t)/(1 - t)**2
+            return (1 + m*Y + (m - 1)*Y**2 + (m - 1 + m*Y + Y**2)*T)/(1 - T)**2
     if DB:
         if verbose:
             print(_time() + "Checking database.")
@@ -137,31 +161,23 @@ def _comb_skele(L, DB=True, verbose=_print):
         if verbose:
             print("\tDone.")
 
-    def poincare(x):
-        pi = L.restriction(x).Poincare_polynomial()
-        try:
-            return pi.subs({pi.variables()[0] : p})
-        except AttributeError: # In case pi is a constant.
-            return pi
+    poincare = _Poincare_polynomial(L)
     if verbose: 
         print(_time() + "Gleaning structure from poset.")
     eq_elt_data = L._combinatorial_eq_elts()
     if verbose:
         print("\tDone.")
-        print(_time() + "Found the following basic structure:\n%s" % (eq_elt_data))
-    factors = map(lambda x: x[1]*t*poincare(x[0]), eq_elt_data)
+        print(_time() + "Lattice points: {0},  Relevant points: {1}".format(len(P), len(eq_elt_data)))
+    factors = map(lambda x: x[1]*T*poincare(x[0]), eq_elt_data)
     if verbose:
         print(_time() + "Recursing...")
     integrals = map(lambda x: _comb_skele(x[2], DB=DB), eq_elt_data)
     if verbose:
         print(_time() + "Putting everything together...")
-    pi = L.Poincare_polynomial()
-    pi = pi.subs({pi.variables()[0] : p})
+    pi = poincare(P.bottom())
     zeta = _reduce(lambda x, y: x + y[0]*y[1], zip(factors, integrals), 0) + pi
     if P.has_top():
-        zeta = zeta/(1 - t)
-    else:
-        zeta = zeta 
+        zeta = zeta/(1 - T)
     if DB and P.rank() > 2: 
         _data.save_gen_func(P, 'skele', zeta)
         
@@ -171,19 +187,57 @@ def _comb_skele(L, DB=True, verbose=_print):
 
 
 def CombinatorialSkeleton(A, database=True, lattice_of_flats=None, int_poset=None, verbose=_print):
+    from .LatticeFlats import LatticeOfFlats
+
     if A.is_central() and A.rank() <= 2:
         return _small_central(A, 'skele')
     if lattice_of_flats == None:
-        L = _LOF(A, poset=int_poset)
+        L = LatticeOfFlats(A, poset=int_poset)
     else:
         L = lattice_of_flats
 
     return _comb_skele(L, DB=database)
 
-def LocalIgusaZetaFunction(A, database=True, int_poset=None):
-    if A.is_central() and A.rank() <= 2:
-        return _small_central(A, 'Igusa')
-    return _local_Igusa(A, DB=database, poset=int_poset, OG=A)
 
-def UniversalGeneratingFunction(A, Map=False, int_poset=None):
-    return _universal_gen_func(A, Map)
+def LocalIgusaZetaFunction(A, database=True, lattice_of_flats=None, int_poset=None, verbose=_print):
+    from .LatticeFlats import LatticeOfFlats
+
+    if lattice_of_flats == None:
+        L = LatticeOfFlats(A, poset=int_poset)
+    else:
+        L = lattice_of_flats
+
+    return _Igusa_zeta_function(L, DB=database)
+
+
+def AnalyticZetaFunction(A, database=True, lattice_of_flats=None, int_poset=None, verbose=_print):
+    from .LatticeFlats import LatticeOfFlats
+
+    if lattice_of_flats == None:
+        L = LatticeOfFlats(A, poset=int_poset)
+    else:
+        L = lattice_of_flats
+
+    return _universal(L, anayltic=True)
+
+
+def AtomZetaFunction(A, database=True, lattice_of_flats=None, int_poset=None, verbose=_print):
+    from .LatticeFlats import LatticeOfFlats
+
+    if lattice_of_flats == None:
+        L = LatticeOfFlats(A, poset=int_poset)
+    else:
+        L = lattice_of_flats
+
+    return _universal(L, anayltic=True, atom=True)
+
+
+def FlagHilbertPoincareSeries(A, database=True, lattice_of_flats=None, int_poset=None, verbose=_print):
+    from .LatticeFlats import LatticeOfFlats
+
+    if lattice_of_flats == None:
+        L = LatticeOfFlats(A, poset=int_poset)
+    else:
+        L = lattice_of_flats
+
+    return _universal(L)
