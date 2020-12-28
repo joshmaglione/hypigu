@@ -244,3 +244,10 @@ def DirectSum(*args):
     else:
         D = _direct_sum(HPAs[0], HPAs[1])
         return _reduce(lambda A, B: _direct_sum(A, B), HPAs[2:], D)
+
+
+def PolynomialToArrangement(f):
+    from .GenFunctions import _parse_poly
+    A, M = _parse_poly(f)
+    return A
+    

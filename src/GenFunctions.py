@@ -183,6 +183,44 @@ def _comb_skele(L, DB=True, verbose=_print):
         
     return zeta
 
+# Given a polynomial, return a hyperplane arrangement equivalent to the linear
+# factors of f. 
+def _parse_poly(f): 
+    from sage.all import SR, QQ, HyperplaneArrangements, Matrix
+    if type(f) == str:
+        f = SR(f)
+    if f.base_ring() == SR:
+        L = f.factor_list()
+        K = QQ
+    else: 
+        L = list(f.factor())
+        K = f.base_ring()
+
+    F, M = list(zip(*L))
+
+    # Verify that each polynomial factor is linear
+    is_lin = lambda g: all(map(lambda x: g.degree(x) <= 1, g.variables()))
+    if not all(map(is_lin, F)):
+        raise ValueError("Expected product of linear factors.")
+
+    varbs = f.variables()
+    varbs_str = tuple(map(lambda x: str(x), varbs))
+    HH = HyperplaneArrangements(K, varbs_str)
+
+    def poly_vec(g):
+        c = K(g.subs({x : 0 for x in g.variables()}))
+        return tuple([c] + [K(g.coefficient(x)) for x in varbs])
+
+    F_vec = tuple(map(poly_vec, F))
+    A = HH(Matrix(K, F_vec))
+
+    # This scrambles the hyperplanes, so we need to scramble M in the same way.
+    A_vec = tuple(map(lambda H: tuple(H.coefficients()), A))
+    perm = tuple([A_vec.index(v) for v in F_vec])
+    M_new = tuple([M[i] for i in perm])
+
+    return A, M_new
+
 
 
 
@@ -192,21 +230,55 @@ def CombinatorialSkeleton(A, database=True, lattice_of_flats=None, int_poset=Non
     if A.is_central() and A.rank() <= 2:
         return _small_central(A, 'skele')
     if lattice_of_flats == None:
+        if verbose:
+            print("{0}Building lattice of flats".format(_time()))
         L = LatticeOfFlats(A, poset=int_poset)
     else:
         L = lattice_of_flats
 
+    if verbose:
+        print("{0}Computing combinatorial skeleton".format(_time()))
     return _comb_skele(L, DB=database)
 
 
-def LocalIgusaZetaFunction(A, database=True, lattice_of_flats=None, int_poset=None, verbose=_print):
+def LocalIgusaZetaFunction(X, database=True, lattice_of_flats=None, int_poset=None, verbose=_print):
     from .LatticeFlats import LatticeOfFlats
+    from sage.all import var
+
+    try:
+        # Check if a hyperplane arrangement. 
+        _ = X.hyperplanes()
+        A = X
+        HPA = True 
+    except AttributeError:
+        # Not an HPA; deal with polynomial input. 
+        A, M = _parse_poly(X)
+        if verbose:
+            print("{0}Constructed a hyperplane arrangement".format(_time()))
+        HPA = False 
 
     if lattice_of_flats == None:
+        if verbose:
+            print("{0}Building lattice of flats".format(_time()))
         L = LatticeOfFlats(A, poset=int_poset)
     else:
         L = lattice_of_flats
 
+    if not HPA:
+        if list(M) == [1]*len(M):
+            if verbose:
+                print("{0}Computing Igusa's zeta function".format(_time()))
+            return _Igusa_zeta_function(L, DB=database)
+        else:
+            if verbose:
+                print("{0}Computing the atom zeta function".format(_time()))
+            Z = _universal(L, anayltic=True, atom=True)
+            t = var('t')
+            SUB = {var('t' + str(k+1)) : t**(M[k]) for k in range(len(M))}
+            return Z.subs(SUB)
+
+    if verbose:
+        print("{0}Computing Igusa's zeta function".format(_time()))
     return _Igusa_zeta_function(L, DB=database)
 
 
@@ -214,10 +286,14 @@ def AnalyticZetaFunction(A, database=True, lattice_of_flats=None, int_poset=None
     from .LatticeFlats import LatticeOfFlats
 
     if lattice_of_flats == None:
+        if verbose:
+            print("{0}Building lattice of flats".format(_time()))
         L = LatticeOfFlats(A, poset=int_poset)
     else:
         L = lattice_of_flats
 
+    if verbose:
+        print("{0}Computing the analytic zeta function".format(_time()))
     return _universal(L, anayltic=True)
 
 
@@ -225,10 +301,14 @@ def AtomZetaFunction(A, database=True, lattice_of_flats=None, int_poset=None, ve
     from .LatticeFlats import LatticeOfFlats
 
     if lattice_of_flats == None:
+        if verbose:
+            print("{0}Building lattice of flats".format(_time()))
         L = LatticeOfFlats(A, poset=int_poset)
     else:
         L = lattice_of_flats
 
+    if verbose:
+        print("{0}Computing the atom zeta function".format(_time()))
     return _universal(L, anayltic=True, atom=True)
 
 
@@ -236,8 +316,12 @@ def FlagHilbertPoincareSeries(A, database=True, lattice_of_flats=None, int_poset
     from .LatticeFlats import LatticeOfFlats
 
     if lattice_of_flats == None:
+        if verbose:
+            print("{0}Building lattice of flats".format(_time()))
         L = LatticeOfFlats(A, poset=int_poset)
     else:
         L = lattice_of_flats
 
+    if verbose:
+        print("{0}Computing the flag Hilbert--Poincare series".format(_time()))
     return _universal(L)
