@@ -18,7 +18,35 @@
         <script src="js/bootstrap.min.js" defer></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
         <script>hljs.initHighlightingOnLoad();</script> 
+        <!-- Load KaTeX -->
+        <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/katex.min.css" integrity="sha384-zB1R0rpPzHqg7Kpt0Aljp8JPLqbXI3bhnPWROx27a9N0Ll6ZP/+DiW/UqRcLbRjq" crossorigin="anonymous">
+        <script src="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/katex.min.js" integrity="sha384-y23I5Q6l+B6vatafAwxRu/0oK/79VlbSz7Q9aiSZUvyWYIYsd+qj+o24G5ZU2zJz" crossorigin="anonymous"></script>
+        <script defer src="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/contrib/auto-render.min.js" integrity="sha384-kWPLUVMOks5AQFrykwIup5lo0m3iMkkHrD0uJ4H5cjeGihAutqP0yW0J6dpFiVkI" crossorigin="anonymous"
+        onload="renderMathInElement(document.body, {
+            delimiters: [
+            {left: '$\n', right: '$', display: false},
+            {left: '$', right: '$', display: false}
+            ]
+        });"></script> -->
+
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
+
+        <!-- The loading of KaTeX is deferred to speed up page rendering -->
+        <script defer src="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.js" integrity="sha384-g7c+Jr9ZivxKLnZTDUhnkOnsh30B4H0rpLUpJ4jAIKs4fnJI+sEnkvrMWph2EDg4" crossorigin="anonymous"></script>
+
+        <!-- To automatically render math in text elements, include the auto-render extension: -->
+        <script defer src="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/contrib/auto-render.min.js" integrity="sha384-mll67QQFJfxn0IYznZYonOWZ644AWYC+Pt2cHqMaRhXVrursRwvLnLaebdGIlYNa" crossorigin="anonymous"
+        onload="renderMathInElement(document.body, {
+            delimiters: [
+            {left: '$\n', right: '$', display: false},
+            {left: '$', right: '$', display: false}, 
+            {left: '\[\n', right: '\]', display: true},
+            {left: '\[', right: '\]', display: true}
+            ]
+        });"></script>
     </head>
+
+
 
     <body class="homepage">
         <div class="navbar fixed-top navbar-expand-lg navbar-dark bg-primary">
@@ -40,7 +68,10 @@
                                 <a href="constructors/" class="nav-link">Constructors</a>
                             </li>
                             <li class="navitem">
-                                <a href="gen-series/" class="nav-link">Generating Functions</a>
+                                <a href="lattices/" class="nav-link">Lattices</a>
+                            </li>
+                            <li class="navitem">
+                                <a href="generating-functions/" class="nav-link">Generating Functions</a>
                             </li>
                         </ul>
 
@@ -88,6 +119,10 @@
               <ul class="nav flex-column">
               </ul>
             </li>
+            <li class="nav-item" data-level="2"><a href="#importing" class="nav-link">Importing</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
             <li class="nav-item" data-level="2"><a href="#funding" class="nav-link">Funding</a>
               <ul class="nav flex-column">
               </ul>
@@ -100,14 +135,19 @@
                     <div class="col-md-9" role="main">
 
 <h1 id="linigu">Linigu</h1>
-<p>Download the source files: <a href="https://github.com/joshmaglione/linigu">Linigu repo</a>.</p>
+<p>Documentation for the <a href="https://github.com/joshmaglione/linigu">Linigu</a> package for SageMath.</p>
 <h2 id="purpose">Purpose</h2>
 <p>The goal of Linigu is to provide SageMath with the functionality to compute various zeta functions associated with hyperplane arrangements. Included are common constructions for hyperplane arrangements and specializations of the flag Hilbert&ndash;Poincar&#233; series defined in Maglione&ndash;Voll. Mathematical details are given in Maglione&ndash;Voll. We outline the functions included in Linigu and provide example cases. </p>
 <h2 id="setup">Setup</h2>
 <p>The simplest way to install Linigu is to run the following </p>
-<pre><code>$ sage -pip install linigu
+<pre><code class="language-bash">$ sage -pip install linigu
 </code></pre>
 <p>Linigu has no external dependencies and is compatible with <a href="https://www.sagemath.org/">SageMath 9.2</a>.</p>
+<h2 id="importing">Importing</h2>
+<p>Import LinIgu during your SageMath run with the following</p>
+<pre><code class="language-python">import linigu as li
+</code></pre>
+<p>Throughout we use <code>li</code> for the reference name of <code>linigu</code>.</p>
 <h2 id="funding">Funding</h2>
 <p>This package is funded in part by DFG grant <a href="https://gepris.dfg.de/gepris/projekt/373111162?language=en">373111162</a>.</p></div>
             </div>
@@ -193,5 +233,5 @@
 
 <!--
 MkDocs version : 1.1.2
-Build Date UTC : 2020-12-29 17:37:12.265427+00:00
+Build Date UTC : 2020-12-29 21:32:07.086640+00:00
 -->
