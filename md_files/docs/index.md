@@ -1,6 +1,6 @@
 # Linigu
 
-Download the source files: [Linigu repo](https://github.com/joshmaglione/linigu).
+Documentation for the [Linigu](https://github.com/joshmaglione/linigu) package for SageMath.
 
 ## Purpose
 
@@ -10,11 +10,21 @@ The goal of Linigu is to provide SageMath with the functionality to compute vari
 
 The simplest way to install Linigu is to run the following 
 
-```
+```bash
 $ sage -pip install linigu
 ```
 
 Linigu has no external dependencies and is compatible with [SageMath 9.2](https://www.sagemath.org/).
+
+## Importing
+
+Import LinIgu during your SageMath run with the following
+
+```python
+import linigu as li
+```
+
+Throughout we use `li` for the reference name of `linigu`.
 
 ## Funding 
 

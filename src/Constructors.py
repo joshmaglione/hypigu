@@ -4,9 +4,8 @@
 #   Distributed under MIT License
 #
 
-from functools import reduce as _reduce
-
 def _non_Weyl_arrangements(X, n, shift=[0]):
+    from functools import reduce
     from sage.all import HyperplaneArrangements, QQ 
     def add_shift(x):
         return list(map(lambda k: [x, k], shift))
@@ -26,10 +25,11 @@ def _non_Weyl_arrangements(X, n, shift=[0]):
             return _non_Weyl_arrangements("I", 5, shift=shift)
         print("Type H not yet implemented.")
         return None
-    aff_norms = _reduce(lambda x, y: x+y, map(lambda x: add_shift(x), norms),[])
+    aff_norms = reduce(lambda x, y: x+y, map(lambda x: add_shift(x), norms),[])
     return H(aff_norms)
     
 def _arrangements_from_roots(X, n, shift=[0]):
+    from functools import reduce
     from sage.all import HyperplaneArrangements, QQ, RootSystem
     Phi = RootSystem([X, n]).ambient_space()
     d = Phi.dimension()
@@ -38,7 +38,7 @@ def _arrangements_from_roots(X, n, shift=[0]):
     def add_shift(x):
         norm = tuple(map(lambda i: QQ(i), x._vector_().list()))
         return list(map(lambda k: [norm, k], shift))
-    aff_norms = _reduce(lambda x, y: x+y, map(lambda x: add_shift(x), norms),[])
+    aff_norms = reduce(lambda x, y: x+y, map(lambda x: add_shift(x), norms),[])
     return H(aff_norms)
 
 # Verifies that the Coxeter-theoretic data is expected.
@@ -73,22 +73,25 @@ def _Coxeter_check(X, n):
     return True
 
 # Parses the Coxeter type input and runs the check for good input. 
-def _parse_Coxeter_input(name, n):
+def _parse_Coxeter_input(name):
     from sage.all import ZZ
-    if not isinstance(name, str):
+    if isinstance(name, str):
+        factors = name.split(' ')
+    else:
+        factors = list(name)
+        if not isinstance(factors[0], str): 
+            raise TypeError("Expected ``name`` to be an interable container of strings.")
+    def convert(s):
+        if len(s) <= 1:
+            raise ValueError("Cannot parse input: {0}".format(s))
         try:
-            n = ZZ(name)
-            name = "A"
-        except:
-            raise TypeError("Expected ``name`` to be a string.")
-    if len(name) >= 2 and n == 0:
-        try:
-            n = int(name[1:])
+            n = int(s[1:])
         except ValueError:
-            print("Expected second character to be an integer.")
-    X = name[0].upper()
-    _ = _Coxeter_check(X, n)
-    return (X, n)
+            raise ValueError("Cannot parse as integer: {0}".format(s[1:]))
+        return tuple([s[0].upper(), n])
+    Cox_facts = list(map(convert, factors))
+    assert all(map(lambda X: _Coxeter_check(X[0], X[1]), Cox_facts))
+    return Cox_facts
 
 # Builds the direct sum arrangement of arrangements A and B.
 def _direct_sum(A, B):
@@ -102,41 +105,76 @@ def _direct_sum(A, B):
     B_emb = map(lambda L: L[0:1] + [0]*(A.dimension()) + L[1:], B_H)
     return HH(list(A_emb) + list(B_emb))
 
-def CoxeterArrangement(name, n=0):
+
+def DirectSum(*args):
+    r"""
+    Return the direct sum of hyperplane arrangements.
+
+    INPUT:
+
+    - An iterable container of hyperplane arrangements. 
+
+    OUTPUT: the direct sum arrangement given as a hyperplane arrangement.
+
+    EXAMPLE:
+
+        sage: A = li.CoxeterArrangement("A1")
+        sage: Bool3 = li.DirectSum(A, A, A)
+        sage: Bool3
+        Arrangement <x4 - x5 | x2 - x3 | x0 - x1>
+        sage: Bool64 = li.DirectSum([A]*64)
+        sage: Bool64
+        Arrangement of 64 hyperplanes of dimension 128 and rank 64
+    """
+
+    from functools import reduce
+    if len(args) == 1:
+        HPAs = args[0]
+    else:
+        HPAs = args
+    if len(HPAs) == 1: 
+        return HPAs[0]
+    else:
+        D = _direct_sum(HPAs[0], HPAs[1])
+        return reduce(lambda A, B: _direct_sum(A, B), HPAs[2:], D)
+
+
+def CoxeterArrangement(name):
     r"""
     Return the Coxeter arrangement of the prescribed type.
 
     INPUT:
 
-    - ``name`` -- string; the Coxeter group name. The string must include a 
-      letter from {A, B, C, D}, and it can also include an integer.
-
-    - ``n`` -- integer (default: `0`); the rank of the Coxeter group. This is 
-      not required if ``name`` includes the rank. 
+    - ``name`` -- an interable container of strings; the Coxeter group 
+        name. The string must include a letter from {A, ..., H} and a 
+        nonnegative integer.
 
     OUTPUT: the Coxeter arrangement given as a hyperplane arrangement.
 
     EXAMPLES:
 
-    This example illustrates how to build a Coxeter arrangement ::
-
-        sage: A = CoxeterArrangement("B", 4)
-        sage: A
+        sage: li.CoxeterArrangement("B4")
         Arrangement of 16 hyperplanes of dimension 4 and rank 4
 
-    We can also combine the rank into the string as follows ::
+        sage: li.CoxeterArrangement("A1 A2")
+        Arrangement <x3 - x4 | x2 - x3 | x2 - x4 | x0 - x1>
 
-        sage: A = IA.CoxeterArrangement("B4")
-        sage: A
-        Arrangement of 16 hyperplanes of dimension 4 and rank 4
-
+        sage: li.CoxeterArrangement(["D4", "E6"])
+        Arrangement of 48 hyperplanes of dimension 12 and rank 10
     """
-    X, n = _parse_Coxeter_input(name, n)
-    if X in {'I', 'H'}:
-        return _non_Weyl_arrangements(X, n)
-    if [X, n] == ['D', 1]:
-        X, n = ('A', 1)
-    return _arrangements_from_roots(X, n)
+
+    from functools import reduce
+    factors = _parse_Coxeter_input(name)
+    def irr_Cox(X):
+        if X[0] in {'I', 'H'}:
+            return _non_Weyl_arrangements(X[0], X[1])
+        if X == ['D', 1]:
+            X = ['A', 1]
+        return _arrangements_from_roots(X[0], X[1])
+    irr_arr = list(map(irr_Cox, factors))
+    return DirectSum(irr_arr)
+
+
 
 
 def ShiArrangement(name, n=0):
@@ -233,18 +271,6 @@ def CatalanArrangement(name, n=0):
     if X in {'I', 'H'}:
         return _non_Weyl_arrangements(X, n, shift=[-1, 0, 1])
     return _arrangements_from_roots(X, n, shift=[-1, 0, 1])
-
-def DirectSum(*args):
-    if len(args) == 1:
-        HPAs = args[0]
-    else:
-        HPAs = args
-    if len(HPAs) == 1: 
-        return HPAs[0]
-    else:
-        D = _direct_sum(HPAs[0], HPAs[1])
-        return _reduce(lambda A, B: _direct_sum(A, B), HPAs[2:], D)
-
 
 def PolynomialToArrangement(f):
     from .GenFunctions import _parse_poly
