@@ -1,0 +1,5 @@
+site_name: Linigu Documentation
+nav:
+    - Home: index.md
+    - Constructors: constructors.md
+    - Generating Functions: gen-series.md
