@@ -196,6 +196,7 @@ def _parse_poly(f):
         L = list(f.factor())
         K = f.base_ring()
 
+    L = filter(lambda T: not T[0] in K, L) # Remove constant factors
     F, M = list(zip(*L))
 
     # Verify that each polynomial factor is linear

@@ -6,9 +6,9 @@
 
 def _non_Weyl_arrangements(X, n, shift=[0]):
     from functools import reduce
-    from sage.all import HyperplaneArrangements, QQ 
+    from sage.all import HyperplaneArrangements, QQ, CoxeterGroup
     def add_shift(x):
-        return list(map(lambda k: [x, k], shift))
+        return list(map(lambda k: [k] + list(x), shift))
     if X == 'I':
         # Not expecting n <= 2 for type I.
         if n == 3:
@@ -23,8 +23,9 @@ def _non_Weyl_arrangements(X, n, shift=[0]):
     else:
         if n == 2:
             return _non_Weyl_arrangements("I", 5, shift=shift)
-        print("Type H not yet implemented.")
-        return None
+        W = CoxeterGroup([X, n])
+        H = HyperplaneArrangements(W.base_ring(), tuple(['x' + str(k) for k in range(n)]))
+        norms = W.positive_roots()
     aff_norms = reduce(lambda x, y: x+y, map(lambda x: add_shift(x), norms),[])
     return H(aff_norms)
     
@@ -105,6 +106,19 @@ def _direct_sum(A, B):
     B_emb = map(lambda L: L[0:1] + [0]*(A.dimension()) + L[1:], B_H)
     return HH(list(A_emb) + list(B_emb))
 
+def _basic_wrapper(name, s):
+    from functools import reduce
+    factors = _parse_Coxeter_input(name)
+    def irr_facts(X):
+        if X[0] in {'I', 'H'}:
+            return _non_Weyl_arrangements(X[0], X[1], shift=s)
+        if X == ['D', 1]:
+            X = ['A', 1]
+        return _arrangements_from_roots(X[0], X[1], shift=s)
+    irr_arr = list(map(irr_facts, factors))
+    return DirectSum(irr_arr)
+
+
 
 def DirectSum(*args):
     r"""
@@ -141,7 +155,7 @@ def DirectSum(*args):
 
 def CoxeterArrangement(name):
     r"""
-    Return the Coxeter arrangement of the prescribed type.
+    Return the Coxeter arrangement of the prescribed Coxeter type.
 
     INPUT:
 
@@ -162,117 +176,110 @@ def CoxeterArrangement(name):
         sage: li.CoxeterArrangement(["D4", "E6"])
         Arrangement of 48 hyperplanes of dimension 12 and rank 10
     """
-
-    from functools import reduce
-    factors = _parse_Coxeter_input(name)
-    def irr_Cox(X):
-        if X[0] in {'I', 'H'}:
-            return _non_Weyl_arrangements(X[0], X[1])
-        if X == ['D', 1]:
-            X = ['A', 1]
-        return _arrangements_from_roots(X[0], X[1])
-    irr_arr = list(map(irr_Cox, factors))
-    return DirectSum(irr_arr)
+    return _basic_wrapper(name, [0])
 
 
-
-
-def ShiArrangement(name, n=0):
+def ShiArrangement(name):
     r"""
-    Return the Shi arrangement associated to a Coxeter arrangement of the
-    prescribed type.
+    Return the Shi arrangement of the Coxeter prescribed type.
 
     INPUT:
 
-    - ``name`` -- string; the Coxeter group name. The string must include a 
-      letter from {A, B, C, D}, and it can also include an integer.
-
-    - ``n`` -- integer (default: `0`); the rank of the Coxeter group. This is 
-      not required if ``name`` includes the rank. 
+    - ``name`` -- an interable container of strings; the Coxeter group 
+        name. The string must include a letter from {A, ..., H} and a 
+        nonnegative integer.
 
     OUTPUT: the Shi arrangement given as a hyperplane arrangement.
 
     EXAMPLES:
 
-    This example illustrates how to build a Shi arrangement ::
+        sage: li.ShiArrangement("A2")
+        Arrangement of 6 hyperplanes of dimension 3 and rank 2
 
-        sage: A = ShiArrangement("D", 4)
-        sage: A
-        Arrangement of 16 hyperplanes of dimension 4 and rank 4
+        sage: li.ShiArrangement("A1 A1")
+        Arrangement <x2 - x3 | x2 - x3 + 1 | x0 - x1 | x0 - x1 + 1>
 
-    We can also combine the rank into the string as follows ::
-
-        sage: A = ShiArrangement("D4")
-        sage: A
-        Arrangement of 16 hyperplanes of dimension 4 and rank 4
-
+        sage: li.ShiArrangement(["H3", "B3"])
+        Arrangement of 48 hyperplanes of dimension 6 and rank 6
     """
-    X, n = _parse_Coxeter_input(name, n)
-    if X in {'I', 'H'}:
-        return _non_Weyl_arrangements(X, n, shift=[0, 1])
-    return _arrangements_from_roots(X, n, shift=[0, 1])
+    return _basic_wrapper(name, [0, 1])
 
 
-def LinialArrangement(name, n=0):
+def LinialArrangement(name):
     r"""
-    Return the Linial arrangement of the prescribed type.
+    Return the Linial arrangement of the prescribed Coxeter type.
 
     INPUT:
 
-    - ``name`` -- string; the Coxeter group name. The string must include a 
-      letter from {A, B, C, D}, and it can also include an integer.
-
-    - ``n`` -- integer (default: `0`); the rank of the Coxeter group. This is 
-      not required if ``name`` includes the rank. 
+    - ``name`` -- an interable container of strings; the Coxeter group 
+        name. The string must include a letter from {A, ..., H} and a 
+        nonnegative integer.
 
     OUTPUT: the Linial arrangement given as a hyperplane arrangement.
 
     EXAMPLES:
 
-    This example illustrates how to build a Linial arrangement ::
+        sage: li.LinialArrangement("D4")
+        Arrangement of 12 hyperplanes of dimension 4 and rank 4
 
-        sage: A = LinialArrangement(3)
-        sage: A
-        Arrangement of 16 hyperplanes of dimension 4 and rank 4
+        sage: li.LinialArrangement("A1 A1")
+        Arrangement <x2 - x3 + 1 | x0 - x1 + 1>
 
+        sage: li.LinialArrangement(["I4", "F4"])
+        Arrangement of 28 hyperplanes of dimension 6 and rank 6
     """
-
-    X, n = _parse_Coxeter_input(name, n)
-    if X in {'I', 'H'}:
-        return _non_Weyl_arrangements(X, n, shift=[1])
-    return _arrangements_from_roots(X, n, shift=[1])
+    return _basic_wrapper(name, [1])
 
 
-def CatalanArrangement(name, n=0):
+def CatalanArrangement(name):
     r"""
-    Return the Catalan arrangement of the prescribed type.
+    Return the Catalan arrangement of the prescribed Coxeter type.
 
     INPUT:
 
-    - ``name`` -- string; the Coxeter group name. The string must include a 
-      letter from {A, B, C, D}, and it can also include an integer.
-
-    - ``n`` -- integer (default: `0`); the rank of the Coxeter group. This is 
-      not required if ``name`` includes the rank. 
+    - ``name`` -- an interable container of strings; the Coxeter group 
+        name. The string must include a letter from {A, ..., H} and a 
+        nonnegative integer.
 
     OUTPUT: the Catalan arrangement given as a hyperplane arrangement.
 
     EXAMPLES:
 
-    This example illustrates how to build a Catalan arrangement ::
+        sage: li.CatalanArrangement("B4")
+        Arrangement of 48 hyperplanes of dimension 4 and rank 4
 
-        sage: A = CatalanArrangement("D", 4)
-        sage: A
-        Arrangement of 36 hyperplanes of dimension 4 and rank 4
+        sage: li.CatalanArrangement("A1 A1")
+        Arrangement of 6 hyperplanes of dimension 4 and rank 2
 
+        sage: li.CatalanArrangement(["D4", "A3"])
+        Arrangement of 54 hyperplanes of dimension 8 and rank 7
     """
+    return _basic_wrapper(name, [-1, 0, 1])
 
-    X, n = _parse_Coxeter_input(name, n)
-    if X in {'I', 'H'}:
-        return _non_Weyl_arrangements(X, n, shift=[-1, 0, 1])
-    return _arrangements_from_roots(X, n, shift=[-1, 0, 1])
 
 def PolynomialToArrangement(f):
+    r"""
+    Return the associated hyperplane arrangement of f, the given product of 
+    linear polynomials. 
+
+    INPUT:
+
+    - ``f`` -- a polynomial or symbolic expression.
+
+    OUTPUT: the hyperplane arrangement associated with the linear factors of f.
+
+    EXAMPLES:
+
+        sage: f = SR('X^3*Y^2*Z')
+        sage: f
+        X^3*Y^2*Z
+        sage: li.PolynomialToArrangement(f)
+        Arrangement <Z | Y | X>
+
+        sage: f = 'X*Y*Z*W*(X - Y)*(X - Z)*(Y - W)'
+        sage: li.PolynomialToArrangement(f)
+        Arrangement of 7 hyperplanes of dimension 4 and rank 4
+    """
     from .GenFunctions import _parse_poly
     A, M = _parse_poly(f)
     return A

@@ -2,7 +2,7 @@
 
 We provide a number of constructions of hyperplane arrangements. This uses the default hyperplane arrangement class in SageMath. There is some overlap with the default [library](https://doc.sagemath.org/html/en/reference/discrete_geometry/sage/geometry/hyperplane_arrangement/library.html), and one is encouraged to search there in case your favorite hyperplane arrangement is not in our list. 
 
-Most of our constructions are Coxeter-theoretic---meaning, they take as input $\mathsf{X}_n$, where $\mathsf{X}$ is the Coxeter type and $n$ is the (Coxeter) rank. 
+Most of our constructions are Coxeter-theoretic&mdash;meaning, they take as input $\mathsf{X}_n$, where $\mathsf{X}$ is the Coxeter type and $n$ is the (Coxeter) rank. 
 
 ## CatalanArrangement
 
@@ -58,7 +58,7 @@ Arrangement of 5 hyperplanes of dimension 10 and rank 5
 
 #### Example (Coxeter type ${\footnotesize \mathsf{I}_2(m)}$)
 
-In all other Coxeter types, the integer corresponds to the rank. The exception is with type $\mathsf{I}$. If the input is type $\mathsf{I}$, then the integer corresponds to the number of hyperplanes. Here, we give a $\mathbb{Q}$-representation of $\mathsf{I}_2(m)$ as follows.
+In all other Coxeter types, the integer corresponds to the rank. The exception is with type $\mathsf{I}$. If the input is type $\mathsf{I}$, then the integer corresponds to the number of hyperplanes. Here, we give a $\mathbb{Q}$-representation of $\mathsf{I}_2(8)$ as follows.
 
 ```python
 sage: A = li.CoxeterArrangement("I8")
