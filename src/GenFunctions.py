@@ -242,7 +242,7 @@ def CombinatorialSkeleton(A, database=True, lattice_of_flats=None, int_poset=Non
     return _comb_skele(L, DB=database)
 
 
-def LocalIgusaZetaFunction(X, database=True, lattice_of_flats=None, int_poset=None, verbose=_print):
+def IgusaZetaFunction(X, database=True, lattice_of_flats=None, int_poset=None, verbose=_print):
     from .LatticeFlats import LatticeOfFlats
     from sage.all import var
 
