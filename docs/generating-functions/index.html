@@ -127,7 +127,7 @@
               <ul class="nav flex-column">
               </ul>
             </li>
-            <li class="nav-item" data-level="2"><a href="#localigusazetafunction" class="nav-link">LocalIgusaZetaFunction</a>
+            <li class="nav-item" data-level="2"><a href="#igusazetafunction" class="nav-link">IgusaZetaFunction</a>
               <ul class="nav flex-column">
               </ul>
             </li>
@@ -139,11 +139,94 @@
                     <div class="col-md-9" role="main">
 
 <h1 id="generating-functions">Generating Functions</h1>
+<p>The main purpose of this package is to explicitly compute the flag Hilbert&ndash;Poincar&#233; series and its specializations like Igusa'a local zeta function. We keep variable letters consistent with Maglione&ndash;Voll; the exceptions is we replace $q^{-s_x}$ with $t_x$, for some label $x$. </p>
 <h2 id="analyticzetafunction">AnalyticZetaFunction</h2>
+<p><strong>Input</strong>:</p>
+<ul>
+<li>a hyperplane arrangement $\mathcal{A}$.</li>
+</ul>
+<p><strong>Output</strong>:</p>
+<ul>
+<li>the analytic zeta function associated to $\mathcal{A}$. </li>
+</ul>
+<p>Given a suitable $\mathfrak{o}$-representation of a $d$-dimensional hyperplane arrangement $\mathcal{A}$, where $\mathfrak{o}$ is a compact discrete valuation ring, the analytic zeta function is defined to be the integral:</p>
+<p>[
+    \zeta_{\mathcal{A}(\mathfrak{o})}(\textbf{s}) = \int_{\mathfrak{o}^d} \prod_{x\in\widetilde{\mathcal{L}}(\mathcal{A})} \| \mathcal{A}_x\|^{s_x} \, d\mu. 
+]</p>
+<h4 id="example-lines-through-the-origin">Example (Lines through the origin)</h4>
+<p>We compute one of the analytic zeta functions in Section 4.2 of Maglione&ndash;Voll. Let $m\geq 2$ and $\zeta_m$ a primitive $m$th root of unity. We define an arrangement of $m$ lines through the origin, given as the linear factors of $X^m-Y^m$ in $\mathbb{Q}(\zeta_m)$. We set $m=5$ for this example. </p>
+<pre><code class="language-python">sage: K = CyclotomicField(5)
+sage: R.&lt;X, Y&gt; = PolynomialRing(K)
+sage: f = X**5 - Y**5
+sage: A = hi.PolynomialToArrangement(f)
+sage: A
+Arrangement of 5 hyperplanes of dimension 2 and rank 2
+</code></pre>
+<p>The analytic zeta function is then</p>
+<pre><code class="language-python">sage: Z = hi.AnalyticZetaFunction(A)
+sage: Z
+-((4/q - 1)*(1/q - 1) - t1*(1/q - 1)^2/(q*(t1/q - 1)) - t2*(1/q - 1)^2/(q*(t2/q - 1)) - t3*(1/q - 1)^2/(q*(t3/q - 1)) - t4*(1/q - 1)^2/(q*(t4/q - 1)) - t5*(1/q - 1)^2/(q*(t5/q - 1)))/(t1*t2*t3*t4*t5*t6/q^2 - 1)
+</code></pre>
+<p>which is indeed</p>
+<p>[
+    \dfrac{1 - q^{-1}}{1 - q^{-2-s_{\hat{1}} - s_1-\cdots -s_5}} \left(1 - 4q^{-1} + (1 - q^{-1}) \sum_{i=1}^5 \dfrac{q^{-1-s_i}}{1 - q^{-1-s_i}}\right) .
+]</p>
 <h2 id="atomzetafunction">AtomZetaFunction</h2>
+<p><strong>Input</strong>:</p>
+<ul>
+<li>a hyperplane arrangement $\mathcal{A}$.</li>
+</ul>
+<p><strong>Output</strong>:</p>
+<ul>
+<li>the atom zeta function associated to $\mathcal{A}$. </li>
+</ul>
+<p>Given a suitable $\mathfrak{o}$-representation of a $d$-dimensional hyperplane arrangement $\mathcal{A}$, where $\mathfrak{o}$ is a compact discrete valuation ring, the atom zeta function is defined to be the integral:</p>
+<p>[
+    \zeta_{\mathcal{A}(\mathfrak{o})}^{\mathrm{at}}(\textbf{s}) = \int_{\mathfrak{o}^d} \prod_{L\in\mathcal{A}(\mathfrak{o})} |L|^{s_L} \, d\mu. 
+]</p>
 <h2 id="combinatorialskeleton">CombinatorialSkeleton</h2>
+<p><strong>Input</strong>:</p>
+<ul>
+<li>a hyperplane arrangement $\mathcal{A}$.</li>
+</ul>
+<p><strong>Output</strong>:</p>
+<ul>
+<li>the combinatorial skeleton associated to $\mathcal{A}$. </li>
+</ul>
+<p>The combinatorial skeleton of $\mathcal{A}$ is defined to be:</p>
+<p>[
+    HP_{\mathcal{A}}^{\mathrm{sk}} (Y, T) 
+    = \sum_{F\in\Delta(\widetilde{\mathcal{L}}(\mathcal{A}))} \pi_F(Y) \left(\dfrac{T}{1 - T}\right)^{|F|}.
+]</p>
 <h2 id="flaghilbertpoincareseries">FlagHilbertPoincareSeries</h2>
-<h2 id="localigusazetafunction">LocalIgusaZetaFunction</h2></div>
+<p><strong>Input</strong>:</p>
+<ul>
+<li>a hyperplane arrangement $\mathcal{A}$.</li>
+</ul>
+<p><strong>Output</strong>:</p>
+<ul>
+<li>the flag Hilbert&ndash;Poincar&#233; series associated to $\mathcal{A}$. </li>
+</ul>
+<p>The flag Hilbert&ndash;Poincar&#233; series of $\mathcal{A}$ is defined to be:</p>
+<p>[
+    HP_{\mathcal{A}} (Y, \mathbf{T}) 
+    = \sum_{F\in\Delta(\widetilde{\mathcal{L}}(\mathcal{A}))} \pi_F(Y) \prod_{x\in F} \frac{T_x}{1 - T_x}.
+]</p>
+<h2 id="igusazetafunction">IgusaZetaFunction</h2>
+<p><strong>Input</strong>:</p>
+<ul>
+<li>a hyperplane arrangement $\mathcal{A}$ or a polynomial $f$.</li>
+</ul>
+<p><strong>Output</strong>:</p>
+<ul>
+<li>Igusa's local zeta function associated to either $\mathcal{A}$ or $f$. </li>
+</ul>
+<p>If a polynomial, $f$, is given, we require that $f$ be the product of linear factors. Symbolic expressions and strings are fine as well, provided SageMath interprets them as a polynomial.</p>
+<p>For a compact discrete valuation ring $\mathfrak{o}$ and a polynomial $f\in \mathfrak{o}[X_1,\dots, X_d]$, Igusa's local zeta function associated with $f$ is </p>
+<p>[
+    Z_f(s) = \int_{\mathfrak{o}^d} |f(\mathbf{X})|^s\, d\mu.
+]</p>
+<p>If $Q_\mathcal{A}$ is the defining polynomial of a hyperplane arrangement, then Igusa's local zeta function associated $\mathcal{A}$ is $Z_{Q_\mathcal{A}}(s)$. </p></div>
             </div>
         </div>
 
