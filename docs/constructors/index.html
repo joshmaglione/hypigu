@@ -8,7 +8,7 @@
         
         
         <link rel="shortcut icon" href="../img/favicon.ico">
-        <title>Constructors - Linigu Documentation</title>
+        <title>Constructors - HypIgu Documentation</title>
         <link href="../css/bootstrap.min.css" rel="stylesheet">
         <link href="../css/font-awesome.min.css" rel="stylesheet">
         <link href="../css/base.css" rel="stylesheet">
@@ -51,7 +51,7 @@
     <body>
         <div class="navbar fixed-top navbar-expand-lg navbar-dark bg-primary">
             <div class="container">
-                <a class="navbar-brand" href="..">Linigu Documentation</a>
+                <a class="navbar-brand" href="..">HypIgu Documentation</a>
                 <!-- Expander button -->
                 <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbar-collapse">
                     <span class="navbar-toggler-icon"></span>
@@ -165,7 +165,7 @@
     \{X_i - X_j + \varepsilon ~|~ 1\leq i &lt; j \leq n+1,\; \varepsilon\in\{-1, 0, 1\} \}.
 ]</p>
 <p>We can quickly construct this as a type $\mathsf{A}_n$ Catalan arrangement for $n=2$. </p>
-<pre><code class="language-python">sage: A = li.CatalanArrangement(&quot;A2&quot;)
+<pre><code class="language-python">sage: A = hi.CatalanArrangement(&quot;A2&quot;)
 sage: A
 Arrangement of 9 hyperplanes of dimension 3 and rank 2
 sage: A.hyperplanes()
@@ -181,7 +181,7 @@ sage: A.hyperplanes()
 </code></pre>
 <h4 id="example-footnotesize-mathsfb_4-catalan-arrangement">Example (${\footnotesize \mathsf{B}_4}$-Catalan arrangement)</h4>
 <p>The Coxeter arrangement of type $\mathsf{B}_4$ has $16$ hyperplanes in $\mathbb{Q}^4$. Thus, the associated Catalan arrangement is non-central with $48$ hyperplanes in $\mathbb{Q}^4$. We verify this.</p>
-<pre><code class="language-python">sage: A = li.CatalanArrangement(&quot;B4&quot;)
+<pre><code class="language-python">sage: A = hi.CatalanArrangement(&quot;B4&quot;)
 sage: A
 Arrangement of 48 hyperplanes of dimension 4 and rank 4
 sage: A.is_central()
@@ -203,25 +203,25 @@ False
     \{X_i - X_j ~|~ 1\leq i &lt; j \leq n+1\}.
 ]</p>
 <p>We construct the braid arrangement with $3$ hyperplanes.</p>
-<pre><code class="language-python">sage: li.CoxeterArrangement(&quot;A2&quot;)
+<pre><code class="language-python">sage: hi.CoxeterArrangement(&quot;A2&quot;)
 Arrangement &lt;x1 - x2 | x0 - x1 | x0 - x2&gt;
 </code></pre>
 <h4 id="example-boolean-arrangement">Example (Boolean arrangement)</h4>
 <p>One should consider the other two constructions of the Boolean arrangement via <a href="#example-boolean-arrangement-again">direct sums</a> and <a href="#example-boolean-arrangement-yet-again">polynomials</a>. The Boolean arrangement with $n$ hyperplanes is a Coxeter arrangement, isomorphic to $\mathsf{A}_1^n$, the direct sum of $n$ copies of $\mathsf{A}_1$. We construct the rank $5$ Boolean arrangement in two different ways. Note that, when created this way, the ambient dimension is double the rank.</p>
 <pre><code class="language-python">sage: bool5 = &quot;A1 A1 A1 A1 A1&quot;
-sage: li.CoxeterArrangement(bool5)
+sage: hi.CoxeterArrangement(bool5)
 Arrangement of 5 hyperplanes of dimension 10 and rank 5
 </code></pre>
 <p>Another construction is as follows.</p>
 <pre><code class="language-python">sage: L = [&quot;A1&quot; for i in range(5)]
 sage: L
 ['A1', 'A1', 'A1', 'A1', 'A1']
-sage: li.CoxeterArrangement(L)
+sage: hi.CoxeterArrangement(L)
 Arrangement of 5 hyperplanes of dimension 10 and rank 5
 </code></pre>
 <h4 id="example-coxeter-type-footnotesize-mathsfi_2m">Example (Coxeter type ${\footnotesize \mathsf{I}_2(m)}$)</h4>
 <p>In all other Coxeter types, the integer corresponds to the rank. The exception is with type $\mathsf{I}$. If the input is type $\mathsf{I}$, then the integer corresponds to the number of hyperplanes. Here, we give a $\mathbb{Q}$-representation of $\mathsf{I}_2(8)$ as follows.</p>
-<pre><code class="language-python">sage: A = li.CoxeterArrangement(&quot;I8&quot;)
+<pre><code class="language-python">sage: A = hi.CoxeterArrangement(&quot;I8&quot;)
 sage: A
 Arrangement of 8 hyperplanes of dimension 2 and rank 2
 sage: A.hyperplanes()
@@ -252,12 +252,12 @@ sage: A
 Arrangement &lt;x&gt;
 </code></pre>
 <p>Now we create higher rank Boolean arrangements in two slightly different ways. The rank $4$ Boolean arrangement is given as follows.</p>
-<pre><code class="language-python">sage: li.DirectSum(A, A, A, A)
+<pre><code class="language-python">sage: hi.DirectSum(A, A, A, A)
 Arrangement &lt;x3 | x2 | x1 | x0&gt;
 </code></pre>
 <p>And the rank $256$ Boolean arrangement is </p>
 <pre><code class="language-python">sage: L = [A for i in range(256)]
-sage: li.DirectSum(L)
+sage: hi.DirectSum(L)
 Arrangement of 256 hyperplanes of dimension 256 and rank 256
 </code></pre>
 <h2 id="linialarrangement">LinialArrangement</h2>
@@ -276,7 +276,7 @@ Arrangement of 256 hyperplanes of dimension 256 and rank 256
 ]</p>
 <h4 id="example-the-linial-arrangement">Example (<em>The</em> Linial arrangement)</h4>
 <p>Usually the Linial arrangement is defined without reference to a Coxeter type and is given as the type-$\mathsf{A}$ version above. We construct the Linial arrangement of type $\mathsf{A}_2$.</p>
-<pre><code class="language-pyhton">sage: A = li.LinialArrangement(&quot;A2&quot;)
+<pre><code class="language-pyhton">sage: A = hi.LinialArrangement(&quot;A2&quot;)
 sage: A
 Arrangement &lt;x1 - x2 + 1 | x0 - x1 + 1 | x0 - x2 + 1&gt;
 </code></pre>
@@ -294,12 +294,12 @@ Arrangement &lt;x1 - x2 + 1 | x0 - x1 + 1 | x0 - x2 + 1&gt;
 <p>Compare this construction with the Boolean construction as a <a href="#example-boolean-arrangement">Coxeter arrangement</a> and as a <a href="#example-boolean-arrangement-again">direct sum</a>. The Boolean arrangement is equivalent to the arrangement of coordinate hyperplanes, so the corresponding polynomial is a monomial. We construct the rank $5$ Boolean arrangement.</p>
 <pre><code class="language-python">sage: a, b, c, d, e = var('a b c d e')
 sage: f = a*b*c*d*e
-sage: A = li.PolynomialToArrangement(f)
+sage: A = hi.PolynomialToArrangement(f)
 sage: A
 Arrangement of 5 hyperplanes of dimension 5 and rank 5
 </code></pre>
 <p>Equivalently, one can input just the string.</p>
-<pre><code class="language-python">sage: B = li.PolynomialToArrangement('a*b*c*d*e')
+<pre><code class="language-python">sage: B = hi.PolynomialToArrangement('a*b*c*d*e')
 sage: A == B
 True
 </code></pre>
@@ -308,7 +308,7 @@ True
 <pre><code class="language-python">sage: K = CyclotomicField(5)
 sage: R.&lt;X, Y&gt; = PolynomialRing(K)
 sage: f = X**5 - Y**5
-sage: A = li.PolynomialToArrangement(f)
+sage: A = hi.PolynomialToArrangement(f)
 sage: A
 Arrangement of 5 hyperplanes of dimension 2 and rank 2
 sage: A.hyperplanes()
@@ -335,7 +335,7 @@ sage: A.hyperplanes()
 ]</p>
 <h4 id="example-the-shi-arrangement">Example (<em>The</em> Shi arrangement)</h4>
 <p>Like with some of our other constructors, the usual definition makes no reference to Coxeter types, so the Shi arrangement is equal to the type-$\mathsf{A}$ Shi arrangement defined above. We can easily construct this for $\mathsf{A}_2$.</p>
-<pre><code class="language-python">sage: A = li.ShiArrangement(&quot;A2&quot;)
+<pre><code class="language-python">sage: A = hi.ShiArrangement(&quot;A2&quot;)
 sage: A
 Arrangement of 6 hyperplanes of dimension 3 and rank 2
 </code></pre></div>

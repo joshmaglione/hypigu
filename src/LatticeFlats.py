@@ -465,13 +465,13 @@ class LatticeOfFlats():
 
         return LatticeOfFlats(new_HPA, poset=new_P, flat_labels=new_FL, hyperplane_labels=new_HL)
 
-    def lazy_restriction(self, H):
+    def _lazy_restriction(self, H):
         HPA = self.hyperplane_arrangement
         assert HPA != None, "Needs underlying hyperplane arrangement."
         A = HPA.restriction(HPA[H - 1])
         return LatticeOfFlats(A, lazy=True)
 
-    def lazy_deletion(self, H):
+    def _lazy_deletion(self, H):
         HPA = self.hyperplane_arrangement
         assert HPA != None, "Needs underlying hyperplane arrangement."
         return LatticeOfFlats(HPA.parent()(HPA[:H-1] + HPA[H:]), lazy=True)
@@ -496,8 +496,8 @@ class LatticeOfFlats():
                 return QQ(1)
             if A.rank() == 1:
                 return QQ(1) + len(A)*X
-        D = self.lazy_deletion(1)
-        R = self.lazy_restriction(1)
+        D = self._lazy_deletion(1)
+        R = self._lazy_restriction(1)
         return D.Poincare_polynomial() + X*R.Poincare_polynomial()
         
     @cached_method
@@ -630,24 +630,24 @@ def _possibly_Coxeter(P):
 
 # Compute the Poincare polynomial of either the chain F or the upper ideal of P
 # at restrict. 
-def PoincarePolynomial(P, F=None, restrict=None):
-    from sage.all import var, ZZ
+# def PoincarePolynomial(P, F=None, restrict=None):
+#     from sage.all import var, ZZ
 
-    # Setup the data
-    if restrict != None:
-        F = [restrict]
-    if F == None:
-        assert P.has_bottom()
-        F = [P.bottom()]
-    if F[0] != P.bottom():
-        F = [P.bottom()] + F 
+#     # Setup the data
+#     if restrict != None:
+#         F = [restrict]
+#     if F == None:
+#         assert P.has_bottom()
+#         F = [P.bottom()]
+#     if F[0] != P.bottom():
+#         F = [P.bottom()] + F 
 
-    P_up = _subposet(P, F[-1], lambda z: P.upper_covers(z))
-    chi = P_up.characteristic_polynomial() 
-    d = chi.degree()
-    Y = var('Y')
-    pi = ((-Y)**d*chi(q=-Y**(-1))).expand().simplify().factor()
-    if F[-1] == P.bottom() or restrict != None:
-        return pi
-    P_down = _subposet(P, F[-1], lambda z: P.lower_covers(z))
-    return pi*PoincarePolynomial(P_down, F=F[:-1])
+#     P_up = _subposet(P, F[-1], lambda z: P.upper_covers(z))
+#     chi = P_up.characteristic_polynomial() 
+#     d = chi.degree()
+#     Y = var('Y')
+#     pi = ((-Y)**d*chi(q=-Y**(-1))).expand().simplify().factor()
+#     if F[-1] == P.bottom() or restrict != None:
+#         return pi
+#     P_down = _subposet(P, F[-1], lambda z: P.lower_covers(z))
+#     return pi*PoincarePolynomial(P_down, F=F[:-1])

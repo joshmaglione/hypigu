@@ -8,7 +8,7 @@
         
         
         <link rel="shortcut icon" href="../img/favicon.ico">
-        <title>Lattices - Linigu Documentation</title>
+        <title>Lattices - HypIgu Documentation</title>
         <link href="../css/bootstrap.min.css" rel="stylesheet">
         <link href="../css/font-awesome.min.css" rel="stylesheet">
         <link href="../css/base.css" rel="stylesheet">
@@ -51,7 +51,7 @@
     <body>
         <div class="navbar fixed-top navbar-expand-lg navbar-dark bg-primary">
             <div class="container">
-                <a class="navbar-brand" href="..">Linigu Documentation</a>
+                <a class="navbar-brand" href="..">HypIgu Documentation</a>
                 <!-- Expander button -->
                 <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbar-collapse">
                     <span class="navbar-toggler-icon"></span>
@@ -115,7 +115,39 @@
               <ul class="nav flex-column">
               </ul>
             </li>
-            <li class="nav-item" data-level="2"><a href="#poincarepolynomial" class="nav-link">PoincarePolynomial</a>
+            <li class="nav-item" data-level="2"><a href="#atoms" class="nav-link">.atoms</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#deletion" class="nav-link">.deletion</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#labels_of_flats" class="nav-link">.labels_of_flats</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#labels_of_hyperplanes" class="nav-link">.labels_of_hyperplanes</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#poincare_polynomial" class="nav-link">.Poincare_polynomial</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#proper_part_poset" class="nav-link">.proper_part_poset</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#show" class="nav-link">.show</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#subarrangement" class="nav-link">.subarrangement</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#restriction" class="nav-link">.restriction</a>
               <ul class="nav flex-column">
               </ul>
             </li>
@@ -127,8 +159,155 @@
                     <div class="col-md-9" role="main">
 
 <h1 id="lattices">Lattices</h1>
+<p>We include a class called <code>LatticeOfFlats</code>, which is associated with a hyperplane arrangement. This class keeps track of basic information we need to compute the various generating functions associated with a hyperplane arrangement. (For non-central arrangements, this is indeed not a lattice, but close to one.) All other functions are tied to the <code>LatticeOfFlats</code> class and, thus, are either attributes or methods. </p>
 <h2 id="latticeofflats">LatticeOfFlats</h2>
-<h2 id="poincarepolynomial">PoincarePolynomial</h2></div>
+<p><strong>Input</strong>:</p>
+<ul>
+<li>a hyperplane arrangement;</li>
+<li><code>poset=None</code> : a finite poset;</li>
+<li><code>flat_labels=None</code> : a dictionary from the elements of the poset to subsets of atoms;</li>
+<li><code>hyperplane_labels=None</code> : a dictionary from the atoms of the poset to the hyperplanes.</li>
+</ul>
+<p><strong>Output</strong>: </p>
+<ul>
+<li>the lattice of flats for the given hyperplane arrangement. </li>
+</ul>
+<p>Unless the poset and labels have been computed before, they should not be given as this function computes the intersection poset of a hyperplane arrangement faster than the default in SageMath.</p>
+<h3 id="attributes">Attributes</h3>
+<p>The lattice of flats has four attributes:</p>
+<ul>
+<li><code>hyperplane_arrangement</code> : the given hyperplane arrangement;</li>
+<li><code>poset</code> : the intersection poset;</li>
+<li><code>flat_labels</code> : the dictionary indexed by the elements of <code>poset</code> with values given by subsets of the atoms of <code>poset</code>;</li>
+<li><code>hyperplane_labels</code> : the dictionary indexed by the atoms of <code>poset</code> with values equal to the hyperplanes of <code>hyperplane_arrangement</code>.</li>
+</ul>
+<h4 id="example-lattice-of-braid-arrangement">Example (Lattice of braid arrangement)</h4>
+<p>We construct the lattice of flats for the braid arrangement in $\mathbb{R}^4$.</p>
+<pre><code class="language-python">sage: A = hi.CoxeterArrangement(&quot;A3&quot;)
+sage: A
+Arrangement of 6 hyperplanes of dimension 4 and rank 3
+sage: L = hi.LatticeOfFlats(A)
+sage: L
+The lattice of flats of:
+Arrangement of 6 hyperplanes of dimension 4 and rank 3
+given by:
+Finite poset containing 15 elements
+</code></pre>
+<p>Now we look at the data stored in the attributes. We display the hyperplanes in the arrangement.</p>
+<pre><code class="language-python">sage: L.hyperplane_arrangement
+Arrangement of 6 hyperplanes of dimension 4 and rank 3
+sage: L.hyperplane_arrangement.hyperplanes()
+(Hyperplane 0*x0 + 0*x1 + x2 - x3 + 0,
+ Hyperplane 0*x0 + x1 - x2 + 0*x3 + 0,
+ Hyperplane 0*x0 + x1 + 0*x2 - x3 + 0,
+ Hyperplane x0 - x1 + 0*x2 + 0*x3 + 0,
+ Hyperplane x0 + 0*x1 - x2 + 0*x3 + 0,
+ Hyperplane x0 + 0*x1 + 0*x2 - x3 + 0)
+</code></pre>
+<p>We display the poset as an image.</p>
+<pre><code class="language-python">sage: L.poset
+Finite poset containing 15 elements
+</code></pre>
+<p><img alt="" src="../A3.png" /></p>
+<p>Instead of showing the entire dictionaries, we will evaluate them at a few points.</p>
+<pre><code class="language-python">sage: L.flat_labels[3]
+{3}
+sage: L.flat_labels[13]
+{3, 5}
+sage: L.flat_labels[9]
+{1, 5, 6}
+sage: L.flat_labels[0]
+{}
+</code></pre>
+<p>We see that hyperplanes 1, 5, and 6 intersect in a codimension 2 subspace. </p>
+<pre><code class="language-python">sage: L.hyperplane_labels[1]
+Hyperplane 0*x0 + 0*x1 + x2 - x3 + 0
+sage: L.hyperplane_labels[5]
+Hyperplane x0 + 0*x1 - x2 + 0*x3 + 0
+sage: L.hyperplane_labels[6]
+Hyperplane x0 + 0*x1 + 0*x2 - x3 + 0
+</code></pre>
+<h2 id="atoms">.atoms</h2>
+<p><strong>Output</strong>:</p>
+<ul>
+<li>the atoms of the underlying poset. </li>
+</ul>
+<h2 id="deletion">.deletion</h2>
+<p><strong>Input</strong>:</p>
+<ul>
+<li>a hyperplane $H$.</li>
+</ul>
+<p><strong>Output</strong>:</p>
+<ul>
+<li>the lattice of flats associated to the arrangement without $H$.</li>
+</ul>
+<h4 id="example-deletion-in-the-braid-arrangement">Example (Deletion in the braid arrangement)</h4>
+<p>We continue the $\mathsf{A}_3$ example started <a href="#example-lattice-of-braid-arrangement">above</a>. We will delete the hyperplane labeled by $2$ and display the resulting lattice of flats. </p>
+<pre><code class="language-python">sage: L.deletion(2)
+The lattice of flats of:
+Arrangement of 5 hyperplanes of dimension 4 and rank 3
+given by:
+Finite poset containing 13 elements
+</code></pre>
+<p><img alt="" src="../A3_del2.png" /></p>
+<h2 id="labels_of_flats">.labels_of_flats</h2>
+<p><strong>Output</strong>:</p>
+<ul>
+<li>the list of tuples with first entry an element of the poset and second entry a subset of atoms. </li>
+</ul>
+<h2 id="labels_of_hyperplanes">.labels_of_hyperplanes</h2>
+<p><strong>Output</strong>:</p>
+<ul>
+<li>the list of tuples with first entry an element of the poset and second entry a hyperplane. </li>
+</ul>
+<h2 id="poincare_polynomial">.Poincare_polynomial</h2>
+<p><strong>Output</strong>:</p>
+<ul>
+<li>the Poincar&#233; polynomial of the hyperplane arrangement. </li>
+</ul>
+<h2 id="proper_part_poset">.proper_part_poset</h2>
+<p><strong>Output</strong>:</p>
+<ul>
+<li>the subposet without $\hat{0}$ and $\hat{1}$.</li>
+</ul>
+<h2 id="show">.show</h2>
+<p>No output given. This displays the underlying intersection poset using the default options in SageMath. This is a shortcut for <code>L.poset.show()</code>. </p>
+<h2 id="subarrangement">.subarrangement</h2>
+<p><strong>Input</strong>:</p>
+<ul>
+<li>an integer $x$.</li>
+</ul>
+<p><strong>Output</strong>:</p>
+<ul>
+<li>the lattice of flats of the interval $[\hat{0}, x]$. </li>
+</ul>
+<h4 id="example-subarrangement-of-the-braid-arrangement">Example (Subarrangement of the braid arrangement)</h4>
+<p>We continue from the original $\mathsf{A}_3$ example started <a href="#example-lattice-of-braid-arrangement">above</a>. We will construct the subarrangement from the flat labeled $10$.</p>
+<pre><code class="language-python">sage: L.subarrangement(10)
+The lattice of flats of:
+Arrangement &lt;x1 - x2 | x0 - x1 | x0 - x2&gt;
+given by:
+Finite poset containing 5 elements
+</code></pre>
+<p><img alt="" src="../A3_sub10.png" /></p>
+<h2 id="restriction">.restriction</h2>
+<p><strong>Input</strong>:</p>
+<ul>
+<li>an integer $x$.</li>
+</ul>
+<p><strong>Output</strong>:</p>
+<ul>
+<li>the lattice of flats of the restriction to $x$ in the poset.</li>
+</ul>
+<h4 id="example-subarrangement-of-the-braid-arrangement_1">Example (Subarrangement of the braid arrangement)</h4>
+<p>We continue from the original $\mathsf{A}_3$ example started <a href="#example-lattice-of-braid-arrangement">above</a>. We will construct the restriction from the flat labeled $3$.</p>
+<pre><code class="language-python">sage: L.restriction(3)
+The lattice of flats of:
+Arrangement &lt;-x0 + x1 | x1 | x0&gt;
+given by:
+Finite poset containing 5 elements
+</code></pre>
+<p><img alt="" src="../A3_res3.png" /></p></div>
             </div>
         </div>
 

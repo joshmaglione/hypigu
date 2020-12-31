@@ -57,7 +57,7 @@ class IADatabase():
 
 def _initialize_main_DB():
     from sage.all import DiGraph, Poset, var
-    import Linigu.src.init_data as init_data
+    import hypigu.src.init_data as init_data
     p = var('q')
     t = var('t')
     DB = IADatabase()
