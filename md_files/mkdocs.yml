@@ -1,4 +1,4 @@
-site_name: Linigu Documentation
+site_name: HypIgu Documentation
 nav:
     - Home: index.md
     - Constructors: constructors.md

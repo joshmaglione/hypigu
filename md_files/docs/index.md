@@ -1,30 +1,30 @@
-# Linigu
+# HypIgu
 
-Documentation for the [Linigu](https://github.com/joshmaglione/linigu) package for SageMath.
+Documentation for the [HypIgu](https://github.com/joshmaglione/hypigu) package for SageMath.
 
 ## Purpose
 
-The goal of Linigu is to provide SageMath with the functionality to compute various zeta functions associated with hyperplane arrangements. Included are common constructions for hyperplane arrangements and specializations of the flag Hilbert&ndash;Poincar&#233; series defined in Maglione&ndash;Voll. Mathematical details are given in Maglione&ndash;Voll. We outline the functions included in Linigu and provide example cases. 
+The goal of HypIgu is to provide SageMath with the functionality to compute various zeta functions associated with hyperplane arrangements. Included are common constructions for hyperplane arrangements and specializations of the flag Hilbert&ndash;Poincar&#233; series defined in Maglione&ndash;Voll. Mathematical details are given in Maglione&ndash;Voll. We outline the functions included in HypIgu and provide example cases. 
 
 ## Setup
 
-The simplest way to install Linigu is to run the following 
+The simplest way to install HypIgu is to run the following 
 
 ```bash
-$ sage -pip install linigu
+$ sage -pip install hypigu
 ```
 
-Linigu has no external dependencies and is compatible with [SageMath 9.2](https://www.sagemath.org/).
+HypIgu has no external dependencies and is compatible with [SageMath 9.2](https://www.sagemath.org/).
 
 ## Importing
 
-Import LinIgu during your SageMath run with the following
+Import HypIgu during your SageMath run with the following
 
 ```python
-import linigu as li
+import hypigu as hi
 ```
 
-Throughout we use `li` for the reference name of `linigu`.
+Throughout we use `hi` for the reference name of `hypigu`.
 
 ## Funding 
 
