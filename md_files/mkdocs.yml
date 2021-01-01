@@ -1,4 +1,6 @@
 site_name: HypIgu Documentation
+site_author: Joshua Maglione, Christopher Voll
+copyright: "&copy; 2021 J. Maglione and C. Voll"
 nav:
     - Home: index.md
     - Constructors: constructors.md

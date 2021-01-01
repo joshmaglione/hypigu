@@ -5,7 +5,7 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta name="description" content="None">
-        
+        <meta name="author" content="Joshua Maglione, Christopher Voll">
         
         <link rel="shortcut icon" href="img/favicon.ico">
         <title>HypIgu Documentation</title>
@@ -19,16 +19,6 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
         <script>hljs.initHighlightingOnLoad();</script> 
         <!-- Load KaTeX -->
-        <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/katex.min.css" integrity="sha384-zB1R0rpPzHqg7Kpt0Aljp8JPLqbXI3bhnPWROx27a9N0Ll6ZP/+DiW/UqRcLbRjq" crossorigin="anonymous">
-        <script src="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/katex.min.js" integrity="sha384-y23I5Q6l+B6vatafAwxRu/0oK/79VlbSz7Q9aiSZUvyWYIYsd+qj+o24G5ZU2zJz" crossorigin="anonymous"></script>
-        <script defer src="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/contrib/auto-render.min.js" integrity="sha384-kWPLUVMOks5AQFrykwIup5lo0m3iMkkHrD0uJ4H5cjeGihAutqP0yW0J6dpFiVkI" crossorigin="anonymous"
-        onload="renderMathInElement(document.body, {
-            delimiters: [
-            {left: '$\n', right: '$', display: false},
-            {left: '$', right: '$', display: false}
-            ]
-        });"></script> -->
-
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
 
         <!-- The loading of KaTeX is deferred to speed up page rendering -->
@@ -135,14 +125,15 @@
                     <div class="col-md-9" role="main">
 
 <h1 id="hypigu">HypIgu</h1>
-<p>Documentation for the <a href="https://github.com/joshmaglione/hypigu">HypIgu</a> package for SageMath.</p>
+<p>Authors: Joshua Maglione and Christopher Voll.</p>
+<p>Documentation for the <a href="https://github.com/joshmaglione/hypigu">HypIgu</a> package for <a href="https://www.sagemath.org/">SageMath</a>.</p>
 <h2 id="purpose">Purpose</h2>
 <p>The goal of HypIgu is to provide SageMath with the functionality to compute various zeta functions associated with hyperplane arrangements. Included are common constructions for hyperplane arrangements and specializations of the flag Hilbert&ndash;Poincar&#233; series defined in Maglione&ndash;Voll. Mathematical details are given in Maglione&ndash;Voll. We outline the functions included in HypIgu and provide example cases. </p>
 <h2 id="setup">Setup</h2>
 <p>The simplest way to install HypIgu is to run the following </p>
 <pre><code class="language-bash">$ sage -pip install hypigu
 </code></pre>
-<p>HypIgu has no external dependencies and is compatible with <a href="https://www.sagemath.org/">SageMath 9.2</a>.</p>
+<p>HypIgu has no external dependencies and is compatible with SageMath 9.2.</p>
 <h2 id="importing">Importing</h2>
 <p>Import HypIgu during your SageMath run with the following</p>
 <pre><code class="language-python">import hypigu as hi
@@ -155,6 +146,7 @@
 
         <footer class="col-md-12">
             <hr>
+                <p>&copy; 2021 J. Maglione and C. Voll</p>
             <p>Documentation built with <a href="https://www.mkdocs.org/">MkDocs</a>.</p>
         </footer>
         <script>
@@ -233,5 +225,5 @@
 
 <!--
 MkDocs version : 1.1.2
-Build Date UTC : 2020-12-31 18:01:51.260213+00:00
+Build Date UTC : 2021-01-01 18:30:07.267232+00:00
 -->

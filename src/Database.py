@@ -58,35 +58,37 @@ class IADatabase():
 def _initialize_main_DB():
     from sage.all import DiGraph, Poset, var
     import hypigu.src.init_data as init_data
-    p = var('q')
+    q = var('q')
     t = var('t')
+    Y = var('Y')
+    T = var('T')
     DB = IADatabase()
 
     # A3 arrangement 
     A3 = Poset(DiGraph(init_data.A3_rels))
-    A3_Igusa = p**-6*(1-p**-1)*(p**4*(6-5*p+p**2)-4*p**4*(2-p)*t-p**2*(3-7*p+2*p**2)*t**2+p**2*(2-7*p+3*p**2)*t**3-4*p*(1-2*p)*t**4-(1-5*p+6*p**2)*t**5)/((1-p**-1*t)**2*(1-p**-2*t**3)*(1-p**-3*t**6))
-    A3_skele = ((1 + 6*p + 11*p**2 + 6*p**3) + (11 + 37*p + 37*p**2 + 11*p**3)*t + (6 + 11*p + 6*p**2 + p**3)*t**2)/((1 - t)**3)
+    A3_Igusa = q**-6*(1-q**-1)*(q**4*(6-5*q+q**2)-4*q**4*(2-q)*t-q**2*(3-7*q+2*q**2)*t**2+q**2*(2-7*q+3*q**2)*t**3-4*q*(1-2*q)*t**4-(1-5*q+6*q**2)*t**5)/((1-q**-1*t)**2*(1-q**-2*t**3)*(1-q**-3*t**6))
+    A3_skele = ((1 + 6*Y + 11*Y**2 + 6*Y**3) + (11 + 37*Y + 37*Y**2 + 11*Y**3)*T + (6 + 11*Y + 6*Y**2 + Y**3)*T**2)/((1 - T)**3)
     DB.save_gen_func(A3, 'Igusa', A3_Igusa)
     DB.save_gen_func(A3, 'skele', A3_skele)
 
     # A4 arrangement 
     A4 = Poset(DiGraph(init_data.A4_rels))
-    A4_skele = ((1 + 10*p + 35*p**2 + 50*p**3 + 24*p**4) + (47 + 260*p + 505*p**2 + 400*p**3 + 108*p**4)*t + (108 + 400*p + 505*p**2 + 260*p**3 + 47*p**4)*t**2 + (24 + 50*p + 35*p**2 + 10*p**3 + p**4)*t**3)/((1 - t)**4)
-    A4_Igusa = init_data.A4_Igusa_n(p, t) / init_data.A4_Igusa_d(p, t)
+    A4_skele = ((1 + 10*Y + 35*Y**2 + 50*Y**3 + 24*Y**4) + (47 + 260*Y + 505*Y**2 + 400*Y**3 + 108*Y**4)*T + (108 + 400*Y + 505*Y**2 + 260*Y**3 + 47*Y**4)*T**2 + (24 + 50*Y + 35*Y**2 + 10*Y**3 + Y**4)*T**3)/((1 - T)**4)
+    A4_Igusa = init_data.A4_Igusa_n(q, t) / init_data.A4_Igusa_d(Y, T)
     DB.save_gen_func(A4, 'skele', A4_skele)
     DB.save_gen_func(A4, 'Igusa', A4_Igusa)
     
     # A5 arrangement
     A5 = Poset(DiGraph(init_data.A5_rels))
-    A5_skele = (p**5*t**4 + 197*p**5*t**3 + 15*p**4*t**4 + 1268*p**5*t**2 + 1546*p**4*t**3 + 85*p**3*t**4 + 1114*p**5*t + 7172*p**4*t**2 + 4670*p**3*t**3 + 225*p**2*t**4 + 120*p**5 + 4493*p**4*t + 15320*p**3*t**2 + 6700*p**2*t**3 + 274*p*t**4 + 274*p**4 + 6700*p**3*t + 15320*p**2*t**2 + 4493*p*t**3 + 120*t**4 + 225*p**3 + 4670*p**2*t + 7172*p*t**2 + 1114*t**3 + 85*p**2 + 1546*p*t + 1268*t**2 + 15*p + 197*t + 1)/((1 - t)**5)
-    A5_Igusa = init_data.A5_Igusa_n(p, t) / init_data.A5_Igusa_d(p, t)
+    A5_skele = (Y**5*T**4 + 197*Y**5*T**3 + 15*Y**4*T**4 + 1268*Y**5*T**2 + 1546*Y**4*T**3 + 85*Y**3*T**4 + 1114*Y**5*T + 7172*Y**4*T**2 + 4670*Y**3*T**3 + 225*Y**2*T**4 + 120*Y**5 + 4493*Y**4*T + 15320*Y**3*T**2 + 6700*Y**2*T**3 + 274*Y*T**4 + 274*Y**4 + 6700*Y**3*T + 15320*Y**2*T**2 + 4493*Y*T**3 + 120*T**4 + 225*Y**3 + 4670*Y**2*T + 7172*Y*T**2 + 1114*T**3 + 85*Y**2 + 1546*Y*T + 1268*T**2 + 15*Y + 197*T + 1)/((1 - T)**5)
+    A5_Igusa = init_data.A5_Igusa_n(q, t) / init_data.A5_Igusa_d(Y, T)
     DB.save_gen_func(A5, 'skele', A5_skele)
     DB.save_gen_func(A5, 'Igusa', A5_Igusa)
 
     # B3 arrangement
     B3 = Poset(DiGraph(init_data.B3_rels))
-    B3_skele = (p**3*t**2 + 20*p**3*t + 9*p**2*t**2 + 15*p**3 + 76*p**2*t + 23*p*t**2 + 23*p**2 + 76*p*t + 15*t**2 + 9*p + 20*t + 1)/((1 - t)**3)
-    B3_Igusa = init_data.B3_Igusa_n(p, t) / init_data.B3_Igusa_d(p, t)
+    B3_skele = (Y**3*T**2 + 20*Y**3*T + 9*Y**2*T**2 + 15*Y**3 + 76*Y**2*T + 23*Y*T**2 + 23*Y**2 + 76*Y*T + 15*T**2 + 9*Y + 20*T + 1)/((1 - T)**3)
+    B3_Igusa = init_data.B3_Igusa_n(q, t) / init_data.B3_Igusa_d(Y, T)
     DB.save_gen_func(B3, 'skele', B3_skele)
     DB.save_gen_func(B3, 'Igusa', B3_Igusa)
 
