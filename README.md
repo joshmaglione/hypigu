@@ -16,7 +16,6 @@ This package is compatible with [SageMath 9.2](https://www.sagemath.org/) and ha
 
 ## Documentation
 
-Documentation: 
 - [online](https://joshmaglione.github.io/hypigu/),
 - in repo: `./docs/`.
 
