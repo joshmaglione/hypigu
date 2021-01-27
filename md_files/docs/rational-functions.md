@@ -1,12 +1,17 @@
-# Generating Functions
+# Rational Functions
 
-The main purpose of this package is to explicitly compute the flag Hilbert&ndash;Poincar&#233; series and its specializations like Igusa'a local zeta function. We keep variable letters consistent with Maglione&ndash;Voll; the exceptions is we replace $q^{-s_x}$ with $t_x$, for some label $x$. 
+The main purpose of this package is to explicitly compute the flag Hilbert&ndash;Poincar&#233; series and its specializations like Igusa'a local zeta function. We keep variable letters consistent with Maglione&ndash;Voll; the exceptions is we replace $q^{-s_x}$ with $t_x$, for some label $x$. We define all of the rational functions, but defer to Maglione&ndash;Voll for the details. 
+
+All of these functions contains many *optional* parameters. With the exception of [TopologicalZetaFunction](#topologicalzetafuncion), these are present to either provide print statements or save on computation time by using data previously computed. Unless these data have been computed, one should leave such parameters set to `None`.
 
 ## AnalyticZetaFunction
 
 **Input**:
 
-- a hyperplane arrangement $\mathcal{A}$.
+- a hyperplane arrangement $\mathcal{A}$,
+- `lattice_of_flats=None` : the lattice of flats of $\mathcal{A}$,
+- `int_poset=None` : the intersection poset of $\mathcal{A}$,
+- `verbose=False` : turn on print statements.
 
 **Output**:
 
@@ -15,8 +20,10 @@ The main purpose of this package is to explicitly compute the flag Hilbert&ndash
 Given a suitable $\mathfrak{o}$-representation of a $d$-dimensional hyperplane arrangement $\mathcal{A}$, where $\mathfrak{o}$ is a compact discrete valuation ring, the analytic zeta function is defined to be the integral:
 
 \[
-    \zeta_{\mathcal{A}(\mathfrak{o})}(\textbf{s}) = \int_{\mathfrak{o}^d} \prod_{x\in\widetilde{\mathcal{L}}(\mathcal{A})} \\| \mathcal{A}_x\\|^{s_x} \\, d\mu. 
+    \zeta_{\mathcal{A}(\mathfrak{o})}(\bm{s}) = \int_{\mathfrak{o}^d} \prod_{x\in\widetilde{\mathcal{L}}(\mathcal{A})} \\| \mathcal{A}_x\\|^{s_x} \\, |\mathrm{d}\bm{X}|. 
 \]
+
+The parameter `lattice_of_flats` can be used to give the lattice of flats of $\mathcal{A}$, computed by [LatticeOfFlats](https://joshmaglione.github.io/hypigu/lattices/#latticeofflats); otherwise this parameter should stay set to `None`. The paramater `int_poset` can be used to give in the intersection poset of $\mathcal{A}$; otherwise this parameter should stay set to `None`.
 
 #### Example (Lines through the origin)
 
@@ -49,7 +56,10 @@ which is indeed
 
 **Input**:
 
-- a hyperplane arrangement $\mathcal{A}$.
+- a hyperplane arrangement $\mathcal{A}$,
+- `lattice_of_flats=None` : the lattice of flats of $\mathcal{A}$,
+- `int_poset=None` : the intersection poset of $\mathcal{A}$,
+- `verbose=False` : turn on print statements.
 
 **Output**:
 
@@ -58,12 +68,14 @@ which is indeed
 Given a suitable $\mathfrak{o}$-representation of a $d$-dimensional hyperplane arrangement $\mathcal{A}$, where $\mathfrak{o}$ is a compact discrete valuation ring, the atom zeta function is defined to be the integral:
 
 \[
-    \zeta_{\mathcal{A}(\mathfrak{o})}^{\mathrm{at}}(\textbf{s}) = \int_{\mathfrak{o}^d} \prod_{L\in\mathcal{A}(\mathfrak{o})} |L(\mathbf{X})|^{s_L} \\, d\mu. 
+    \zeta_{\mathcal{A}(\mathfrak{o})}^{\mathrm{at}}(\textbf{s}) = \int_{\mathfrak{o}^d} \prod_{L\in\mathcal{A}(\mathfrak{o})} |L(\bm{X})|^{s_L} \\, |\mathrm{d}\bm{X}|. 
 \]
+
+The parameter `lattice_of_flats` can be used to give the lattice of flats of $\mathcal{A}$, computed by [LatticeOfFlats](https://joshmaglione.github.io/hypigu/lattices/#latticeofflats); otherwise this parameter should stay set to `None`. The paramater `int_poset` can be used to give in the intersection poset of $\mathcal{A}$; otherwise this parameter should stay set to `None`.
 
 #### Example (Atom zeta function for braid arrangement)
 
-We compute the atom zeta function for the braid arrangement, $\mathcal{A}$, in $\mathbb{R}^4$, which has $6$ hyperplanes, so $\zeta_{\mathcal{A}(\mathfrak{o})}^{\mathrm{at}}(\mathbf{s})$ has $6$ variables. First we construct the braid arrangement as a Coxeter arrangement of type $\mathsf{A}_3$. 
+We compute the atom zeta function for the braid arrangement, $\mathcal{A}$, in $\mathbb{R}^4$, which has $6$ hyperplanes, so $\zeta_{\mathcal{A}(\mathfrak{o})}^{\mathrm{at}}(\bm{s})$ has $6$ variables. First we construct the braid arrangement as a Coxeter arrangement of type $\mathsf{A}_3$. 
 
 ```python
 sage: A = hi.CoxeterArrangement("A3")
@@ -79,7 +91,7 @@ sage: Z
 -(((2/q - 1)*(1/q - 1) - t1*(1/q - 1)^2/(q*(t1/q - 1)) - t2*(1/q - 1)^2/(q*(t2/q - 1)) - t3*(1/q - 1)^2/(q*(t3/q - 1)))*t1*t2*t3*(1/q - 1)/(q^2*(t1*t2*t3/q^2 - 1)) + ((2/q - 1)*(1/q - 1) - t2*(1/q - 1)^2/(q*(t2/q - 1)) - t4*(1/q - 1)^2/(q*(t4/q - 1)) - t5*(1/q - 1)^2/(q*(t5/q - 1)))*t2*t4*t5*(1/q - 1)/(q^2*(t2*t4*t5/q^2 - 1)) + ((2/q - 1)*(1/q - 1) - t3*(1/q - 1)^2/(q*(t3/q - 1)) - t4*(1/q - 1)^2/(q*(t4/q - 1)) - t6*(1/q - 1)^2/(q*(t6/q - 1)))*t3*t4*t6*(1/q - 1)/(q^2*(t3*t4*t6/q^2 - 1)) + ((2/q - 1)*(1/q - 1) - t1*(1/q - 1)^2/(q*(t1/q - 1)) - t5*(1/q - 1)^2/(q*(t5/q - 1)) - t6*(1/q - 1)^2/(q*(t6/q - 1)))*t1*t5*t6*(1/q - 1)/(q^2*(t1*t5*t6/q^2 - 1)) + ((1/q - 1)^2 - t1*(1/q - 1)^2/(q*(t1/q - 1)) - t4*(1/q - 1)^2/(q*(t4/q - 1)))*t1*t4*(1/q - 1)/(q^2*(t1*t4/q^2 - 1)) + ((1/q - 1)^2 - t3*(1/q - 1)^2/(q*(t3/q - 1)) - t5*(1/q - 1)^2/(q*(t5/q - 1)))*t3*t5*(1/q - 1)/(q^2*(t3*t5/q^2 - 1)) + ((1/q - 1)^2 - t2*(1/q - 1)^2/(q*(t2/q - 1)) - t6*(1/q - 1)^2/(q*(t6/q - 1)))*t2*t6*(1/q - 1)/(q^2*(t2*t6/q^2 - 1)) - t1*(3/q - 2/q^2 - 1)*(1/q - 1)/(q*(t1/q - 1)) - t2*(3/q - 2/q^2 - 1)*(1/q - 1)/(q*(t2/q - 1)) - t3*(3/q - 2/q^2 - 1)*(1/q - 1)/(q*(t3/q - 1)) - t4*(3/q - 2/q^2 - 1)*(1/q - 1)/(q*(t4/q - 1)) - t5*(3/q - 2/q^2 - 1)*(1/q - 1)/(q*(t5/q - 1)) - t6*(3/q - 2/q^2 - 1)*(1/q - 1)/(q*(t6/q - 1)) - 6/q + 11/q^2 - 6/q^3 + 1)/(t1*t2*t3*t4*t5*t6/q^3 - 1)
 ```
 
-Expressing $\zeta_{\mathcal{A}(\mathfrak{o})}^{\mathrm{at}}(\mathbf{s})$ as a quotient of polynomials requires too much text space for this example, so we will just write the denominator:
+Expressing $\zeta_{\mathcal{A}(\mathfrak{o})}^{\mathrm{at}}(\bm{s})$ as a quotient of polynomials requires too much text space for this example, so we will just write the denominator:
 
 ```python
 sage: Z.numerator_denominator()[1]
@@ -144,7 +156,10 @@ which is equal to
 
 **Input**:
 
-- a hyperplane arrangement $\mathcal{A}$.
+- a hyperplane arrangement $\mathcal{A}$,
+- `lattice_of_flats=None` : the lattice of flats of $\mathcal{A}$,
+- `int_poset=None` : the intersection poset of $\mathcal{A}$,
+- `verbose=False` : turn on print statements.
 
 **Output**:
 
@@ -156,6 +171,8 @@ The combinatorial skeleton of $\mathcal{A}$ is defined to be:
     HP_{\mathcal{A}}^{\mathrm{sk}} (Y, T) 
     = \sum_{F\in\Delta(\widetilde{\mathcal{L}}(\mathcal{A}))} \pi_F(Y) \left(\dfrac{T}{1 - T}\right)^{|F|}.
 \]
+
+The parameter `lattice_of_flats` can be used to give the lattice of flats of $\mathcal{A}$, computed by [LatticeOfFlats](https://joshmaglione.github.io/hypigu/lattices/#latticeofflats); otherwise this parameter should stay set to `None`. The paramater `int_poset` can be used to give in the intersection poset of $\mathcal{A}$; otherwise this parameter should stay set to `None`.
 
 #### Example (Boolean skeleton)
 
@@ -204,7 +221,10 @@ sage: S(Y=1).factor()/1920
 
 **Input**:
 
-- a hyperplane arrangement $\mathcal{A}$.
+- a hyperplane arrangement $\mathcal{A}$,
+- `lattice_of_flats=None` : the lattice of flats of $\mathcal{A}$,
+- `int_poset=None` : the intersection poset of $\mathcal{A}$,
+- `verbose=False` : turn on print statements.
 
 **Output**:
 
@@ -213,9 +233,11 @@ sage: S(Y=1).factor()/1920
 The flag Hilbert&ndash;Poincar&#233; series of $\mathcal{A}$ is defined to be:
 
 \[
-    HP_{\mathcal{A}} (Y, \mathbf{T}) 
+    HP_{\mathcal{A}} (Y, \bm{T}) 
     = \sum_{F\in\Delta(\widetilde{\mathcal{L}}(\mathcal{A}))} \pi_F(Y) \prod_{x\in F} \frac{T_x}{1 - T_x}.
 \]
+
+The parameter `lattice_of_flats` can be used to give the lattice of flats of $\mathcal{A}$, computed by [LatticeOfFlats](https://joshmaglione.github.io/hypigu/lattices/#latticeofflats); otherwise this parameter should stay set to `None`. The paramater `int_poset` can be used to give in the intersection poset of $\mathcal{A}$; otherwise this parameter should stay set to `None`.
 
 #### Example (Lines through the origin again)
 
@@ -238,7 +260,10 @@ This is, indeed, equal to
 
 **Input**:
 
-- a hyperplane arrangement $\mathcal{A}$ or a polynomial $f$.
+- a hyperplane arrangement $\mathcal{A}$ or a polynomial $f$,
+- `lattice_of_flats=None` : the lattice of flats of $\mathcal{A}$,
+- `int_poset=None` : the intersection poset of $\mathcal{A}$,
+- `verbose=False` : turn on print statements.
 
 **Output**:
 
@@ -249,10 +274,12 @@ If a polynomial, $f$, is given, we require that $f$ be the product of linear fac
 For a compact discrete valuation ring $\mathfrak{o}$ and a polynomial $f\in \mathfrak{o}[X_1,\dots, X_d]$, Igusa's local zeta function associated with $f$ is 
 
 \[
-    Z_f(s) = \int_{\mathfrak{o}^d} |f(\mathbf{X})|^s\, d\mu.
+    Z_f(s) = \int_{\mathfrak{o}^d} |f(\bm{X})|^s\, |\mathrm{d}\bm{X}|.
 \]
 
 If $Q_\mathcal{A}$ is the defining polynomial of a hyperplane arrangement, then Igusa's local zeta function associated $\mathcal{A}$ is $Z_{Q_\mathcal{A}}(s)$. 
+
+The parameter `lattice_of_flats` can be used to give the lattice of flats of $\mathcal{A}$, computed by [LatticeOfFlats](https://joshmaglione.github.io/hypigu/lattices/#latticeofflats); otherwise this parameter should stay set to `None`. The paramater `int_poset` can be used to give in the intersection poset of $\mathcal{A}$; otherwise this parameter should stay set to `None`.
 
 #### Example (Polynomial vs. hyperplane arrangement input)
 
@@ -291,4 +318,65 @@ which is equal to
 
 \[
     \dfrac{(1 - q^{-1})^3}{(1 - q^{-1}t)^3} .
+\]
+
+## TopologicalZetaFuncion
+
+**Input**:
+
+- a hyperplane arrangement $\mathcal{A}$ or a polynomial $f$,
+- `multivariate=False` : return the *multivariate* zeta function associated with $\mathcal{A}$,
+- `atom=False` : return the *atom specialization* of the multivariate zeta function associated with $\mathcal{A}$,
+- `lattice_of_flats=None` : the lattice of flats of $\mathcal{A}$,
+- `int_poset=None` : the intersection poset of $\mathcal{A}$,
+- `verbose=False` : turn on print statements.
+
+**Output**:
+
+- the topological zeta function associated to either $\mathcal{A}$ or $f$. 
+
+If a polynomial, $f$, is given, we require that $f$ be the product of linear factors. Symbolic expressions and strings are fine as well, provided SageMath interprets them as a polynomial. This kind of input should be acceptable for [PolynomialToArrangement](https://joshmaglione.github.io/hypigu/constructors/#polynomialtoarrangement).
+
+For a hyperplane arrangement $\mathcal{A}$, the multivariate topological zeta function associated with $\mathcal{A}$ is 
+\[
+    \zeta_{\mathcal{A}}^{\mathrm{top}}(\bm{s}) = \sum_{F\in \Delta(\widetilde{\mathcal{L}}(\mathcal{A}))} \pi_{\mathcal{A},F}^\circ(-1) \prod_{x\in F} \dfrac{1}{\mathrm{rk}(x) + \sum_{y\in\widetilde{\mathcal{L}}(\mathcal{A}_x)}s_y}  .
+\]
+
+Depending on the parameters `multivariate` and `atom`, different topological zeta functions are returned. If `multivariate=True` and `atom=False`, then the multivariate topological zeta function is returned. If `mutlivariate=True` and `atom=True`, then the *atom specialization* is returned; namely,
+\[
+    \zeta_{\mathcal{A}}^{\mathrm{top},\mathrm{at}}(\bm{s}) = 
+    \zeta_{\mathcal{A}}^{\mathrm{top}}\left((s_x\cdot \delta_{|A_x|=1})_{x\in\widetilde{\mathcal{L}}(\mathcal{A})}\right).
+\]
+
+Lastly, if `multivariate=False`, then the (univariate) topological zeta function is returned, which is defined to be
+\[
+    Z_{\mathcal{A}}^{\mathrm{top}}(s) = \zeta_{\mathcal{A}}^{\mathrm{top},\mathrm{at}}\left((s)_{L\in\mathcal{A}}\right) .
+\]
+
+The parameter `lattice_of_flats` can be used to give the lattice of flats of $\mathcal{A}$, computed by [LatticeOfFlats](https://joshmaglione.github.io/hypigu/lattices/#latticeofflats); otherwise this parameter should stay set to `None`. The paramater `int_poset` can be used to give in the intersection poset of $\mathcal{A}$; otherwise this parameter should stay set to `None`.
+
+#### Example (Shi arrangement)
+
+We consider the Shi $\mathsf{A}_2$ arrangement and compute its topological zeta function. The Shi $\mathsf{A}_2$ arrangement is defined to be 
+\[
+    \mathcal{S} \mathsf{A}_2 = \left\\{X_i - X_j - k ~\middle|~ 1\leq i < j\leq 3,\; k\in \\{0,1\\}\right\\}.
+\]
+
+```python
+sage: A = hi.ShiArrangement("A2")
+sage: A
+Arrangement of 6 hyperplanes of dimension 3 and rank 2
+```
+
+The topological zeta function is 
+
+```python
+sage: Z = hi.TopologicalZetaFunction(A)
+sage: Z
+-9/(s + 1) - 3*(s - 2)/((3*s + 2)*(s + 1)) + 3/(s + 1)^2 + 4
+```
+
+which is equivalent to
+\[
+    Z_{\mathcal{S}\mathsf{A}_2}^{\mathrm{top}}(s) = \dfrac{2 - 5s + 2s^2 + 12s^3}{(s+1)^2(3s+2)} .
 \]

@@ -1,11 +1,11 @@
 site_name: HypIgu Documentation
-site_author: Joshua Maglione, Christopher Voll
-copyright: "&copy; 2021 J. Maglione and C. Voll"
+site_author: Joshua Maglione
+copyright: "&copy; 2021 J. Maglione"
 nav:
     - Home: index.md
     - Constructors: constructors.md
     - Lattices: lattices.md
-    - Generating Functions: generating-functions.md
+    - Rational Functions: rational-functions.md
 theme:
     name: mkdocs
     custom_dir: custom_theme/

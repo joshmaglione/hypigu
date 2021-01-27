@@ -1,6 +1,6 @@
 # HypIgu
 
-Authors: Joshua Maglione and Christopher Voll.
+Author: Joshua Maglione.
 
 Documentation for the [HypIgu](https://github.com/joshmaglione/hypigu) package for [SageMath](https://www.sagemath.org/).
 
@@ -30,4 +30,4 @@ Throughout we use `hi` for the reference name of `hypigu`.
 
 ## Funding 
 
-This package is funded in part by DFG grant [373111162](https://gepris.dfg.de/gepris/projekt/373111162?language=en).
+This work was supported by DFG-grant [373111162](https://gepris.dfg.de/gepris/projekt/373111162?language=en).
