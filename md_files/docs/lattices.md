@@ -1,13 +1,13 @@
 # Lattices
 
-We include a class called `LatticeOfFlats`, which is associated with a hyperplane arrangement. This class keeps track of basic information we need to compute the various generating functions associated with a hyperplane arrangement. (For non-central arrangements, this is indeed not a lattice, but close to one.) All other functions are tied to the `LatticeOfFlats` class and, thus, are either attributes or methods. 
+We include a class called `LatticeOfFlats`, which is associated with a hyperplane arrangement. This class keeps track of basic information we need to compute the various generating functions associated with a hyperplane arrangement. (For non-central arrangements, this is indeed not a lattice, but a semi-lattice.) All other functions are tied to the `LatticeOfFlats` class and, thus, are either [attributes](#attributes) or methods. Methods are written as `.method_name`.
 
 ## LatticeOfFlats
 
 **Input**:
 
 - a hyperplane arrangement;
-- `poset=None` : a finite poset;
+- `poset=None` : the intersection poset of $\mathcal{A}$;
 - `flat_labels=None` : a dictionary from the elements of the poset to subsets of atoms;
 - `hyperplane_labels=None` : a dictionary from the atoms of the poset to the hyperplanes.
 
@@ -15,7 +15,7 @@ We include a class called `LatticeOfFlats`, which is associated with a hyperplan
 
 - the lattice of flats for the given hyperplane arrangement. 
 
-Unless the poset and labels have been computed before, they should not be given as this function computes the intersection poset of a hyperplane arrangement faster than the default in SageMath.
+Unless the poset and labels have been computed before, they should not be given as this function may compute the intersection poset of a hyperplane arrangement faster than the default in SageMath.
 
 ### Attributes 
 

@@ -1,8 +1,18 @@
 # Rational Functions
 
-The main purpose of this package is to explicitly compute the flag Hilbert&ndash;Poincar&#233; series and its specializations like Igusa'a local zeta function. We keep variable letters consistent with Maglione&ndash;Voll; the exceptions is we replace $q^{-s_x}$ with $t_x$, for some label $x$. We define all of the rational functions, but defer to Maglione&ndash;Voll for the details. 
+The main purpose of this package is to explicitly compute the flag Hilbert&ndash;Poincar&#233; series and its specializations like Igusa'a local zeta function. We keep variable letters consistent with Maglione&ndash;Voll; the exception is that we replace $q^{-s_x}$ by $t_x$, for some label $x$. We define all of the rational functions, but defer to Maglione&ndash;Voll for the details. 
 
 All of these functions contains many *optional* parameters. With the exception of [TopologicalZetaFunction](#topologicalzetafuncion), these are present to either provide print statements or save on computation time by using data previously computed. Unless these data have been computed, one should leave such parameters set to `None`.
+
+For example, if one wants to compute the combinatorial skeleton, the Igusa zeta function, and the topological zeta function of $\mathcal{A}$, then it would be beneficial to first compute the [lattice of flats](https://joshmaglione.github.io/hypigu/lattices/#latticeofflats) and pass it to the three rational functions. This way, the lattice of flats is computed only once.
+
+```python
+sage: A = hi.CoxeterArrangement("A5")
+sage: L = hi.LatticeOfFlats(A)
+sage: CS = hi.CombinatorialSkeleton(A, lattice_of_flats=L)
+sage: Z = hi.IgusaZetaFunction(A, lattice_of_flats=L)
+sage: TZ = hi.TopologicalZetaFunction(A, lattice_of_flats=L)
+```
 
 ## AnalyticZetaFunction
 
