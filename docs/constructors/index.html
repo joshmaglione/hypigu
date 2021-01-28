@@ -133,8 +133,8 @@
                     <div class="col-md-9" role="main">
 
 <h1 id="constructors">Constructors</h1>
-<p>We provide a number of constructions of hyperplane arrangements. This uses the default hyperplane arrangement class in SageMath. There is some overlap with the default <a href="https://doc.sagemath.org/html/en/reference/discrete_geometry/sage/geometry/hyperplane_arrangement/library.html">library</a>, and one is encouraged to search there in case your favorite hyperplane arrangement is not in our list. </p>
-<p>Most of our constructions are Coxeter-theoretic&mdash;meaning, they take as input $\mathsf{X}_n$, where $\mathsf{X}$ is the Coxeter type and $n$ is the (Coxeter) rank. For example the Catalan arrangement of type $\mathsf{X}_n$ can be defined for all Coxeter arrangements like its defined for the (type $\mathsf{A}$) braid arrangement. </p>
+<p>We provide a number of constructions of hyperplane arrangements. This uses the default hyperplane arrangement class in SageMath. There is some overlap with the default <a href="https://doc.sagemath.org/html/en/reference/discrete_geometry/sage/geometry/hyperplane_arrangement/library.html">hyperplane arrangement library</a>, and one is encouraged to search there in case your favorite hyperplane arrangement is not in our list. </p>
+<p>Most of our constructions are Coxeter-theoretic&mdash;meaning, they take as input $\mathsf{X}$ and $n$, where $\mathsf{X}$ is the Coxeter type and $n$ is the (Coxeter) rank. For example the Catalan arrangement of type $\mathsf{X}_n$ can be defined for all Coxeter arrangements like its defined for the (type $\mathsf{A}$) braid arrangement. </p>
 <h2 id="catalanarrangement">CatalanArrangement</h2>
 <p><strong>Input</strong>:</p>
 <ul>
@@ -142,9 +142,9 @@
 </ul>
 <p><strong>Output</strong>:</p>
 <ul>
-<li>the Catalan arrangement associated with the strings. </li>
+<li>the associated Catalan arrangement. </li>
 </ul>
-<p>If just one string is provide, it should be formatted like <code>'Xn'</code>, where <code>X</code> is a roman letter from $\mathsf{A}$ to $\mathsf{H}$ and <code>n</code> is a positive integer. Strings can be separated by one white space like <code>'Xm Yn'</code>, and iterable containers of strings need to have strings formatted in this way. The input format matches <a href="#coxeterarrangement">CoxeterArrangement</a>. </p>
+<p>If just one string is provided, it should be formatted like <code>'Xn'</code>, where <code>X</code> is a roman letter from $\mathsf{A}$ to $\mathsf{H}$ and <code>n</code> is a positive integer. Iterable containers of strings need to have strings formatted in this way. Strings can also be separated by one white space like <code>'Xm Yn'</code> instead of being in an iterable container. </p>
 <p>If $\mathcal{A}$ is a Coxeter arrangement of type $\mathsf{X}_n$, then the <em>Catalan arrangement of type $\mathsf{X}_n$</em> is </p>
 <p>[ 
     \mathcal{C} = \{L - 1 ~|~ L\in\mathcal{A} \} \cup \mathcal{A} \cup \{L + 1 ~|~ L\in\mathcal{A} \}.
@@ -184,11 +184,11 @@ False
 </ul>
 <p><strong>Output</strong>:</p>
 <ul>
-<li>the Coxeter arrangement associated with the strings. </li>
+<li>the associated Coxeter arrangement. </li>
 </ul>
-<p>If just one string is provide, it should be formatted like <code>'Xn'</code>, where <code>X</code> is a roman letter from $\mathsf{A}$ to $\mathsf{H}$ and <code>n</code> is a positive integer. Strings can be separated by one white space like <code>'Xm Yn'</code>, and iterable containers of strings need to have strings formatted in this way. </p>
+<p>If just one string is provided, it should be formatted like <code>'Xn'</code>, where <code>X</code> is a roman letter from $\mathsf{A}$ to $\mathsf{H}$ and <code>n</code> is a positive integer. Iterable containers of strings need to have strings formatted in this way. Strings can also be separated by one white space like <code>'Xm Yn'</code> instead of being in an iterable container. </p>
 <h4 id="example-braid-arrangement">Example (Braid arrangement)</h4>
-<p>The braid arrangement with $n+1$ hyperplanes is the type $\mathsf{A}_n$ Coxeter arrangement:</p>
+<p>The braid arrangement with $n+1$ hyperplanes is equivalent to the type $\mathsf{A}_n$ Coxeter arrangement:</p>
 <p>[
     \{X_i - X_j ~|~ 1\leq i &lt; j \leq n+1\}.
 ]</p>
@@ -197,7 +197,7 @@ False
 Arrangement &lt;x1 - x2 | x0 - x1 | x0 - x2&gt;
 </code></pre>
 <h4 id="example-boolean-arrangement">Example (Boolean arrangement)</h4>
-<p>One should consider the other two constructions of the Boolean arrangement via <a href="#example-boolean-arrangement-again">direct sums</a> and <a href="#example-boolean-arrangement-yet-again">polynomials</a>. The Boolean arrangement with $n$ hyperplanes is a Coxeter arrangement, isomorphic to $\mathsf{A}_1^n$, the direct sum of $n$ copies of $\mathsf{A}_1$. We construct the rank $5$ Boolean arrangement in two different ways. Note that, when created this way, the ambient dimension is double the rank.</p>
+<p>One should consider the other two constructions of the Boolean arrangement via <a href="#example-boolean-arrangement-again">direct sums</a> and <a href="#example-boolean-arrangement-yet-again">polynomials</a>. The Boolean arrangement with $n$ hyperplanes is a Coxeter arrangement, equivalent to $\mathsf{A}_1^n$, the direct sum of $n$ copies of $\mathsf{A}_1$. We construct the rank $5$ Boolean arrangement in two different ways. Note that, when created this way, the ambient dimension is double the rank.</p>
 <pre><code class="language-python">sage: bool5 = &quot;A1 A1 A1 A1 A1&quot;
 sage: hi.CoxeterArrangement(bool5)
 Arrangement of 5 hyperplanes of dimension 10 and rank 5
@@ -257,9 +257,9 @@ Arrangement of 256 hyperplanes of dimension 256 and rank 256
 </ul>
 <p><strong>Output</strong>:</p>
 <ul>
-<li>the Linial arrangement associated with the strings. </li>
+<li>the associated Linial arrangement. </li>
 </ul>
-<p>If just one string is provide, it should be formatted like <code>'Xn'</code>, where <code>X</code> is a roman letter from $\mathsf{A}$ to $\mathsf{H}$ and <code>n</code> is a positive integer. Strings can be separated by one white space like <code>'Xm Yn'</code>, and iterable containers of strings need to have strings formatted in this way. The input format matches <a href="#coxeterarrangement">CoxeterArrangement</a>. </p>
+<p>If just one string is provided, it should be formatted like <code>'Xn'</code>, where <code>X</code> is a roman letter from $\mathsf{A}$ to $\mathsf{H}$ and <code>n</code> is a positive integer. Iterable containers of strings need to have strings formatted in this way. Strings can also be separated by one white space like <code>'Xm Yn'</code> instead of being in an iterable container. </p>
 <p>If $\mathcal{A}$ is a Coxeter arrangement of type $\mathsf{X}_n$, then the <em>Linial arrangement of type $\mathsf{X}_n$</em> is </p>
 <p>[ 
     \mathcal{L} = \{L - 1 ~|~ L\in\mathcal{A} \} .
@@ -279,7 +279,7 @@ Arrangement &lt;x1 - x2 + 1 | x0 - x1 + 1 | x0 - x2 + 1&gt;
 <ul>
 <li>the hyperplane arrangement associated with the linear factors of the given polynomial.</li>
 </ul>
-<p>We require that the given polynomial <em>only</em> have linear factors. Strings are also acceptable input and will be interpreted by SageMath (so they should be formatted accordingly). The underlying field for symbolic expressions is assumed to be $\mathbb{Q}$. </p>
+<p>We require that the given polynomial <em>only</em> have linear factors. Strings are also acceptable input and will be interpreted by SageMath (so they should be formatted accordingly). The underlying field for such symbolic expressions is assumed to be $\mathbb{Q}$. </p>
 <h4 id="example-boolean-arrangement-yet-again">Example (Boolean arrangement yet again)</h4>
 <p>Compare this construction with the Boolean construction as a <a href="#example-boolean-arrangement">Coxeter arrangement</a> and as a <a href="#example-boolean-arrangement-again">direct sum</a>. The Boolean arrangement is equivalent to the arrangement of coordinate hyperplanes, so the corresponding polynomial is a monomial. We construct the rank $5$ Boolean arrangement.</p>
 <pre><code class="language-python">sage: a, b, c, d, e = var('a b c d e')
@@ -316,9 +316,9 @@ sage: A.hyperplanes()
 </ul>
 <p><strong>Output</strong>:</p>
 <ul>
-<li>the Shi arrangement associated with the strings. </li>
+<li>the associated Shi arrangement. </li>
 </ul>
-<p>If just one string is provide, it should be formatted like <code>'Xn'</code>, where <code>X</code> is a roman letter from $\mathsf{A}$ to $\mathsf{H}$ and <code>n</code> is a positive integer. Strings can be separated by one white space like <code>'Xm Yn'</code>, and iterable containers of strings need to have strings formatted in this way. The input format matches <a href="#coxeterarrangement">CoxeterArrangement</a>. </p>
+<p>If just one string is provided, it should be formatted like <code>'Xn'</code>, where <code>X</code> is a roman letter from $\mathsf{A}$ to $\mathsf{H}$ and <code>n</code> is a positive integer. Iterable containers of strings need to have strings formatted in this way. Strings can also be separated by one white space like <code>'Xm Yn'</code> instead of being in an iterable container. </p>
 <p>If $\mathcal{A}$ is a Coxeter arrangement of type $\mathsf{X}_n$, then the <em>Shi arrangement of type $\mathsf{X}_n$</em> is </p>
 <p>[ 
     \mathcal{S} = \mathcal{A} \cup \{L - 1 ~|~ L\in\mathcal{A} \} .
