@@ -313,8 +313,11 @@ def _parse_poly(f):
 def CombinatorialSkeleton(A, lattice_of_flats=None, int_poset=None, verbose=_print):
     from .LatticeFlats import LatticeOfFlats
 
-    if A.is_central() and A.rank() <= 2:
-        return _small_central(A, 'skele')
+    try:
+        if A.is_central() and A.rank() <= 2:
+            return _small_central(A, 'skele')
+    except AttributeError:
+        pass
     if lattice_of_flats == None:
         if verbose:
             print("{0}Building lattice of flats".format(_time()))
