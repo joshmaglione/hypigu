@@ -382,7 +382,8 @@ class LatticeOfFlats():
             assert x in P, "Expected element to be in poset."
             new_P = _subposet(P, x, lambda z: P.upper_covers(z))
             new_A = None 
-            if self.hyperplane_arrangement and self.hyperplane_labels:
+            new_HL = None 
+            if self.hyperplane_arrangement:
                 A = self.hyperplane_arrangement
                 hyp_coeffs = map(lambda H: H.coefficients(), A.hyperplanes())
                 M = Matrix(A.base_ring(), list(hyp_coeffs))
@@ -400,6 +401,9 @@ class LatticeOfFlats():
                 FL = self.flat_labels
                 new_FL = {x : lab_func(FL[x]) for x in new_P._elements}
                 new_HL = {a : new_A[hyp_dict[a]] for a in new_P.upper_covers(new_P.bottom())}
+            else:
+                FL = self.flat_labels
+                new_FL = {y : FL[y].difference(FL[x]) for y in new_P._elements}
             return LatticeOfFlats(new_A, poset=new_P, flat_labels=new_FL, hyperplane_labels=new_HL)
         else:
             L = self.flat_labels 
@@ -480,14 +484,14 @@ class LatticeOfFlats():
     def Poincare_polynomial(self):
         from sage.all import QQ
         from sage.rings.polynomial.polynomial_ring import polygen
-        X = polygen(QQ, 'X')
+        Y = polygen(QQ, 'Y')
         if self.poset != None:
             P = self.poset 
             atoms = self.atoms()
             if P.rank() == 0:
                 return QQ(1)
             if P.rank() == 1:
-                return QQ(1) + len(atoms)*X
+                return QQ(1) + len(atoms)*Y
         else: 
             # Lazy 
             A = self.hyperplane_arrangement
@@ -495,10 +499,15 @@ class LatticeOfFlats():
             if A.rank() == 0:
                 return QQ(1)
             if A.rank() == 1:
-                return QQ(1) + len(A)*X
+                return QQ(1) + len(A)*Y
+        if self.hyperplane_arrangement == None:
+            chi = self.poset.characteristic_polynomial()
+            q = chi.variables()[0]
+            d = chi.degree(q)
+            return (-Y)**d*chi.subs({q : -Y**-1})
         D = self._lazy_deletion(1)
         R = self._lazy_restriction(1)
-        return D.Poincare_polynomial() + X*R.Poincare_polynomial()
+        return D.Poincare_polynomial() + Y*R.Poincare_polynomial()
         
     @cached_method
     def _combinatorial_eq_elts(self):
@@ -561,22 +570,6 @@ class LatticeOfFlats():
         return equiv_elts
 
 
-# The deletion method is coded well enough to allow for this kind of recursion. 
-# We need the new labels for a hyperplane though.
-def _deletion(A, X, P, poset=True, OG=None):
-    if OG:
-        Ar = OG
-    else:
-        Ar = A
-    H_to_str = lambda H: str(list(Ar).index(H))
-    complement = filter(lambda H: not P.le(H_to_str(H), X), A)
-    B = _reduce(lambda x, y: x.deletion(y), complement, A)
-    if not poset:
-        return B
-    Q = _subposet(P, X, lambda z: P.lower_covers(z))
-    return B, Q
-
-
 def _Coxeter_poset_data():
     # Bell numbers: A000110
     def A_poset(n):
@@ -625,29 +618,3 @@ def _possibly_Coxeter(P):
             if CPD[name]['poset'](r) == len(P):
                 return [True, name]
     return [False, None]
-
-
-
-# Compute the Poincare polynomial of either the chain F or the upper ideal of P
-# at restrict. 
-# def PoincarePolynomial(P, F=None, restrict=None):
-#     from sage.all import var, ZZ
-
-#     # Setup the data
-#     if restrict != None:
-#         F = [restrict]
-#     if F == None:
-#         assert P.has_bottom()
-#         F = [P.bottom()]
-#     if F[0] != P.bottom():
-#         F = [P.bottom()] + F 
-
-#     P_up = _subposet(P, F[-1], lambda z: P.upper_covers(z))
-#     chi = P_up.characteristic_polynomial() 
-#     d = chi.degree()
-#     Y = var('Y')
-#     pi = ((-Y)**d*chi(q=-Y**(-1))).expand().simplify().factor()
-#     if F[-1] == P.bottom() or restrict != None:
-#         return pi
-#     P_down = _subposet(P, F[-1], lambda z: P.lower_covers(z))
-#     return pi*PoincarePolynomial(P_down, F=F[:-1])
