@@ -214,9 +214,9 @@ def _top_zeta_function_mul(L, DB=True, verbose=_print, atom=False):
     Y = poincare(P.bottom()).variables()[0]
     pi_circ = lambda x: (poincare(x)/(1 + Y)**C).factor().simplify().subs({Y: -1})
     x_factor = lambda x: pi_circ(x)
-    eq_elt_data = L._combinatorial_eq_elts()
-    factors = map(lambda x: x[1]*x_factor(x[0]), eq_elt_data)
-    integrals = map(lambda x: _top_zeta_function_mul(x[2], DB=DB, atom=atom), eq_elt_data)
+    prop_elts = L.proper_part_poset()._elements
+    factors = map(lambda x: x_factor(x), prop_elts)
+    integrals = map(lambda x: _top_zeta_function_mul(L.subarrangement(x), DB=DB, atom=atom), prop_elts)
     pi = pi_circ(P.bottom())
     zeta = _reduce(lambda x, y: x + y[0]*y[1], zip(factors, integrals), 0) + pi
     if P.has_top():
@@ -301,8 +301,8 @@ def _parse_poly(f):
     A = HH(Matrix(K, F_vec))
 
     # This scrambles the hyperplanes, so we need to scramble M in the same way.
-    A_vec = tuple(map(lambda H: tuple(H.coefficients()), A))
-    perm = tuple([A_vec.index(v) for v in F_vec])
+    A_vec = tuple(map(lambda H: tuple(H.coefficients()), A.hyperplanes()))
+    perm = tuple([F_vec.index(v) for v in A_vec])
     M_new = tuple([M[i] for i in perm])
 
     return A, M_new
