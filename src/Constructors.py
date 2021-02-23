@@ -118,6 +118,18 @@ def _basic_wrapper(name, s):
     irr_arr = list(map(irr_facts, factors))
     return DirectSum(irr_arr)
 
+def _res_arr(n):
+    from sage.all import Subsets, HyperplaneArrangements, QQ, Matrix
+    Subs = Subsets(range(1, n + 1))
+    def S_vec(S):
+        v = [QQ(0)]*(n+1)
+        for s in S:
+            v[s] = QQ(1)
+        return v
+    M = [S_vec(S) for S in Subs if len(S) > 0]
+    HH = HyperplaneArrangements(QQ, tuple(['x' + str(k) for k in range(n)]))
+    H = HH(Matrix(QQ, M))
+    return H
 
 
 def DirectSum(*args):
@@ -132,11 +144,11 @@ def DirectSum(*args):
 
     EXAMPLE:
 
-        sage: A = li.CoxeterArrangement("A1")
-        sage: Bool3 = li.DirectSum(A, A, A)
+        sage: A = hi.CoxeterArrangement("A1")
+        sage: Bool3 = hi.DirectSum(A, A, A)
         sage: Bool3
         Arrangement <x4 - x5 | x2 - x3 | x0 - x1>
-        sage: Bool64 = li.DirectSum([A]*64)
+        sage: Bool64 = hi.DirectSum([A]*64)
         sage: Bool64
         Arrangement of 64 hyperplanes of dimension 128 and rank 64
     """
@@ -167,13 +179,13 @@ def CoxeterArrangement(name):
 
     EXAMPLES:
 
-        sage: li.CoxeterArrangement("B4")
+        sage: hi.CoxeterArrangement("B4")
         Arrangement of 16 hyperplanes of dimension 4 and rank 4
 
-        sage: li.CoxeterArrangement("A1 A2")
+        sage: hi.CoxeterArrangement("A1 A2")
         Arrangement <x3 - x4 | x2 - x3 | x2 - x4 | x0 - x1>
 
-        sage: li.CoxeterArrangement(["D4", "E6"])
+        sage: hi.CoxeterArrangement(["D4", "E6"])
         Arrangement of 48 hyperplanes of dimension 12 and rank 10
     """
     return _basic_wrapper(name, [0])
@@ -193,13 +205,13 @@ def ShiArrangement(name):
 
     EXAMPLES:
 
-        sage: li.ShiArrangement("A2")
+        sage: hi.ShiArrangement("A2")
         Arrangement of 6 hyperplanes of dimension 3 and rank 2
 
-        sage: li.ShiArrangement("A1 A1")
+        sage: hi.ShiArrangement("A1 A1")
         Arrangement <x2 - x3 | x2 - x3 + 1 | x0 - x1 | x0 - x1 + 1>
 
-        sage: li.ShiArrangement(["H3", "B3"])
+        sage: hi.ShiArrangement(["H3", "B3"])
         Arrangement of 48 hyperplanes of dimension 6 and rank 6
     """
     return _basic_wrapper(name, [0, 1])
@@ -219,13 +231,13 @@ def LinialArrangement(name):
 
     EXAMPLES:
 
-        sage: li.LinialArrangement("D4")
+        sage: hi.LinialArrangement("D4")
         Arrangement of 12 hyperplanes of dimension 4 and rank 4
 
-        sage: li.LinialArrangement("A1 A1")
+        sage: hi.LinialArrangement("A1 A1")
         Arrangement <x2 - x3 + 1 | x0 - x1 + 1>
 
-        sage: li.LinialArrangement(["I4", "F4"])
+        sage: hi.LinialArrangement(["I4", "F4"])
         Arrangement of 28 hyperplanes of dimension 6 and rank 6
     """
     return _basic_wrapper(name, [1])
@@ -245,17 +257,39 @@ def CatalanArrangement(name):
 
     EXAMPLES:
 
-        sage: li.CatalanArrangement("B4")
+        sage: hi.CatalanArrangement("B4")
         Arrangement of 48 hyperplanes of dimension 4 and rank 4
 
-        sage: li.CatalanArrangement("A1 A1")
+        sage: hi.CatalanArrangement("A1 A1")
         Arrangement of 6 hyperplanes of dimension 4 and rank 2
 
-        sage: li.CatalanArrangement(["D4", "A3"])
+        sage: hi.CatalanArrangement(["D4", "A3"])
         Arrangement of 54 hyperplanes of dimension 8 and rank 7
     """
     return _basic_wrapper(name, [-1, 0, 1])
 
+def ResonanceArrangement(n):
+    r"""
+    Return the rank-n resonance arrangement.
+
+    INPUT:
+
+    - ``n`` -- a positive integer.
+
+    OUTPUT: the resonance arrangement given as a hyperplane arrangement.
+
+    EXAMPLES:
+
+        sage: hi.ResonanceArrangement(3)
+        Arrangement of 7 hyperplanes of dimension 3 and rank 3
+
+        sage: hi.ResonanceArrangement(2)
+        Arrangement <x1 | x0 | x0 + x1>
+
+        sage: hi.ResonanceArrangement(10)
+        Arrangement of 1023 hyperplanes of dimension 10 and rank 10
+    """
+    return _res_arr(n)
 
 def PolynomialToArrangement(f):
     r"""
@@ -273,11 +307,11 @@ def PolynomialToArrangement(f):
         sage: f = SR('X^3*Y^2*Z')
         sage: f
         X^3*Y^2*Z
-        sage: li.PolynomialToArrangement(f)
+        sage: hi.PolynomialToArrangement(f)
         Arrangement <Z | Y | X>
 
         sage: f = 'X*Y*Z*W*(X - Y)*(X - Z)*(Y - W)'
-        sage: li.PolynomialToArrangement(f)
+        sage: hi.PolynomialToArrangement(f)
         Arrangement of 7 hyperplanes of dimension 4 and rank 4
     """
     from .GenFunctions import _parse_poly

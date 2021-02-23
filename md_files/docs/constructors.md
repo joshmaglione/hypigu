@@ -246,6 +246,32 @@ sage: A.hyperplanes()
 
 Note that if the underlying field were just, say, $\mathbb{Q}$, then this would result in an error since $f$ is not a product of linear factors. 
 
+## ResonanceArrangement 
+
+**Input**:
+
+- a positive integer.
+
+**Output**:
+
+- the resonance arrangement.
+
+The resonance arrangement, $\mathcal{R}_n$, of rank $n$ is 
+
+\[ 
+    \left\\{ \sum_{i\in I}X_i ~\middle|~ \varnothing \neq I\subseteq \\{1,\dots, n\\} \right\\} .
+\]
+
+#### Example (The resonance arrangement)
+
+We construct the resonance arrangement of rank $4$, which should contain $2^4-1$ hyperplanes.
+
+```python
+sage: A = hi.ResonanceArrangement(4)
+sage: A
+Arrangement of 15 hyperplanes of dimension 4 and rank 4
+```
+
 ## ShiArrangement 
 
 **Input**:

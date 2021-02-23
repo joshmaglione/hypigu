@@ -309,7 +309,7 @@ class LatticeOfFlats():
         dict_builder = "FL = {x[0] : Set(x[1]) for x in FL_tup}\n"
         with open(file, "w") as F:
             F.write("from sage.all import HyperplaneArrangements, QQ, Poset, Set\n")
-            F.write("import Linigu as LI\n")
+            F.write("import hypigu as hi\n")
             F.write("H = HyperplaneArrangements(QQ, {0})\n".format(HH.variable_names()))
             del HH
             F.write("A = H({0})\n".format(A).replace("), ", "),\n"))
@@ -320,7 +320,7 @@ class LatticeOfFlats():
             F.write("FL_tup = {0}\n".format(FL_tup).replace("), ", "),\n"))
             F.write(dict_builder)
             F.write("del FL_tup\n")
-            F.write("{0} = LI.LatticeOfFlats(A, poset=P, flat_labels=FL)\n".format(var_name))
+            F.write("{0} = hi.LatticeOfFlats(A, poset=P, flat_labels=FL)\n".format(var_name))
             F.write("del H, A, CR, P, FL\n")
             F.write("print('Loaded a lattice of flats. Variable name: {0}')".format(var_name))
 

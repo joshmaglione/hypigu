@@ -121,6 +121,10 @@
               <ul class="nav flex-column">
               </ul>
             </li>
+            <li class="nav-item" data-level="2"><a href="#resonancearrangement" class="nav-link">ResonanceArrangement</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
             <li class="nav-item" data-level="2"><a href="#shiarrangement" class="nav-link">ShiArrangement</a>
               <ul class="nav flex-column">
               </ul>
@@ -309,6 +313,25 @@ sage: A.hyperplanes()
  Hyperplane X + (-1)*Y + 0)
 </code></pre>
 <p>Note that if the underlying field were just, say, $\mathbb{Q}$, then this would result in an error since $f$ is not a product of linear factors. </p>
+<h2 id="resonancearrangement">ResonanceArrangement</h2>
+<p><strong>Input</strong>:</p>
+<ul>
+<li>a positive integer.</li>
+</ul>
+<p><strong>Output</strong>:</p>
+<ul>
+<li>the resonance arrangement.</li>
+</ul>
+<p>The resonance arrangement, $\mathcal{R}_n$, of rank $n$ is </p>
+<p>[ 
+    \left\{ \sum_{i\in I}X_i ~\middle|~ \varnothing \neq I\subseteq \{1,\dots, n\} \right\} .
+]</p>
+<h4 id="example-the-resonance-arrangement">Example (The resonance arrangement)</h4>
+<p>We construct the resonance arrangement of rank $4$, which should contain $2^4-1$ hyperplanes.</p>
+<pre><code class="language-python">sage: A = hi.ResonanceArrangement(4)
+sage: A
+Arrangement of 15 hyperplanes of dimension 4 and rank 4
+</code></pre>
 <h2 id="shiarrangement">ShiArrangement</h2>
 <p><strong>Input</strong>:</p>
 <ul>
