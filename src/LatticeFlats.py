@@ -7,8 +7,9 @@
 from functools import reduce as _reduce
 from sage.misc.cachefunc import cached_method
 from .Globals import __TIME as _time
+from .Globals import __NCPUS as _N
 import sage.parallel.decorate as _para
-from os import cpu_count as _NCPUs
+
 
 def _contract(M, rows):
     from sage.all import Matrix, identity_matrix
@@ -87,12 +88,11 @@ def _get_labels(M, x, rows, L):
 
 def _parse_poset(P):
     global POS, atoms, labs, int_at
-    from os import cpu_count
     from sage.all import Set
     import sage.parallel.decorate as para
     
     POS = P
-    N = cpu_count()
+    N = _N
     atoms = POS.upper_covers(POS.bottom())
 
     @para.parallel(N)
@@ -127,7 +127,7 @@ def _subposet(P, x, F):
 
 # Parallel function to build the intersection lattice.
 # Moved to global to prevent accidentally carrying unnecessary data. 
-@_para.parallel(_NCPUs())
+@_para.parallel(_N)
 def build_next(A, S, HYP, LIN):
     from sage.all import exists, Set
     new_level = []
@@ -172,10 +172,9 @@ def build_next(A, S, HYP, LIN):
 def _para_intersection_poset(A):
     from sage.geometry.hyperplane_arrangement.affine_subspace import AffineSubspace
     from sage.all import exists, flatten, Set, QQ, VectorSpace, Poset
-    from os import cpu_count
     from .Globals import __SANITY
 
-    N = cpu_count()
+    N = _N
     K = A.base_ring()
     whole_space = AffineSubspace(0, VectorSpace(K, A.dimension()))
     # L is the ranked list of affine subspaces in L(A).
@@ -512,10 +511,9 @@ class LatticeOfFlats():
     @cached_method
     def _combinatorial_eq_elts(self):
         global POS, P_elts
-        from os import cpu_count
         import sage.parallel.decorate as para
 
-        N = cpu_count()
+        N = _N
         POS = self.poset
         P_elts = self.proper_part_poset()._elements
 
