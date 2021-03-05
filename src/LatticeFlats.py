@@ -267,6 +267,20 @@ def _para_intersection_poset(A):
     return [Poset((t, cmp_fn)), label_dict, hyp_dict]
 
 
+def _lof_from_matroid(A):
+    from sage.all import Set, Matrix, Matroid, Poset
+    from functools import reduce
+    rows = list(map(lambda H: H.coefficients()[1:], A.hyperplanes()))
+    mat = Matrix(A.base_ring(), rows).transpose()
+    M = Matroid(mat)
+    L = M.lattice_of_flats()
+    ranks = reduce(lambda x, y: x+y, [list(filter(lambda x: L.rank(x) == r, L._elements)) for r in range(2, L.rank() + 1)], [L.bottom()] + [frozenset([k]) for k in range(len(A))])
+    P = Poset(L, element_labels={x : ranks.index(x) for x in L._elements})
+    adj_set = lambda S: Set([x+1 for x in S])
+    label_dict = {i : adj_set(ranks[i]) for i in range(len(L))}
+    hyp_dict = {i : A[list(ranks[i])[0]] for i in range(1, len(A) + 1)}
+    return [P, label_dict, hyp_dict]
+
 
 class LatticeOfFlats():
 
@@ -282,7 +296,10 @@ class LatticeOfFlats():
             self.poset = poset
         else:
             if not lazy:
-                P, FL, HL = _para_intersection_poset(A)
+                if A.is_central():
+                    P, FL, HL = _lof_from_matroid(A)
+                else:
+                    P, FL, HL = _para_intersection_poset(A)
                 self.poset = P
                 self.flat_labels = FL
                 self.hyperplane_labels = HL
