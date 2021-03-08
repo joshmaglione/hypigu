@@ -13,7 +13,7 @@ The goal of HypIgu (HYPerplane IGUsa) is to provide SageMath with the functional
 The simplest way to install HypIgu is to run the following 
 
 ```bash
-$ sage -pip install hypigu
+$ sage --pip install hypigu
 ```
 
 Alternatively, one can download the latest release and unzip it into a directory that SageMath can find for importing.

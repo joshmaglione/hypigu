@@ -7,7 +7,7 @@ HypIgu (HYPerplane IGUsa) is a SageMath package that provides functions to compu
 The simplest way to install HypIgu in Sage is by running 
 
 ```bash
-$ sage -pip install hypigu
+$ sage --pip install hypigu
 ```
 
 HypIgu source files can be downloaded here: [Latest version](https://github.com/joshmaglione/hypigu/releases/latest)
