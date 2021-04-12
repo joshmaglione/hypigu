@@ -16,7 +16,10 @@ This package is compatible with [SageMath 9.2](https://www.sagemath.org/) and ha
 
 ## Documentation
 
-Found [online](https://joshmaglione.github.io/hypigu/) or in repo: 
+Found [online](https://joshmaglione.github.io/hypigu/) at
+[https://joshmaglione.github.io/hypigu/](https://joshmaglione.github.io/hypigu/)
+
+Also in repo: 
 - Home: `./docs/index.html`
     - Constructors: `./docs/constructors/index.html`
     - Lattices: `./docs/lattices/index.html`

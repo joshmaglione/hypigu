@@ -2,7 +2,7 @@
 
 Author: Joshua Maglione.
 
-Documentation for the [HypIgu](https://github.com/joshmaglione/hypigu) package for [SageMath](https://www.sagemath.org/).
+Documentation for the [HypIgu](https://github.com/joshmaglione/hypigu) package version 1.1 for [SageMath](https://www.sagemath.org/).
 
 ## Purpose
 
@@ -16,7 +16,7 @@ The simplest way to install HypIgu is to run the following
 $ sage --pip install hypigu
 ```
 
-Alternatively, one can download the latest release and unzip it into a directory that SageMath can find for importing.
+Alternatively, one can download the [latest release](https://github.com/joshmaglione/hypigu/releases/latest) and unzip it into a directory that SageMath can find for importing.
 
 HypIgu has no external dependencies and is compatible with SageMath 9.2.
 
@@ -28,7 +28,7 @@ Import HypIgu during your SageMath run with the following
 import hypigu as hi
 ```
 
-Throughout we use `hi` for the reference name of `hypigu`.
+Throughout this documentation, we use `hi` for the reference name of `hypigu`.
 
 ## Funding 
 
