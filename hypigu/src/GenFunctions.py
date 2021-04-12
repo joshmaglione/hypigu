@@ -103,14 +103,13 @@ def _Igusa_zeta_function(L, DB=True, verbose=_print):
     P = L.poset
     q = var('q')
     t = var('t')
-    A = L.hyperplane_arrangement
 
     # Base cases for recursion.
-    if L.poset.has_top() and L.poset.rank() == 2:
-        m = len(L.poset) - 2
+    if P.has_top() and P.rank() == 2:
+        m = len(P) - 2
         return (1 - q**-1)*(1 - (m-1)*q**-1 + m*(1 - q**-1)*q**-1*t/(1 - q**-1*t))/(1 - q**-2*t**m)
-    if L.poset.rank() == 1:
-        m = len(L.poset) - 1
+    if P.rank() == 1:
+        m = len(P) - 1
         return 1 - m*q**-1 + m*(1 - q**-1)*q**-1*t/(1 - q**-1*t)
 
     if DB:
@@ -119,23 +118,24 @@ def _Igusa_zeta_function(L, DB=True, verbose=_print):
             return zeta
     # We check to see if we have a type A braid arrangement. 
     # We can compute these *extremely* quickly.
-    if _Coxeter_poset_data()['A']['hyperplanes'](A.rank()) == len(A):
-        if _Coxeter_poset_data()['A']['poset'](A.rank()) == len(P):
-            B = CoxeterArrangement("A", n=A.rank())
+    if _Coxeter_poset_data()['A']['hyperplanes'](P.rank()) == len(L.atoms()):
+        if _Coxeter_poset_data()['A']['poset'](P.rank()) == len(P):
+            B = CoxeterArrangement("A", n=P.rank())
             if P.is_isomorphic(LatticeOfFlats(B).poset):
-                return BraidArrangementIgusa(A.rank())
+                return BraidArrangementIgusa(P.rank())
 
     poincare = _Poincare_polynomial(L, sub=-q**(-1))
     t_factor = lambda X: t**len(L.flat_labels[X])
-    x_factor = lambda x: poincare(x)*t_factor(x)*q**(-L.poset.rank(x))
+    x_factor = lambda x: poincare(x)*t_factor(x)*q**(-P.rank(x))
     eq_elt_data = L._combinatorial_eq_elts()
     factors = map(lambda x: x[1]*x_factor(x[0]), eq_elt_data)
     integrals = map(lambda x: _Igusa_zeta_function(x[2], DB=DB), eq_elt_data)
-    pi = poincare(L.poset.bottom())
+    pi = poincare(P.bottom())
+    print(pi) ## WHATS GOING ON HERE?!
     zeta = _reduce(lambda x, y: x + y[0]*y[1], zip(factors, integrals), 0) + pi
-    if L.poset.has_top():
-        zeta = zeta/(1 - q**(-A.rank())*t**len(A))
-    if DB and A.rank() > 2: 
+    if P.has_top():
+        zeta = zeta/(1 - q**(-P.rank())*t**len(L.atoms()))
+    if DB and P.rank() > 2: 
         _data.save_gen_func(P, 'Igusa', zeta)
     return zeta
 
@@ -310,52 +310,60 @@ def _parse_poly(f):
 
 
 
-def CoarseFlagHPSeries(A, lattice_of_flats=None, int_poset=None, verbose=_print):
+def CoarseFlagHPSeries(A=None, lattice_of_flats=None, int_poset=None, matroid=None, numerator=False, verbose=_print):
     from .LatticeFlats import LatticeOfFlats
 
-    try:
-        if A.is_central() and A.rank() <= 2:
-            return _small_central(A, 'skele')
-    except AttributeError:
-        pass
+    if matroid == None: 
+        try:
+            if A.is_central() and A.rank() <= 2:
+                return _small_central(A, 'skele')
+        except AttributeError:
+            raise TypeError("object is not a hyperplane arrangement.")
     if lattice_of_flats == None:
         if verbose:
             print("{0}Building lattice of flats".format(_time()))
-        try: 
-            # Check if A is a matroid
-            _ = A.circuits() 
-            L = LatticeOfFlats(A=None, matroid=A)
-        except AttributeError:
-            # Not a matroid, so assume it's a hyperplane arrangement
+        if matroid == None:
             L = LatticeOfFlats(A, poset=int_poset)
+        else:
+            L = LatticeOfFlats(matroid=matroid)
     else:
         L = lattice_of_flats
 
     if verbose:
         print("{0}Computing coarse flag Hilbert--Poincare series".format(_time()))
-    return _comb_skele(L)
+    cfHP = _comb_skele(L)
+    
+    if numerator:
+        D = cfHP.numerator_denominator()[1]
+        return (cfHP*D).factor()
+    else: 
+        return cfHP 
 
 
-def IgusaZetaFunction(X, lattice_of_flats=None, int_poset=None, verbose=_print):
+def IgusaZetaFunction(X=None, lattice_of_flats=None, int_poset=None, matroid=None, verbose=_print):
     from .LatticeFlats import LatticeOfFlats
     from sage.all import var
 
-    try:
-        # Check if a hyperplane arrangement. 
-        _ = X.hyperplanes()
-        A = X
-        HPA = True 
-    except AttributeError:
-        # Not an HPA; deal with polynomial input. 
-        A, M = _parse_poly(X)
-        if verbose:
-            print("{0}Constructed a hyperplane arrangement".format(_time()))
-        HPA = False 
+    HPA = True 
+    if matroid == None:
+        try:
+            # Check if a hyperplane arrangement. 
+            _ = X.hyperplanes()
+            A = X
+        except AttributeError:
+            # Not an HPA; deal with polynomial input. 
+            A, M = _parse_poly(X)
+            if verbose:
+                print("{0}Constructed a hyperplane arrangement".format(_time()))
+            HPA = False 
 
     if lattice_of_flats == None:
         if verbose:
             print("{0}Building lattice of flats".format(_time()))
-        L = LatticeOfFlats(A, poset=int_poset)
+        if matroid == None:
+            L = LatticeOfFlats(A, poset=int_poset)
+        else:
+            L = LatticeOfFlats(matroid=matroid)
     else:
         L = lattice_of_flats
 
