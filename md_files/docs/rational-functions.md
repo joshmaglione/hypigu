@@ -2,6 +2,8 @@
 
 The main purpose of this package is to explicitly compute the flag Hilbert&ndash;Poincar&#233; series and its specializations like Igusa'a local zeta function. We keep variable letters consistent with Maglione&ndash;Voll; the exception is that we replace $q^{-s_x}$ by $t_x$, for some label $x$. We define all of the rational functions, but defer to Maglione&ndash;Voll for the details. 
 
+We omit the analogous definitions for matroids. Since all of the rational functions here are related to the flag Hilbert&ndash;Poincar&#233; series, the matroid versions use the lattice of flats of the given matroid and possibly Theorem B of Maglione&ndash;Voll.
+
 All of these functions contains many *optional* parameters. With the exception of [TopologicalZetaFunction](#topologicalzetafuncion), these are present to either provide print statements or save on computation time by using data previously computed. Unless these data have been computed, one should leave such parameters set to `None`.
 
 For example, if one wants to compute the combinatorial skeleton, the Igusa zeta function, and the topological zeta function of $\mathcal{A}$, then it would be beneficial to first compute the [lattice of flats](https://joshmaglione.github.io/hypigu/lattices/#latticeofflats) and pass it to the three rational functions. This way, the lattice of flats is computed only once.
@@ -169,6 +171,7 @@ which is equal to
 - a hyperplane arrangement $\mathcal{A}$,
 - `lattice_of_flats=None` : the lattice of flats of $\mathcal{A}$,
 - `int_poset=None` : the intersection poset of $\mathcal{A}$,
+- `numerator=False` : only return the numerator $\mathcal{N}_{\mathcal{A}}(Y, T)$,
 - `verbose=False` : turn on print statements.
 
 **Output**:
@@ -178,7 +181,7 @@ which is equal to
 The coarse flag Hilbert&ndash;Poincar&#233; series of $\mathcal{A}$ is defined to be:
 
 \[
-    {\sf cfHP}_{\mathcal{A}} (Y, T) 
+    cfHP_{\mathcal{A}} (Y, T) 
     = \sum_{F\in\Delta(\widetilde{\mathcal{L}}(\mathcal{A}))} \pi_F(Y) \left(\dfrac{T}{1 - T}\right)^{|F|}.
 \]
 
@@ -243,7 +246,7 @@ sage: S(Y=1).factor()/1920
 The flag Hilbert&ndash;Poincar&#233; series of $\mathcal{A}$ is defined to be:
 
 \[
-    {\sf fHP}_{\mathcal{A}} (Y, \bm{T}) 
+    fHP_{\mathcal{A}} (Y, \bm{T}) 
     = \sum_{F\in\Delta(\widetilde{\mathcal{L}}(\mathcal{A}))} \pi_F(Y) \prod_{x\in F} \frac{T_x}{1 - T_x}.
 \]
 

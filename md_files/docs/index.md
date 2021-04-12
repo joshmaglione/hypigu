@@ -1,18 +1,18 @@
 # HypIgu 
 
-Author: Joshua Maglione.
+Author: [Joshua Maglione](https://www.math.uni-bielefeld.de/~jmaglione/).
 
-Documentation for the [HypIgu](https://github.com/joshmaglione/hypigu) package version 1.1 for [SageMath](https://www.sagemath.org/).
+Documentation for the [HypIgu](https://github.com/joshmaglione/hypigu) package (v. 1.1) for [SageMath](https://www.sagemath.org/).
 
 ## Purpose
 
-The goal of HypIgu (HYPerplane IGUsa) is to provide SageMath with the functionality to compute various zeta functions associated with hyperplane arrangements. Included are common constructions for hyperplane arrangements and specializations of the flag Hilbert&ndash;Poincar&#233; series defined in Maglione&ndash;Voll. Mathematical details are given in Maglione&ndash;Voll. We outline the functions included in HypIgu and provide example cases. 
+The goal of **HypIgu** (**HYP**erplane **IGU**sa) is to provide SageMath with the functionality to compute various zeta functions associated with hyperplane arrangements. Included are common constructions for hyperplane arrangements and specializations of the flag Hilbert&ndash;Poincar&#233; series defined in [Maglione&ndash;Voll](https://arxiv.org/abs/2103.03640). Mathematical details are given in [Maglione&ndash;Voll](https://arxiv.org/abs/2103.03640). We outline the functions included in HypIgu and provide example cases. 
 
 ## Setup
 
 The simplest way to install HypIgu is to run the following 
 
-```bash
+```
 $ sage --pip install hypigu
 ```
 
@@ -33,3 +33,8 @@ Throughout this documentation, we use `hi` for the reference name of `hypigu`.
 ## Funding 
 
 This work was supported in part by DFG-grant [373111162](https://gepris.dfg.de/gepris/projekt/373111162?language=en).
+
+## References 
+
+1. [Joshua Maglione](https://www.math.uni-bielefeld.de/~jmaglione/) and [Christopher Voll](https://www.math.uni-bielefeld.de/~voll/). Flag Hilbert&ndash;Poincar&#233; series of hyperplane arrangements and their Igusa zeta functions, 2021. [arXiv:2103:03640](https://arxiv.org/abs/2103.03640).
+   
