@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        <meta name="author" content="Joshua Maglione">
+        
+        <link rel="shortcut icon" href="../img/favicon.ico">
+        <title>Lattices - HypIgu Documentation</title>
+        <link href="../css/bootstrap.min.css" rel="stylesheet">
+        <link href="../css/font-awesome.min.css" rel="stylesheet">
+        <link href="../css/base.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
+
+        <script src="../js/jquery-1.10.2.min.js" defer></script>
+        <script src="../js/bootstrap.min.js" defer></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+        <script>hljs.initHighlightingOnLoad();</script> 
+        <!-- Load KaTeX -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
+
+        <!-- The loading of KaTeX is deferred to speed up page rendering -->
+        <script defer src="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.js" integrity="sha384-g7c+Jr9ZivxKLnZTDUhnkOnsh30B4H0rpLUpJ4jAIKs4fnJI+sEnkvrMWph2EDg4" crossorigin="anonymous"></script>
+
+        <!-- To automatically render math in text elements, include the auto-render extension: -->
+        <script defer src="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/contrib/auto-render.min.js" integrity="sha384-mll67QQFJfxn0IYznZYonOWZ644AWYC+Pt2cHqMaRhXVrursRwvLnLaebdGIlYNa" crossorigin="anonymous"
+        onload="renderMathInElement(document.body, {
+            delimiters: [
+            {left: '$\n', right: '$', display: false},
+            {left: '$', right: '$', display: false}, 
+            {left: '\[\n', right: '\]', display: true},
+            {left: '\[', right: '\]', display: true}
+            ]
+        });"></script>
+    </head>
+
+
+
+    <body>
+        <div class="navbar fixed-top navbar-expand-lg navbar-dark bg-primary">
+            <div class="container">
+                <a class="navbar-brand" href="..">HypIgu Documentation</a>
+                <!-- Expander button -->
+                <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbar-collapse">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <!-- Expanded navigation -->
+                <div id="navbar-collapse" class="navbar-collapse collapse">
+                        <!-- Main navigation -->
+                        <ul class="nav navbar-nav">
+                            <li class="navitem">
+                                <a href=".." class="nav-link">Home</a>
+                            </li>
+                            <li class="navitem">
+                                <a href="../constructors/" class="nav-link">Constructors</a>
+                            </li>
+                            <li class="navitem active">
+                                <a href="./" class="nav-link">Lattices</a>
+                            </li>
+                            <li class="navitem">
+                                <a href="../rational-functions/" class="nav-link">Rational Functions</a>
+                            </li>
+                        </ul>
+
+                    <ul class="nav navbar-nav ml-auto">
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" data-toggle="modal" data-target="#mkdocs_search_modal">
+                                <i class="fa fa-search"></i> Search
+                            </a>
+                        </li>
+                            <li class="nav-item">
+                                <a rel="prev" href="../constructors/" class="nav-link">
+                                    <i class="fa fa-arrow-left"></i> Previous
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a rel="next" href="../rational-functions/" class="nav-link">
+                                    Next <i class="fa fa-arrow-right"></i>
+                                </a>
+                            </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="row">
+                    <div class="col-md-3"><div class="navbar-light navbar-expand-md bs-sidebar hidden-print affix" role="complementary">
+    <div class="navbar-header">
+        <button type="button" class="navbar-toggler collapsed" data-toggle="collapse" data-target="#toc-collapse" title="Table of Contents">
+            <span class="fa fa-angle-down"></span>
+        </button>
+    </div>
+
+    
+    <div id="toc-collapse" class="navbar-collapse collapse card bg-secondary">
+        <ul class="nav flex-column">
+            
+            <li class="nav-item" data-level="1"><a href="#lattices" class="nav-link">Lattices</a>
+              <ul class="nav flex-column">
+            <li class="nav-item" data-level="2"><a href="#latticeofflats" class="nav-link">LatticeOfFlats</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#atoms" class="nav-link">.atoms</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#deletion" class="nav-link">.deletion</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#labels_of_flats" class="nav-link">.labels_of_flats</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#labels_of_hyperplanes" class="nav-link">.labels_of_hyperplanes</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#poincare_polynomial" class="nav-link">.Poincare_polynomial</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#proper_part_poset" class="nav-link">.proper_part_poset</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#show" class="nav-link">.show</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#subarrangement" class="nav-link">.subarrangement</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#restriction" class="nav-link">.restriction</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+              </ul>
+            </li>
+        </ul>
+    </div>
+</div></div>
+                    <div class="col-md-9" role="main">
+
+<h1 id="lattices">Lattices</h1>
+<p>We include a class called <code>LatticeOfFlats</code>, which is associated with a hyperplane arrangement. This class keeps track of basic information we need to compute the various generating functions associated with a hyperplane arrangement. (For non-central arrangements, this is indeed not a lattice, but a semi-lattice.) All other functions are tied to the <code>LatticeOfFlats</code> class and, thus, are either <a href="#attributes">attributes</a> or methods. Methods are written as <code>.method_name</code>.</p>
+<h2 id="latticeofflats">LatticeOfFlats</h2>
+<p><strong>Input</strong>:</p>
+<ul>
+<li>a hyperplane arrangement;</li>
+<li><code>poset=None</code> : the intersection poset of $\mathcal{A}$;</li>
+<li><code>flat_labels=None</code> : a dictionary from the elements of the poset to subsets of atoms;</li>
+<li><code>hyperplane_labels=None</code> : a dictionary from the atoms of the poset to the hyperplanes.</li>
+</ul>
+<p><strong>Output</strong>: </p>
+<ul>
+<li>the lattice of flats for the given hyperplane arrangement. </li>
+</ul>
+<p>Unless the poset and labels have been computed before, they should not be given as this function may compute the intersection poset of a hyperplane arrangement faster than the default in SageMath.</p>
+<h3 id="attributes">Attributes</h3>
+<p>The lattice of flats has four attributes:</p>
+<ul>
+<li><code>hyperplane_arrangement</code> : the given hyperplane arrangement;</li>
+<li><code>poset</code> : the intersection poset;</li>
+<li><code>flat_labels</code> : the dictionary indexed by the elements of <code>poset</code> with values given by subsets of the atoms of <code>poset</code>;</li>
+<li><code>hyperplane_labels</code> : the dictionary indexed by the atoms of <code>poset</code> with values equal to the hyperplanes of <code>hyperplane_arrangement</code>.</li>
+</ul>
+<h4 id="example-lattice-of-braid-arrangement">Example (Lattice of braid arrangement)</h4>
+<p>We construct the lattice of flats for the braid arrangement in $\mathbb{R}^4$.</p>
+<pre><code class="language-python">sage: A = hi.CoxeterArrangement(&quot;A3&quot;)
+sage: A
+Arrangement of 6 hyperplanes of dimension 4 and rank 3
+sage: L = hi.LatticeOfFlats(A)
+sage: L
+The lattice of flats of:
+Arrangement of 6 hyperplanes of dimension 4 and rank 3
+given by:
+Finite poset containing 15 elements
+</code></pre>
+<p>Now we look at the data stored in the attributes. We display the hyperplanes in the arrangement.</p>
+<pre><code class="language-python">sage: L.hyperplane_arrangement
+Arrangement of 6 hyperplanes of dimension 4 and rank 3
+sage: L.hyperplane_arrangement.hyperplanes()
+(Hyperplane 0*x0 + 0*x1 + x2 - x3 + 0,
+ Hyperplane 0*x0 + x1 - x2 + 0*x3 + 0,
+ Hyperplane 0*x0 + x1 + 0*x2 - x3 + 0,
+ Hyperplane x0 - x1 + 0*x2 + 0*x3 + 0,
+ Hyperplane x0 + 0*x1 - x2 + 0*x3 + 0,
+ Hyperplane x0 + 0*x1 + 0*x2 - x3 + 0)
+</code></pre>
+<p>We display the poset as an image.</p>
+<pre><code class="language-python">sage: L.poset
+Finite poset containing 15 elements
+</code></pre>
+<p><img alt="" src="../A3.png" /></p>
+<p>Instead of showing the entire dictionaries, we will evaluate them at a few points.</p>
+<pre><code class="language-python">sage: L.flat_labels[3]
+{3}
+sage: L.flat_labels[13]
+{3, 5}
+sage: L.flat_labels[9]
+{1, 5, 6}
+sage: L.flat_labels[0]
+{}
+</code></pre>
+<p>We see that hyperplanes 1, 5, and 6 intersect in a codimension 2 subspace. </p>
+<pre><code class="language-python">sage: L.hyperplane_labels[1]
+Hyperplane 0*x0 + 0*x1 + x2 - x3 + 0
+sage: L.hyperplane_labels[5]
+Hyperplane x0 + 0*x1 - x2 + 0*x3 + 0
+sage: L.hyperplane_labels[6]
+Hyperplane x0 + 0*x1 + 0*x2 - x3 + 0
+</code></pre>
+<h2 id="atoms">.atoms</h2>
+<p><strong>Output</strong>:</p>
+<ul>
+<li>the atoms of the underlying poset. </li>
+</ul>
+<h2 id="deletion">.deletion</h2>
+<p><strong>Input</strong>:</p>
+<ul>
+<li>a hyperplane $H$.</li>
+</ul>
+<p><strong>Output</strong>:</p>
+<ul>
+<li>the lattice of flats associated to the arrangement without $H$.</li>
+</ul>
+<h4 id="example-deletion-in-the-braid-arrangement">Example (Deletion in the braid arrangement)</h4>
+<p>We continue the $\mathsf{A}_3$ example started <a href="#example-lattice-of-braid-arrangement">above</a>. We will delete the hyperplane labeled by $2$ and display the resulting lattice of flats. </p>
+<pre><code class="language-python">sage: L.deletion(2)
+The lattice of flats of:
+Arrangement of 5 hyperplanes of dimension 4 and rank 3
+given by:
+Finite poset containing 13 elements
+</code></pre>
+<p><img alt="" src="../A3_del2.png" /></p>
+<h2 id="labels_of_flats">.labels_of_flats</h2>
+<p><strong>Output</strong>:</p>
+<ul>
+<li>the list of tuples with first entry an element of the poset and second entry a subset of atoms. </li>
+</ul>
+<h2 id="labels_of_hyperplanes">.labels_of_hyperplanes</h2>
+<p><strong>Output</strong>:</p>
+<ul>
+<li>the list of tuples with first entry an element of the poset and second entry a hyperplane. </li>
+</ul>
+<h2 id="poincare_polynomial">.Poincare_polynomial</h2>
+<p><strong>Output</strong>:</p>
+<ul>
+<li>the Poincar&#233; polynomial of the hyperplane arrangement. </li>
+</ul>
+<h2 id="proper_part_poset">.proper_part_poset</h2>
+<p><strong>Output</strong>:</p>
+<ul>
+<li>the subposet without $\hat{0}$ and $\hat{1}$.</li>
+</ul>
+<h2 id="show">.show</h2>
+<p>No output given. This displays the underlying intersection poset using the default options in SageMath. This is a shortcut for <code>L.poset.show()</code>. </p>
+<h2 id="subarrangement">.subarrangement</h2>
+<p><strong>Input</strong>:</p>
+<ul>
+<li>an integer $x$.</li>
+</ul>
+<p><strong>Output</strong>:</p>
+<ul>
+<li>the lattice of flats of the interval $[\hat{0}, x]$. </li>
+</ul>
+<h4 id="example-subarrangement-of-the-braid-arrangement">Example (Subarrangement of the braid arrangement)</h4>
+<p>We continue from the original $\mathsf{A}_3$ example started <a href="#example-lattice-of-braid-arrangement">above</a>. We will construct the subarrangement from the flat labeled $10$.</p>
+<pre><code class="language-python">sage: L.subarrangement(10)
+The lattice of flats of:
+Arrangement &lt;x1 - x2 | x0 - x1 | x0 - x2&gt;
+given by:
+Finite poset containing 5 elements
+</code></pre>
+<p><img alt="" src="../A3_sub10.png" /></p>
+<h2 id="restriction">.restriction</h2>
+<p><strong>Input</strong>:</p>
+<ul>
+<li>an integer $x$.</li>
+</ul>
+<p><strong>Output</strong>:</p>
+<ul>
+<li>the lattice of flats of the restriction to $x$ in the poset.</li>
+</ul>
+<h4 id="example-subarrangement-of-the-braid-arrangement_1">Example (Subarrangement of the braid arrangement)</h4>
+<p>We continue from the original $\mathsf{A}_3$ example started <a href="#example-lattice-of-braid-arrangement">above</a>. We will construct the restriction from the flat labeled $3$.</p>
+<pre><code class="language-python">sage: L.restriction(3)
+The lattice of flats of:
+Arrangement &lt;-x0 + x1 | x1 | x0&gt;
+given by:
+Finite poset containing 5 elements
+</code></pre>
+<p><img alt="" src="../A3_res3.png" /></p></div>
+            </div>
+        </div>
+
+        <footer class="col-md-12">
+            <hr>
+                <p>&copy; 2021 J. Maglione</p>
+            <p>Documentation built with <a href="https://www.mkdocs.org/">MkDocs</a>.</p>
+        </footer>
+        <script>
+            var base_url = "..",
+                shortcuts = {"help": 191, "next": 78, "previous": 80, "search": 83};
+        </script>
+        <script src="../js/base.js" defer></script>
+        <script src="../search/main.js" defer></script>
+
+        <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="searchModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="searchModalLabel">Search</h4>
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            </div>
+            <div class="modal-body">
+                <p>
+                    From here you can search these documents. Enter
+                    your search terms below.
+                </p>
+                <form>
+                    <div class="form-group">
+                        <input type="search" class="form-control" placeholder="Search..." id="mkdocs-search-query" title="Type search term here">
+                    </div>
+                </form>
+                <div id="mkdocs-search-results"></div>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div><div class="modal" id="mkdocs_keyboard_modal" tabindex="-1" role="dialog" aria-labelledby="keyboardModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="keyboardModalLabel">Keyboard Shortcuts</h4>
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            </div>
+            <div class="modal-body">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th style="width: 20%;">Keys</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="help shortcut"><kbd>?</kbd></td>
+                    <td>Open this help</td>
+                  </tr>
+                  <tr>
+                    <td class="next shortcut"><kbd>n</kbd></td>
+                    <td>Next page</td>
+                  </tr>
+                  <tr>
+                    <td class="prev shortcut"><kbd>p</kbd></td>
+                    <td>Previous page</td>
+                  </tr>
+                  <tr>
+                    <td class="search shortcut"><kbd>s</kbd></td>
+                    <td>Search</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>
+
+    </body>
+</html>

@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        <meta name="author" content="Joshua Maglione">
+        
+        <link rel="shortcut icon" href="../img/favicon.ico">
+        <title>Constructors - HypIgu Documentation</title>
+        <link href="../css/bootstrap.min.css" rel="stylesheet">
+        <link href="../css/font-awesome.min.css" rel="stylesheet">
+        <link href="../css/base.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
+
+        <script src="../js/jquery-1.10.2.min.js" defer></script>
+        <script src="../js/bootstrap.min.js" defer></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+        <script>hljs.initHighlightingOnLoad();</script> 
+        <!-- Load KaTeX -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
+
+        <!-- The loading of KaTeX is deferred to speed up page rendering -->
+        <script defer src="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.js" integrity="sha384-g7c+Jr9ZivxKLnZTDUhnkOnsh30B4H0rpLUpJ4jAIKs4fnJI+sEnkvrMWph2EDg4" crossorigin="anonymous"></script>
+
+        <!-- To automatically render math in text elements, include the auto-render extension: -->
+        <script defer src="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/contrib/auto-render.min.js" integrity="sha384-mll67QQFJfxn0IYznZYonOWZ644AWYC+Pt2cHqMaRhXVrursRwvLnLaebdGIlYNa" crossorigin="anonymous"
+        onload="renderMathInElement(document.body, {
+            delimiters: [
+            {left: '$\n', right: '$', display: false},
+            {left: '$', right: '$', display: false}, 
+            {left: '\[\n', right: '\]', display: true},
+            {left: '\[', right: '\]', display: true}
+            ]
+        });"></script>
+    </head>
+
+
+
+    <body>
+        <div class="navbar fixed-top navbar-expand-lg navbar-dark bg-primary">
+            <div class="container">
+                <a class="navbar-brand" href="..">HypIgu Documentation</a>
+                <!-- Expander button -->
+                <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbar-collapse">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <!-- Expanded navigation -->
+                <div id="navbar-collapse" class="navbar-collapse collapse">
+                        <!-- Main navigation -->
+                        <ul class="nav navbar-nav">
+                            <li class="navitem">
+                                <a href=".." class="nav-link">Home</a>
+                            </li>
+                            <li class="navitem active">
+                                <a href="./" class="nav-link">Constructors</a>
+                            </li>
+                            <li class="navitem">
+                                <a href="../lattices/" class="nav-link">Lattices</a>
+                            </li>
+                            <li class="navitem">
+                                <a href="../rational-functions/" class="nav-link">Rational Functions</a>
+                            </li>
+                        </ul>
+
+                    <ul class="nav navbar-nav ml-auto">
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" data-toggle="modal" data-target="#mkdocs_search_modal">
+                                <i class="fa fa-search"></i> Search
+                            </a>
+                        </li>
+                            <li class="nav-item">
+                                <a rel="prev" href=".." class="nav-link">
+                                    <i class="fa fa-arrow-left"></i> Previous
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a rel="next" href="../lattices/" class="nav-link">
+                                    Next <i class="fa fa-arrow-right"></i>
+                                </a>
+                            </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="row">
+                    <div class="col-md-3"><div class="navbar-light navbar-expand-md bs-sidebar hidden-print affix" role="complementary">
+    <div class="navbar-header">
+        <button type="button" class="navbar-toggler collapsed" data-toggle="collapse" data-target="#toc-collapse" title="Table of Contents">
+            <span class="fa fa-angle-down"></span>
+        </button>
+    </div>
+
+    
+    <div id="toc-collapse" class="navbar-collapse collapse card bg-secondary">
+        <ul class="nav flex-column">
+            
+            <li class="nav-item" data-level="1"><a href="#constructors" class="nav-link">Constructors</a>
+              <ul class="nav flex-column">
+            <li class="nav-item" data-level="2"><a href="#catalanarrangement" class="nav-link">CatalanArrangement</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#coxeterarrangement" class="nav-link">CoxeterArrangement</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#directsum" class="nav-link">DirectSum</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#linialarrangement" class="nav-link">LinialArrangement</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#polynomialtoarrangement" class="nav-link">PolynomialToArrangement</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#resonancearrangement" class="nav-link">ResonanceArrangement</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#shiarrangement" class="nav-link">ShiArrangement</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+              </ul>
+            </li>
+        </ul>
+    </div>
+</div></div>
+                    <div class="col-md-9" role="main">
+
+<h1 id="constructors">Constructors</h1>
+<p>We provide a number of constructions of hyperplane arrangements. This uses the default hyperplane arrangement class in SageMath. There is some overlap with the default <a href="https://doc.sagemath.org/html/en/reference/discrete_geometry/sage/geometry/hyperplane_arrangement/library.html">hyperplane arrangement library</a>, and one is encouraged to search there in case your favorite hyperplane arrangement is not in our list. </p>
+<p>Most of our constructions are Coxeter-theoretic&mdash;meaning, they take as input $\mathsf{X}$ and $n$, where $\mathsf{X}$ is the Coxeter type and $n$ is the (Coxeter) rank. For example the Catalan arrangement of type $\mathsf{X}_n$ can be defined for all Coxeter arrangements like its defined for the (type $\mathsf{A}$) braid arrangement. </p>
+<h2 id="catalanarrangement">CatalanArrangement</h2>
+<p><strong>Input</strong>:</p>
+<ul>
+<li>a string or an iterable container of strings.</li>
+</ul>
+<p><strong>Output</strong>:</p>
+<ul>
+<li>the associated Catalan arrangement. </li>
+</ul>
+<p>If just one string is provided, it should be formatted like <code>'Xn'</code>, where <code>X</code> is a roman letter from $\mathsf{A}$ to $\mathsf{H}$ and <code>n</code> is a positive integer. Iterable containers of strings need to have strings formatted in this way. Strings can also be separated by one white space like <code>'Xm Yn'</code> instead of being in an iterable container. </p>
+<p>If $\mathcal{A}$ is a Coxeter arrangement of type $\mathsf{X}_n$, then the <em>Catalan arrangement of type $\mathsf{X}_n$</em> is </p>
+<p>[ 
+    \mathcal{C} = \{L - 1 ~|~ L\in\mathcal{A} \} \cup \mathcal{A} \cup \{L + 1 ~|~ L\in\mathcal{A} \}.
+]</p>
+<h4 id="example-the-catalan-arrangement">Example (<em>The</em> Catalan arrangement)</h4>
+<p>The Catalan arrangement is defined as </p>
+<p>[
+    \{X_i - X_j + \varepsilon ~|~ 1\leq i &lt; j \leq n+1,\; \varepsilon\in\{-1, 0, 1\} \}.
+]</p>
+<p>We can quickly construct this as a type $\mathsf{A}_n$ Catalan arrangement for $n=2$. </p>
+<pre><code class="language-python">sage: A = hi.CatalanArrangement(&quot;A2&quot;)
+sage: A
+Arrangement of 9 hyperplanes of dimension 3 and rank 2
+sage: A.hyperplanes()
+(Hyperplane 0*x0 + x1 - x2 - 1,
+ Hyperplane 0*x0 + x1 - x2 + 0,
+ Hyperplane 0*x0 + x1 - x2 + 1,
+ Hyperplane x0 - x1 + 0*x2 - 1,
+ Hyperplane x0 - x1 + 0*x2 + 0,
+ Hyperplane x0 - x1 + 0*x2 + 1,
+ Hyperplane x0 + 0*x1 - x2 - 1,
+ Hyperplane x0 + 0*x1 - x2 + 0,
+ Hyperplane x0 + 0*x1 - x2 + 1)
+</code></pre>
+<h4 id="example-footnotesize-mathsfb_4-catalan-arrangement">Example (${\footnotesize \mathsf{B}_4}$-Catalan arrangement)</h4>
+<p>The Coxeter arrangement of type $\mathsf{B}_4$ has $16$ hyperplanes in $\mathbb{Q}^4$. Thus, the associated Catalan arrangement is non-central with $48$ hyperplanes in $\mathbb{Q}^4$. We verify this.</p>
+<pre><code class="language-python">sage: A = hi.CatalanArrangement(&quot;B4&quot;)
+sage: A
+Arrangement of 48 hyperplanes of dimension 4 and rank 4
+sage: A.is_central()
+False
+</code></pre>
+<h2 id="coxeterarrangement">CoxeterArrangement</h2>
+<p><strong>Input</strong>:</p>
+<ul>
+<li>a string or an iterable container of strings.</li>
+</ul>
+<p><strong>Output</strong>:</p>
+<ul>
+<li>the associated Coxeter arrangement. </li>
+</ul>
+<p>If just one string is provided, it should be formatted like <code>'Xn'</code>, where <code>X</code> is a roman letter from $\mathsf{A}$ to $\mathsf{H}$ and <code>n</code> is a positive integer. Iterable containers of strings need to have strings formatted in this way. Strings can also be separated by one white space like <code>'Xm Yn'</code> instead of being in an iterable container. </p>
+<h4 id="example-braid-arrangement">Example (Braid arrangement)</h4>
+<p>The braid arrangement with $n+1$ hyperplanes is equivalent to the type $\mathsf{A}_n$ Coxeter arrangement:</p>
+<p>[
+    \{X_i - X_j ~|~ 1\leq i &lt; j \leq n+1\}.
+]</p>
+<p>We construct the braid arrangement with $3$ hyperplanes.</p>
+<pre><code class="language-python">sage: hi.CoxeterArrangement(&quot;A2&quot;)
+Arrangement &lt;x1 - x2 | x0 - x1 | x0 - x2&gt;
+</code></pre>
+<h4 id="example-boolean-arrangement">Example (Boolean arrangement)</h4>
+<p>One should consider the other two constructions of the Boolean arrangement via <a href="#example-boolean-arrangement-again">direct sums</a> and <a href="#example-boolean-arrangement-yet-again">polynomials</a>. The Boolean arrangement with $n$ hyperplanes is a Coxeter arrangement, equivalent to $\mathsf{A}_1^n$, the direct sum of $n$ copies of $\mathsf{A}_1$. We construct the rank $5$ Boolean arrangement in two different ways. Note that, when created this way, the ambient dimension is double the rank.</p>
+<pre><code class="language-python">sage: bool5 = &quot;A1 A1 A1 A1 A1&quot;
+sage: hi.CoxeterArrangement(bool5)
+Arrangement of 5 hyperplanes of dimension 10 and rank 5
+</code></pre>
+<p>Another construction is as follows.</p>
+<pre><code class="language-python">sage: L = [&quot;A1&quot; for i in range(5)]
+sage: L
+['A1', 'A1', 'A1', 'A1', 'A1']
+sage: hi.CoxeterArrangement(L)
+Arrangement of 5 hyperplanes of dimension 10 and rank 5
+</code></pre>
+<h4 id="example-coxeter-type-footnotesize-mathsfi_2m">Example (Coxeter type ${\footnotesize \mathsf{I}_2(m)}$)</h4>
+<p>In all other Coxeter types, the integer corresponds to the rank. The exception is with type $\mathsf{I}$. If the input is type $\mathsf{I}$, then the integer corresponds to the number of hyperplanes. Here, we give a $\mathbb{Q}$-representation of $\mathsf{I}_2(8)$ as follows.</p>
+<pre><code class="language-python">sage: A = hi.CoxeterArrangement(&quot;I8&quot;)
+sage: A
+Arrangement of 8 hyperplanes of dimension 2 and rank 2
+sage: A.hyperplanes()
+(Hyperplane -x0 + 2*x1 + 0,
+ Hyperplane -x0 + 3*x1 + 0,
+ Hyperplane 0*x0 + x1 + 0,
+ Hyperplane x0 - x1 + 0,
+ Hyperplane x0 + 0*x1 + 0,
+ Hyperplane x0 + x1 + 0,
+ Hyperplane x0 + 2*x1 + 0,
+ Hyperplane x0 + 3*x1 + 0)
+</code></pre>
+<h2 id="directsum">DirectSum</h2>
+<p><strong>Input</strong>:</p>
+<ul>
+<li>an iterable container of hyperplane arrangements.</li>
+</ul>
+<p><strong>Output</strong>:</p>
+<ul>
+<li>the direct sum arrangement. </li>
+</ul>
+<p>The direct sum arrangement is also known as the product arrangement. </p>
+<h4 id="example-boolean-arrangement-again">Example (Boolean arrangement again)</h4>
+<p>One should compare this example with the other Boolean examples: as a <a href="#example-boolean-arrangement">Coxeter arrangement</a> and as an arrangement from a <a href="#example-boolean-arrangement-yet-again">polynomial</a>. First we create the irreducible factor: the origin on the rational line. </p>
+<pre><code class="language-python">sage: H = HyperplaneArrangements(QQ, 'x')
+sage: A = H([0, 1])
+sage: A
+Arrangement &lt;x&gt;
+</code></pre>
+<p>Now we create higher rank Boolean arrangements in two slightly different ways. The rank $4$ Boolean arrangement is given as follows.</p>
+<pre><code class="language-python">sage: hi.DirectSum(A, A, A, A)
+Arrangement &lt;x3 | x2 | x1 | x0&gt;
+</code></pre>
+<p>And the rank $256$ Boolean arrangement is </p>
+<pre><code class="language-python">sage: L = [A for i in range(256)]
+sage: hi.DirectSum(L)
+Arrangement of 256 hyperplanes of dimension 256 and rank 256
+</code></pre>
+<h2 id="linialarrangement">LinialArrangement</h2>
+<p><strong>Input</strong>:</p>
+<ul>
+<li>a string or an iterable container of strings.</li>
+</ul>
+<p><strong>Output</strong>:</p>
+<ul>
+<li>the associated Linial arrangement. </li>
+</ul>
+<p>If just one string is provided, it should be formatted like <code>'Xn'</code>, where <code>X</code> is a roman letter from $\mathsf{A}$ to $\mathsf{H}$ and <code>n</code> is a positive integer. Iterable containers of strings need to have strings formatted in this way. Strings can also be separated by one white space like <code>'Xm Yn'</code> instead of being in an iterable container. </p>
+<p>If $\mathcal{A}$ is a Coxeter arrangement of type $\mathsf{X}_n$, then the <em>Linial arrangement of type $\mathsf{X}_n$</em> is </p>
+<p>[ 
+    \mathcal{L} = \{L - 1 ~|~ L\in\mathcal{A} \} .
+]</p>
+<h4 id="example-the-linial-arrangement">Example (<em>The</em> Linial arrangement)</h4>
+<p>Usually the Linial arrangement is defined without reference to a Coxeter type and is given as the type-$\mathsf{A}$ version above. We construct the Linial arrangement of type $\mathsf{A}_2$.</p>
+<pre><code class="language-pyhton">sage: A = hi.LinialArrangement(&quot;A2&quot;)
+sage: A
+Arrangement &lt;x1 - x2 + 1 | x0 - x1 + 1 | x0 - x2 + 1&gt;
+</code></pre>
+<h2 id="polynomialtoarrangement">PolynomialToArrangement</h2>
+<p><strong>Input</strong>:</p>
+<ul>
+<li>a polynomial or symbolic expression.</li>
+</ul>
+<p><strong>Output</strong>:</p>
+<ul>
+<li>the hyperplane arrangement associated with the linear factors of the given polynomial.</li>
+</ul>
+<p>We require that the given polynomial <em>only</em> have linear factors. Strings are also acceptable input and will be interpreted by SageMath (so they should be formatted accordingly). The underlying field for such symbolic expressions is assumed to be $\mathbb{Q}$. </p>
+<h4 id="example-boolean-arrangement-yet-again">Example (Boolean arrangement yet again)</h4>
+<p>Compare this construction with the Boolean construction as a <a href="#example-boolean-arrangement">Coxeter arrangement</a> and as a <a href="#example-boolean-arrangement-again">direct sum</a>. The Boolean arrangement is equivalent to the arrangement of coordinate hyperplanes, so the corresponding polynomial is a monomial. We construct the rank $5$ Boolean arrangement.</p>
+<pre><code class="language-python">sage: a, b, c, d, e = var('a b c d e')
+sage: f = a*b*c*d*e
+sage: A = hi.PolynomialToArrangement(f)
+sage: A
+Arrangement of 5 hyperplanes of dimension 5 and rank 5
+</code></pre>
+<p>Equivalently, one can input just the string.</p>
+<pre><code class="language-python">sage: B = hi.PolynomialToArrangement('a*b*c*d*e')
+sage: A == B
+True
+</code></pre>
+<h4 id="example-cyclotomic">Example (Cyclotomic)</h4>
+<p>Let $\zeta_5$ be a primitive $5$th root of unity. We construct the arrangement of $5$ lines through the origin with underlying field $\mathbb{Q}(\zeta_5)$. This can be accomplished by constructing the hyperplane arrangement associated to the polynomial $X^5 - Y^5\in \mathbb{Q}(\zeta_5)[X, Y]$. Note that this arrangement is equivalent to the Coxeter arrangement of type $\mathsf{I}_2(5)\cong \mathsf{H}_2$; see the <a href="#example-coxeter-type-footnotesize-mathsfi_2m">$\mathsf{I}_2(m)$ Example</a>. </p>
+<pre><code class="language-python">sage: K = CyclotomicField(5)
+sage: R.&lt;X, Y&gt; = PolynomialRing(K)
+sage: f = X**5 - Y**5
+sage: A = hi.PolynomialToArrangement(f)
+sage: A
+Arrangement of 5 hyperplanes of dimension 2 and rank 2
+sage: A.hyperplanes()
+(Hyperplane X + (-zeta5^2)*Y + 0,
+ Hyperplane X + (zeta5^3 + zeta5^2 + zeta5 + 1)*Y + 0,
+ Hyperplane X + (-zeta5^3)*Y + 0,
+ Hyperplane X + (-zeta5)*Y + 0,
+ Hyperplane X + (-1)*Y + 0)
+</code></pre>
+<p>Note that if the underlying field were just, say, $\mathbb{Q}$, then this would result in an error since $f$ is not a product of linear factors. </p>
+<h2 id="resonancearrangement">ResonanceArrangement</h2>
+<p><strong>Input</strong>:</p>
+<ul>
+<li>a positive integer.</li>
+</ul>
+<p><strong>Output</strong>:</p>
+<ul>
+<li>the resonance arrangement.</li>
+</ul>
+<p>The resonance arrangement, $\mathcal{R}_n$, of rank $n$ is </p>
+<p>[ 
+    \left\{ \sum_{i\in I}X_i ~\middle|~ \varnothing \neq I\subseteq \{1,\dots, n\} \right\} .
+]</p>
+<h4 id="example-the-resonance-arrangement">Example (The resonance arrangement)</h4>
+<p>We construct the resonance arrangement of rank $4$, which should contain $2^4-1$ hyperplanes.</p>
+<pre><code class="language-python">sage: A = hi.ResonanceArrangement(4)
+sage: A
+Arrangement of 15 hyperplanes of dimension 4 and rank 4
+</code></pre>
+<h2 id="shiarrangement">ShiArrangement</h2>
+<p><strong>Input</strong>:</p>
+<ul>
+<li>a string or an iterable container of strings.</li>
+</ul>
+<p><strong>Output</strong>:</p>
+<ul>
+<li>the associated Shi arrangement. </li>
+</ul>
+<p>If just one string is provided, it should be formatted like <code>'Xn'</code>, where <code>X</code> is a roman letter from $\mathsf{A}$ to $\mathsf{H}$ and <code>n</code> is a positive integer. Iterable containers of strings need to have strings formatted in this way. Strings can also be separated by one white space like <code>'Xm Yn'</code> instead of being in an iterable container. </p>
+<p>If $\mathcal{A}$ is a Coxeter arrangement of type $\mathsf{X}_n$, then the <em>Shi arrangement of type $\mathsf{X}_n$</em> is </p>
+<p>[ 
+    \mathcal{S} = \mathcal{A} \cup \{L - 1 ~|~ L\in\mathcal{A} \} .
+]</p>
+<h4 id="example-the-shi-arrangement">Example (<em>The</em> Shi arrangement)</h4>
+<p>Like with some of our other constructors, the usual definition makes no reference to Coxeter types, so the Shi arrangement is equal to the type-$\mathsf{A}$ Shi arrangement defined above. We can easily construct this for $\mathsf{A}_2$.</p>
+<pre><code class="language-python">sage: A = hi.ShiArrangement(&quot;A2&quot;)
+sage: A
+Arrangement of 6 hyperplanes of dimension 3 and rank 2
+</code></pre></div>
+            </div>
+        </div>
+
+        <footer class="col-md-12">
+            <hr>
+                <p>&copy; 2021 J. Maglione</p>
+            <p>Documentation built with <a href="https://www.mkdocs.org/">MkDocs</a>.</p>
+        </footer>
+        <script>
+            var base_url = "..",
+                shortcuts = {"help": 191, "next": 78, "previous": 80, "search": 83};
+        </script>
+        <script src="../js/base.js" defer></script>
+        <script src="../search/main.js" defer></script>
+
+        <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="searchModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="searchModalLabel">Search</h4>
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            </div>
+            <div class="modal-body">
+                <p>
+                    From here you can search these documents. Enter
+                    your search terms below.
+                </p>
+                <form>
+                    <div class="form-group">
+                        <input type="search" class="form-control" placeholder="Search..." id="mkdocs-search-query" title="Type search term here">
+                    </div>
+                </form>
+                <div id="mkdocs-search-results"></div>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div><div class="modal" id="mkdocs_keyboard_modal" tabindex="-1" role="dialog" aria-labelledby="keyboardModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="keyboardModalLabel">Keyboard Shortcuts</h4>
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            </div>
+            <div class="modal-body">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th style="width: 20%;">Keys</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="help shortcut"><kbd>?</kbd></td>
+                    <td>Open this help</td>
+                  </tr>
+                  <tr>
+                    <td class="next shortcut"><kbd>n</kbd></td>
+                    <td>Next page</td>
+                  </tr>
+                  <tr>
+                    <td class="prev shortcut"><kbd>p</kbd></td>
+                    <td>Previous page</td>
+                  </tr>
+                  <tr>
+                    <td class="search shortcut"><kbd>s</kbd></td>
+                    <td>Search</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>
+
+    </body>
+</html>

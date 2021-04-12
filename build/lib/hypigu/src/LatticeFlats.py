@@ -7,8 +7,9 @@
 from functools import reduce as _reduce
 from sage.misc.cachefunc import cached_method
 from .Globals import __TIME as _time
+from .Globals import __NCPUS as _N
 import sage.parallel.decorate as _para
-from os import cpu_count as _NCPUs
+
 
 def _contract(M, rows):
     from sage.all import Matrix, identity_matrix
@@ -87,12 +88,11 @@ def _get_labels(M, x, rows, L):
 
 def _parse_poset(P):
     global POS, atoms, labs, int_at
-    from os import cpu_count
     from sage.all import Set
     import sage.parallel.decorate as para
     
     POS = P
-    N = cpu_count()
+    N = _N
     atoms = POS.upper_covers(POS.bottom())
 
     @para.parallel(N)
@@ -127,7 +127,7 @@ def _subposet(P, x, F):
 
 # Parallel function to build the intersection lattice.
 # Moved to global to prevent accidentally carrying unnecessary data. 
-@_para.parallel(_NCPUs())
+@_para.parallel(_N)
 def build_next(A, S, HYP, LIN):
     from sage.all import exists, Set
     new_level = []
@@ -172,10 +172,9 @@ def build_next(A, S, HYP, LIN):
 def _para_intersection_poset(A):
     from sage.geometry.hyperplane_arrangement.affine_subspace import AffineSubspace
     from sage.all import exists, flatten, Set, QQ, VectorSpace, Poset
-    from os import cpu_count
     from .Globals import __SANITY
 
-    N = cpu_count()
+    N = _N
     K = A.base_ring()
     whole_space = AffineSubspace(0, VectorSpace(K, A.dimension()))
     # L is the ranked list of affine subspaces in L(A).
@@ -268,6 +267,20 @@ def _para_intersection_poset(A):
     return [Poset((t, cmp_fn)), label_dict, hyp_dict]
 
 
+def _lof_from_matroid(A):
+    from sage.all import Set, Matrix, Matroid, Poset
+    from functools import reduce
+    rows = list(map(lambda H: H.coefficients()[1:], A.hyperplanes()))
+    mat = Matrix(A.base_ring(), rows).transpose()
+    M = Matroid(mat)
+    L = M.lattice_of_flats()
+    ranks = reduce(lambda x, y: x+y, [list(filter(lambda x: L.rank(x) == r, L._elements)) for r in range(2, L.rank() + 1)], [L.bottom()] + [frozenset([k]) for k in range(len(A))])
+    P = Poset(L, element_labels={x : ranks.index(x) for x in L._elements})
+    adj_set = lambda S: Set([x+1 for x in S])
+    label_dict = {i : adj_set(ranks[i]) for i in range(len(L))}
+    hyp_dict = {i : A[list(ranks[i])[0]] for i in range(1, len(A) + 1)}
+    return [P, label_dict, hyp_dict]
+
 
 class LatticeOfFlats():
 
@@ -283,7 +296,10 @@ class LatticeOfFlats():
             self.poset = poset
         else:
             if not lazy:
-                P, FL, HL = _para_intersection_poset(A)
+                if A.is_central():
+                    P, FL, HL = _lof_from_matroid(A)
+                else:
+                    P, FL, HL = _para_intersection_poset(A)
                 self.poset = P
                 self.flat_labels = FL
                 self.hyperplane_labels = HL
@@ -309,7 +325,7 @@ class LatticeOfFlats():
         dict_builder = "FL = {x[0] : Set(x[1]) for x in FL_tup}\n"
         with open(file, "w") as F:
             F.write("from sage.all import HyperplaneArrangements, QQ, Poset, Set\n")
-            F.write("import Linigu as LI\n")
+            F.write("import hypigu as hi\n")
             F.write("H = HyperplaneArrangements(QQ, {0})\n".format(HH.variable_names()))
             del HH
             F.write("A = H({0})\n".format(A).replace("), ", "),\n"))
@@ -320,7 +336,7 @@ class LatticeOfFlats():
             F.write("FL_tup = {0}\n".format(FL_tup).replace("), ", "),\n"))
             F.write(dict_builder)
             F.write("del FL_tup\n")
-            F.write("{0} = LI.LatticeOfFlats(A, poset=P, flat_labels=FL)\n".format(var_name))
+            F.write("{0} = hi.LatticeOfFlats(A, poset=P, flat_labels=FL)\n".format(var_name))
             F.write("del H, A, CR, P, FL\n")
             F.write("print('Loaded a lattice of flats. Variable name: {0}')".format(var_name))
 
@@ -382,7 +398,8 @@ class LatticeOfFlats():
             assert x in P, "Expected element to be in poset."
             new_P = _subposet(P, x, lambda z: P.upper_covers(z))
             new_A = None 
-            if self.hyperplane_arrangement and self.hyperplane_labels:
+            new_HL = None 
+            if self.hyperplane_arrangement:
                 A = self.hyperplane_arrangement
                 hyp_coeffs = map(lambda H: H.coefficients(), A.hyperplanes())
                 M = Matrix(A.base_ring(), list(hyp_coeffs))
@@ -400,6 +417,9 @@ class LatticeOfFlats():
                 FL = self.flat_labels
                 new_FL = {x : lab_func(FL[x]) for x in new_P._elements}
                 new_HL = {a : new_A[hyp_dict[a]] for a in new_P.upper_covers(new_P.bottom())}
+            else:
+                FL = self.flat_labels
+                new_FL = {y : FL[y].difference(FL[x]) for y in new_P._elements}
             return LatticeOfFlats(new_A, poset=new_P, flat_labels=new_FL, hyperplane_labels=new_HL)
         else:
             L = self.flat_labels 
@@ -465,13 +485,13 @@ class LatticeOfFlats():
 
         return LatticeOfFlats(new_HPA, poset=new_P, flat_labels=new_FL, hyperplane_labels=new_HL)
 
-    def lazy_restriction(self, H):
+    def _lazy_restriction(self, H):
         HPA = self.hyperplane_arrangement
         assert HPA != None, "Needs underlying hyperplane arrangement."
         A = HPA.restriction(HPA[H - 1])
         return LatticeOfFlats(A, lazy=True)
 
-    def lazy_deletion(self, H):
+    def _lazy_deletion(self, H):
         HPA = self.hyperplane_arrangement
         assert HPA != None, "Needs underlying hyperplane arrangement."
         return LatticeOfFlats(HPA.parent()(HPA[:H-1] + HPA[H:]), lazy=True)
@@ -480,14 +500,14 @@ class LatticeOfFlats():
     def Poincare_polynomial(self):
         from sage.all import QQ
         from sage.rings.polynomial.polynomial_ring import polygen
-        X = polygen(QQ, 'X')
+        Y = polygen(QQ, 'Y')
         if self.poset != None:
             P = self.poset 
             atoms = self.atoms()
             if P.rank() == 0:
                 return QQ(1)
             if P.rank() == 1:
-                return QQ(1) + len(atoms)*X
+                return QQ(1) + len(atoms)*Y
         else: 
             # Lazy 
             A = self.hyperplane_arrangement
@@ -495,18 +515,22 @@ class LatticeOfFlats():
             if A.rank() == 0:
                 return QQ(1)
             if A.rank() == 1:
-                return QQ(1) + len(A)*X
-        D = self.lazy_deletion(1)
-        R = self.lazy_restriction(1)
-        return D.Poincare_polynomial() + X*R.Poincare_polynomial()
+                return QQ(1) + len(A)*Y
+        if self.hyperplane_arrangement == None:
+            chi = self.poset.characteristic_polynomial()
+            q = chi.variables()[0]
+            d = chi.degree(q)
+            return (-Y)**d*chi.subs({q : -Y**-1})
+        D = self._lazy_deletion(1)
+        R = self._lazy_restriction(1)
+        return D.Poincare_polynomial() + Y*R.Poincare_polynomial()
         
     @cached_method
     def _combinatorial_eq_elts(self):
         global POS, P_elts
-        from os import cpu_count
         import sage.parallel.decorate as para
 
-        N = cpu_count()
+        N = _N
         POS = self.poset
         P_elts = self.proper_part_poset()._elements
 
@@ -561,22 +585,6 @@ class LatticeOfFlats():
         return equiv_elts
 
 
-# The deletion method is coded well enough to allow for this kind of recursion. 
-# We need the new labels for a hyperplane though.
-def _deletion(A, X, P, poset=True, OG=None):
-    if OG:
-        Ar = OG
-    else:
-        Ar = A
-    H_to_str = lambda H: str(list(Ar).index(H))
-    complement = filter(lambda H: not P.le(H_to_str(H), X), A)
-    B = _reduce(lambda x, y: x.deletion(y), complement, A)
-    if not poset:
-        return B
-    Q = _subposet(P, X, lambda z: P.lower_covers(z))
-    return B, Q
-
-
 def _Coxeter_poset_data():
     # Bell numbers: A000110
     def A_poset(n):
@@ -625,29 +633,3 @@ def _possibly_Coxeter(P):
             if CPD[name]['poset'](r) == len(P):
                 return [True, name]
     return [False, None]
-
-
-
-# Compute the Poincare polynomial of either the chain F or the upper ideal of P
-# at restrict. 
-def PoincarePolynomial(P, F=None, restrict=None):
-    from sage.all import var, ZZ
-
-    # Setup the data
-    if restrict != None:
-        F = [restrict]
-    if F == None:
-        assert P.has_bottom()
-        F = [P.bottom()]
-    if F[0] != P.bottom():
-        F = [P.bottom()] + F 
-
-    P_up = _subposet(P, F[-1], lambda z: P.upper_covers(z))
-    chi = P_up.characteristic_polynomial() 
-    d = chi.degree()
-    Y = var('Y')
-    pi = ((-Y)**d*chi(q=-Y**(-1))).expand().simplify().factor()
-    if F[-1] == P.bottom() or restrict != None:
-        return pi
-    P_down = _subposet(P, F[-1], lambda z: P.lower_covers(z))
-    return pi*PoincarePolynomial(P_down, F=F[:-1])
