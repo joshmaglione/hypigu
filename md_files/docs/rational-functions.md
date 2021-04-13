@@ -185,7 +185,8 @@ The coarse flag Hilbert&ndash;Poincar&#233; series of $\mathcal{A}$ is defined t
 
 \[
     cfHP_{\mathcal{A}} (Y, T) 
-    = \sum_{F\in\Delta(\widetilde{\mathcal{L}}(\mathcal{A}))} \pi_F(Y) \left(\dfrac{T}{1 - T}\right)^{|F|}.
+    = \sum_{F\in\Delta(\widetilde{\mathcal{L}}(\mathcal{A}))} \pi_F(Y) \left(\dfrac{T}{1 - T}\right)^{|F|} 
+    = \dfrac{\mathcal{N}_{\mathcal{A}}(Y, T)}{(1 - T)^{\mathrm{rk}(\mathcal{A})}}.
 \]
 
 The parameter `lattice_of_flats` can be used to give the lattice of flats of $\mathcal{A}$, computed by [LatticeOfFlats](https://joshmaglione.github.io/hypigu/lattices/#latticeofflats); otherwise this parameter should stay set to `None`. The paramater `int_poset` can be used to give in the intersection poset of $\mathcal{A}$; otherwise this parameter should stay set to `None`.

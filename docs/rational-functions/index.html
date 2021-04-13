@@ -109,7 +109,7 @@
               <ul class="nav flex-column">
               </ul>
             </li>
-            <li class="nav-item" data-level="2"><a href="#combinatorialskeleton" class="nav-link">CombinatorialSkeleton</a>
+            <li class="nav-item" data-level="2"><a href="#coarseflaghpseries" class="nav-link">CoarseFlagHPSeries</a>
               <ul class="nav flex-column">
               </ul>
             </li>
@@ -134,6 +134,7 @@
 
 <h1 id="rational-functions">Rational Functions</h1>
 <p>The main purpose of this package is to explicitly compute the flag Hilbert&ndash;Poincar&#233; series and its specializations like Igusa'a local zeta function. We keep variable letters consistent with Maglione&ndash;Voll; the exception is that we replace $q^{-s_x}$ by $t_x$, for some label $x$. We define all of the rational functions, but defer to Maglione&ndash;Voll for the details. </p>
+<p>We omit the analogous definitions for matroids. Since all of the rational functions here are related to the flag Hilbert&ndash;Poincar&#233; series, the matroid versions use the lattice of flats of the given matroid and possibly Theorem B of Maglione&ndash;Voll.</p>
 <p>All of these functions contains many <em>optional</em> parameters. With the exception of <a href="#topologicalzetafuncion">TopologicalZetaFunction</a>, these are present to either provide print statements or save on computation time by using data previously computed. Unless these data have been computed, one should leave such parameters set to <code>None</code>.</p>
 <p>For example, if one wants to compute the combinatorial skeleton, the Igusa zeta function, and the topological zeta function of $\mathcal{A}$, then it would be beneficial to first compute the <a href="https://joshmaglione.github.io/hypigu/lattices/#latticeofflats">lattice of flats</a> and pass it to the three rational functions. This way, the lattice of flats is computed only once.</p>
 <pre><code class="language-python">sage: A = hi.CoxeterArrangement(&quot;A5&quot;)
@@ -146,6 +147,7 @@ sage: TZ = hi.TopologicalZetaFunction(A, lattice_of_flats=L)
 <p><strong>Input</strong>:</p>
 <ul>
 <li>a hyperplane arrangement $\mathcal{A}$,</li>
+<li><code>matroid=None</code> : a matroid, </li>
 <li><code>lattice_of_flats=None</code> : the lattice of flats of $\mathcal{A}$,</li>
 <li><code>int_poset=None</code> : the intersection poset of $\mathcal{A}$,</li>
 <li><code>verbose=False</code> : turn on print statements.</li>
@@ -181,6 +183,7 @@ sage: Z
 <p><strong>Input</strong>:</p>
 <ul>
 <li>a hyperplane arrangement $\mathcal{A}$,</li>
+<li><code>matroid=None</code> : a matroid, </li>
 <li><code>lattice_of_flats=None</code> : the lattice of flats of $\mathcal{A}$,</li>
 <li><code>int_poset=None</code> : the intersection poset of $\mathcal{A}$,</li>
 <li><code>verbose=False</code> : turn on print statements.</li>
@@ -243,46 +246,49 @@ sage: Z_B = hi.AtomZetaFunction(B)
 <p>[
     \prod_{i=1}^5\dfrac{1-q^{-1}}{1 - q^{-1}t_i}.
 ]</p>
-<h2 id="combinatorialskeleton">CombinatorialSkeleton</h2>
+<h2 id="coarseflaghpseries">CoarseFlagHPSeries</h2>
 <p><strong>Input</strong>:</p>
 <ul>
 <li>a hyperplane arrangement $\mathcal{A}$,</li>
+<li><code>matroid=None</code> : a matroid, </li>
 <li><code>lattice_of_flats=None</code> : the lattice of flats of $\mathcal{A}$,</li>
 <li><code>int_poset=None</code> : the intersection poset of $\mathcal{A}$,</li>
+<li><code>numerator=False</code> : only return the numerator $\mathcal{N}_{\mathcal{A}}(Y, T)$,</li>
 <li><code>verbose=False</code> : turn on print statements.</li>
 </ul>
 <p><strong>Output</strong>:</p>
 <ul>
-<li>the combinatorial skeleton associated to $\mathcal{A}$. </li>
+<li>the coarse flag Hilbert&ndash;Poincar&#233; series associated to $\mathcal{A}$. </li>
 </ul>
-<p>The combinatorial skeleton of $\mathcal{A}$ is defined to be:</p>
+<p>The coarse flag Hilbert&ndash;Poincar&#233; series of $\mathcal{A}$ is defined to be:</p>
 <p>[
-    HP_{\mathcal{A}}^{\mathrm{sk}} (Y, T) 
-    = \sum_{F\in\Delta(\widetilde{\mathcal{L}}(\mathcal{A}))} \pi_F(Y) \left(\dfrac{T}{1 - T}\right)^{|F|}.
+    cfHP_{\mathcal{A}} (Y, T) 
+    = \sum_{F\in\Delta(\widetilde{\mathcal{L}}(\mathcal{A}))} \pi_F(Y) \left(\dfrac{T}{1 - T}\right)^{|F|} 
+    = \dfrac{\mathcal{N}_{\mathcal{A}}(Y, T)}{(1 - T)^{\mathrm{rk}(\mathcal{A})}}.
 ]</p>
 <p>The parameter <code>lattice_of_flats</code> can be used to give the lattice of flats of $\mathcal{A}$, computed by <a href="https://joshmaglione.github.io/hypigu/lattices/#latticeofflats">LatticeOfFlats</a>; otherwise this parameter should stay set to <code>None</code>. The paramater <code>int_poset</code> can be used to give in the intersection poset of $\mathcal{A}$; otherwise this parameter should stay set to <code>None</code>.</p>
 <h4 id="example-boolean-skeleton">Example (Boolean skeleton)</h4>
 <p>We verify that the Boolean arrangement, $\mathcal{A}$, of rank $n$ satisfies the equation</p>
 <p>[
-    {\sf HP}_{\mathcal{A}}^{\mathrm{sk}}(Y, T) = \dfrac{(1+ Y)^nE_n(T)}{(1 - T)^n},
+    {\sf cfHP}_{\mathcal{A}}(Y, T) = \dfrac{(1+ Y)^nE_n(T)}{(1 - T)^n},
 ]</p>
 <p>where $E_n(T)$ is the $n$th Eulerian polynomial. We set $n=6$ for this example.</p>
 <pre><code class="language-python">sage: A = hi.CoxeterArrangement([&quot;A1&quot; for i in range(6)])
 sage: A
 Arrangement of 6 hyperplanes of dimension 12 and rank 6
-sage: S = hi.CombinatorialSkeleton(A)
+sage: S = hi.CoarseFlagHPSeries(A)
 sage: S.factor()
 (T^4 + 56*T^3 + 246*T^2 + 56*T + 1)*(T + 1)*(Y + 1)^6/(T - 1)^6
 </code></pre>
 <h4 id="example-coxeter-skeletons-at-footnotesize-y1">Example (Coxeter skeletons at ${\footnotesize Y=1}$)</h4>
 <p>We verify Theorem D of Maglione--Voll for the Coxeter arrangement of type $\mathsf{D}_5$. Thus, we will show that </p>
 <p>[
-    {\sf HP}_{\mathsf{D}_5}^{\mathrm{sk}} (1, T) = 1920\cdot \dfrac{1 + 26T + 66T^2 + 26T^3 + T^4}{(1 - T)^5}, 
+    {\sf cfHP}_{\mathsf{D}_5} (1, T) = 1920\cdot \dfrac{1 + 26T + 66T^2 + 26T^3 + T^4}{(1 - T)^5}, 
 ]</p>
 <pre><code class="language-python">sage: A = hi.CoxeterArrangement(&quot;D5&quot;)
 sage: A
 Arrangement of 20 hyperplanes of dimension 5 and rank 5
-sage: S = hi.CombinatorialSkeleton(A)
+sage: S = hi.CoarseFlagHPSeries(A)
 sage: S.factor()
 -(T^4*Y^4 + 19*T^4*Y^3 + 397*T^3*Y^4 + 131*T^4*Y^2 + 3074*T^3*Y^3 + 3143*T^2*Y^4 + 389*T^4*Y + 8556*T^3*Y^2 + 15624*T^2*Y^3 + 3239*T*Y^4 + 420*T^4 + 9694*T^3*Y + 25826*T^2*Y^2 + 9694*T*Y^3 + 420*Y^4 + 3239*T^3 + 15624*T^2*Y + 8556*T*Y^2 + 389*Y^3 + 3143*T^2 + 3074*T*Y + 131*Y^2 + 397*T + 19*Y + 1)*(Y + 1)/(T - 1)^5
 </code></pre>
@@ -294,6 +300,7 @@ sage: S.factor()
 <p><strong>Input</strong>:</p>
 <ul>
 <li>a hyperplane arrangement $\mathcal{A}$,</li>
+<li><code>matroid=None</code> : a matroid, </li>
 <li><code>lattice_of_flats=None</code> : the lattice of flats of $\mathcal{A}$,</li>
 <li><code>int_poset=None</code> : the intersection poset of $\mathcal{A}$,</li>
 <li><code>verbose=False</code> : turn on print statements.</li>
@@ -304,7 +311,7 @@ sage: S.factor()
 </ul>
 <p>The flag Hilbert&ndash;Poincar&#233; series of $\mathcal{A}$ is defined to be:</p>
 <p>[
-    HP_{\mathcal{A}} (Y, \bm{T}) 
+    fHP_{\mathcal{A}} (Y, \bm{T}) 
     = \sum_{F\in\Delta(\widetilde{\mathcal{L}}(\mathcal{A}))} \pi_F(Y) \prod_{x\in F} \frac{T_x}{1 - T_x}.
 ]</p>
 <p>The parameter <code>lattice_of_flats</code> can be used to give the lattice of flats of $\mathcal{A}$, computed by <a href="https://joshmaglione.github.io/hypigu/lattices/#latticeofflats">LatticeOfFlats</a>; otherwise this parameter should stay set to <code>None</code>. The paramater <code>int_poset</code> can be used to give in the intersection poset of $\mathcal{A}$; otherwise this parameter should stay set to <code>None</code>.</p>
@@ -323,6 +330,7 @@ sage: hi.FlagHilbertPoincareSeries(A)
 <p><strong>Input</strong>:</p>
 <ul>
 <li>a hyperplane arrangement $\mathcal{A}$ or a polynomial $f$,</li>
+<li><code>matroid=None</code> : a matroid, </li>
 <li><code>lattice_of_flats=None</code> : the lattice of flats of $\mathcal{A}$,</li>
 <li><code>int_poset=None</code> : the intersection poset of $\mathcal{A}$,</li>
 <li><code>verbose=False</code> : turn on print statements.</li>
@@ -367,6 +375,7 @@ sage: Z_A.factor()
 <p><strong>Input</strong>:</p>
 <ul>
 <li>a hyperplane arrangement $\mathcal{A}$ or a polynomial $f$,</li>
+<li><code>matroid=None</code> : a matroid, </li>
 <li><code>multivariate=False</code> : return the <em>multivariate</em> zeta function associated with $\mathcal{A}$,</li>
 <li><code>atom=False</code> : return the <em>atom specialization</em> of the multivariate zeta function associated with $\mathcal{A}$,</li>
 <li><code>lattice_of_flats=None</code> : the lattice of flats of $\mathcal{A}$,</li>
