@@ -21,6 +21,7 @@ sage: TZ = hi.TopologicalZetaFunction(A, lattice_of_flats=L)
 **Input**:
 
 - a hyperplane arrangement $\mathcal{A}$,
+- `matroid=None` : a matroid, 
 - `lattice_of_flats=None` : the lattice of flats of $\mathcal{A}$,
 - `int_poset=None` : the intersection poset of $\mathcal{A}$,
 - `verbose=False` : turn on print statements.
@@ -69,6 +70,7 @@ which is indeed
 **Input**:
 
 - a hyperplane arrangement $\mathcal{A}$,
+- `matroid=None` : a matroid, 
 - `lattice_of_flats=None` : the lattice of flats of $\mathcal{A}$,
 - `int_poset=None` : the intersection poset of $\mathcal{A}$,
 - `verbose=False` : turn on print statements.
@@ -169,6 +171,7 @@ which is equal to
 **Input**:
 
 - a hyperplane arrangement $\mathcal{A}$,
+- `matroid=None` : a matroid, 
 - `lattice_of_flats=None` : the lattice of flats of $\mathcal{A}$,
 - `int_poset=None` : the intersection poset of $\mathcal{A}$,
 - `numerator=False` : only return the numerator $\mathcal{N}_{\mathcal{A}}(Y, T)$,
@@ -235,6 +238,7 @@ sage: S(Y=1).factor()/1920
 **Input**:
 
 - a hyperplane arrangement $\mathcal{A}$,
+- `matroid=None` : a matroid, 
 - `lattice_of_flats=None` : the lattice of flats of $\mathcal{A}$,
 - `int_poset=None` : the intersection poset of $\mathcal{A}$,
 - `verbose=False` : turn on print statements.
@@ -274,6 +278,7 @@ This is, indeed, equal to
 **Input**:
 
 - a hyperplane arrangement $\mathcal{A}$ or a polynomial $f$,
+- `matroid=None` : a matroid, 
 - `lattice_of_flats=None` : the lattice of flats of $\mathcal{A}$,
 - `int_poset=None` : the intersection poset of $\mathcal{A}$,
 - `verbose=False` : turn on print statements.
@@ -338,6 +343,7 @@ which is equal to
 **Input**:
 
 - a hyperplane arrangement $\mathcal{A}$ or a polynomial $f$,
+- `matroid=None` : a matroid, 
 - `multivariate=False` : return the *multivariate* zeta function associated with $\mathcal{A}$,
 - `atom=False` : return the *atom specialization* of the multivariate zeta function associated with $\mathcal{A}$,
 - `lattice_of_flats=None` : the lattice of flats of $\mathcal{A}$,
