@@ -332,7 +332,12 @@ def CoarseFlagHPSeries(A=None, lattice_of_flats=None, int_poset=None, matroid=No
     
     if numerator:
         D = cfHP.numerator_denominator()[1]
-        return (cfHP*D).factor()
+        T = D.variables()[0]
+        if D == (T - 1)**(L.poset.rank()): 
+            e = -1
+        if D == (1 - T)**(L.poset.rank()): 
+            e = 1
+        return e*(cfHP*D).factor()
     else: 
         return cfHP 
 
