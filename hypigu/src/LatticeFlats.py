@@ -554,32 +554,32 @@ class LatticeOfFlats():
 
     @cached_method
     def Poincare_polynomial(self):
-        from sage.all import QQ
-        from sage.rings.polynomial.polynomial_ring import polygen
-        Y = polygen(QQ, 'Y')
+        from sage.all import QQ, PolynomialRing
+        PR = PolynomialRing(QQ, 'Y')
+        Y = PR.gens()[0]
         if self.poset != None:
             P = self.poset 
             atoms = self.atoms()
             if P.rank() == 0:
-                return QQ(1)
+                return PR(1)
             if P.rank() == 1:
-                return QQ(1) + len(atoms)*Y
+                return PR(1 + len(atoms)*Y)
         else: 
             # Lazy 
             A = self.hyperplane_arrangement
             assert A != None, "Expected either a poset or hyperplane arrangement."
             if A.rank() == 0:
-                return QQ(1)
+                return PR(1)
             if A.rank() == 1:
-                return QQ(1) + len(A)*Y
+                return PR(1 + len(A)*Y)
         if self.hyperplane_arrangement == None:
             chi = self.poset.characteristic_polynomial()
             q = chi.variables()[0]
             d = chi.degree(q)
-            return (-Y)**d*chi.subs({q : -Y**-1})
+            return PR((-Y)**d*chi.subs({q : -Y**-1}))
         D = self._lazy_deletion(1)
         R = self._lazy_restriction(1)
-        return D.Poincare_polynomial() + Y*R.Poincare_polynomial()
+        return PR(D.Poincare_polynomial() + Y*R.Poincare_polynomial())
         
     @cached_method
     def _combinatorial_eq_elts(self):

@@ -131,7 +131,6 @@ def _Igusa_zeta_function(L, DB=True, verbose=_print):
     factors = map(lambda x: x[1]*x_factor(x[0]), eq_elt_data)
     integrals = map(lambda x: _Igusa_zeta_function(x[2], DB=DB), eq_elt_data)
     pi = poincare(P.bottom())
-    print(pi) ## WHATS GOING ON HERE?!
     zeta = _reduce(lambda x, y: x + y[0]*y[1], zip(factors, integrals), 0) + pi
     if P.has_top():
         zeta = zeta/(1 - q**(-P.rank())*t**len(L.atoms()))
@@ -145,27 +144,26 @@ def _top_zeta_function_uni(L, DB=True, verbose=_print):
 
     P = L.poset
     s = var('s')
-    A = L.hyperplane_arrangement
     C = 1*L.poset.has_top()
 
     # Base cases for recursion.
-    if L.poset.has_top() and L.poset.rank() == 2:
-        m = len(L.poset) - 2
+    if P.has_top() and P.rank() == 2:
+        m = len(P) - 2
         return (2 + (2 - m)*s)/((2 + m*s)*(1 + s))
-    if L.poset.rank() == 1:
-        m = len(L.poset) - 1
+    if P.rank() == 1:
+        m = len(P) - 1
         return (1 + (1 - m)*s)/(1 + s)
 
     poincare = _Poincare_polynomial(L)
-    Y = poincare(L.poset.bottom()).variables()[0]
+    Y = poincare(P.bottom()).variables()[0]
     pi_circ = lambda x: (poincare(x)/(1 + Y)**C).factor().simplify().subs({Y: -1})
     eq_elt_data = L._combinatorial_eq_elts()
     factors = map(lambda x: x[1]*pi_circ(x[0]), eq_elt_data)
     integrals = map(lambda x: _top_zeta_function_uni(x[2], DB=DB), eq_elt_data)
-    pi = pi_circ(L.poset.bottom())
+    pi = pi_circ(P.bottom())
     zeta = _reduce(lambda x, y: x + y[0]*y[1], zip(factors, integrals), 0) + pi
     if C == 1:
-        zeta = zeta/(L.poset.rank() + len(A)*s)
+        zeta = zeta/(P.rank() + len(L.atoms())*s)
 
     return zeta
 
@@ -175,7 +173,6 @@ def _top_zeta_function_mul(L, DB=True, verbose=_print, atom=False):
     from .LatticeFlats import _subposet
 
     P = L.poset
-    A = L.hyperplane_arrangement
     C = 1*L.poset.has_top()
 
     s_name = lambda x: var("s" + str(x))
@@ -385,26 +382,30 @@ def IgusaZetaFunction(X=None, lattice_of_flats=None, int_poset=None, matroid=Non
     return _Igusa_zeta_function(L)
 
 
-def TopologicalZetaFunction(X, lattice_of_flats=None, int_poset=None, verbose=_print, multivariate=False, atom=False):
+def TopologicalZetaFunction(X=None, lattice_of_flats=None, int_poset=None, verbose=_print, multivariate=False, atom=False, matroid=None):
     from .LatticeFlats import LatticeOfFlats
     from sage.all import var
 
-    try:
-        # Check if a hyperplane arrangement. 
-        _ = X.hyperplanes()
-        A = X
-        HPA = True 
-    except AttributeError:
-        # Not an HPA; deal with polynomial input. 
-        A, M = _parse_poly(X)
-        if verbose:
-            print("{0}Constructed a hyperplane arrangement".format(_time()))
-        HPA = False 
+    HPA = True 
+    if matroid == None:
+        try:
+            # Check if a hyperplane arrangement. 
+            _ = X.hyperplanes()
+            A = X
+        except AttributeError:
+            # Not an HPA; deal with polynomial input. 
+            A, M = _parse_poly(X)
+            if verbose:
+                print("{0}Constructed a hyperplane arrangement".format(_time()))
+            HPA = False 
 
     if lattice_of_flats == None:
-        if verbose:
-            print("{0}Building lattice of flats".format(_time()))
-        L = LatticeOfFlats(A, poset=int_poset)
+        if matroid == None:
+            if verbose:
+                print("{0}Building lattice of flats".format(_time()))
+            L = LatticeOfFlats(A, poset=int_poset)
+        else: 
+            L = LatticeOfFlats(matroid=matroid)
     else:
         L = lattice_of_flats
 
@@ -426,13 +427,16 @@ def TopologicalZetaFunction(X, lattice_of_flats=None, int_poset=None, verbose=_p
     return _top_zeta_function_mul(L, atom=atom)
 
 
-def AnalyticZetaFunction(A, lattice_of_flats=None, int_poset=None, verbose=_print):
+def AnalyticZetaFunction(A=None, lattice_of_flats=None, int_poset=None, matroid=None, verbose=_print):
     from .LatticeFlats import LatticeOfFlats
 
     if lattice_of_flats == None:
-        if verbose:
-            print("{0}Building lattice of flats".format(_time()))
-        L = LatticeOfFlats(A, poset=int_poset)
+        if matroid == None:
+            if verbose:
+                print("{0}Building lattice of flats".format(_time()))
+            L = LatticeOfFlats(A, poset=int_poset)
+        else: 
+            L = LatticeOfFlats(matroid=matroid)
     else:
         L = lattice_of_flats
 
@@ -441,13 +445,16 @@ def AnalyticZetaFunction(A, lattice_of_flats=None, int_poset=None, verbose=_prin
     return _universal(L, anayltic=True)
 
 
-def AtomZetaFunction(A, lattice_of_flats=None, int_poset=None, verbose=_print):
+def AtomZetaFunction(A=None, lattice_of_flats=None, int_poset=None, matroid=None, verbose=_print):
     from .LatticeFlats import LatticeOfFlats
 
     if lattice_of_flats == None:
-        if verbose:
-            print("{0}Building lattice of flats".format(_time()))
-        L = LatticeOfFlats(A, poset=int_poset)
+        if matroid == None:
+            if verbose:
+                print("{0}Building lattice of flats".format(_time()))
+            L = LatticeOfFlats(A, poset=int_poset)
+        else: 
+            L = LatticeOfFlats(matroid=matroid)
     else:
         L = lattice_of_flats
 
@@ -456,13 +463,16 @@ def AtomZetaFunction(A, lattice_of_flats=None, int_poset=None, verbose=_print):
     return _universal(L, anayltic=True, atom=True)
 
 
-def FlagHilbertPoincareSeries(A, lattice_of_flats=None, int_poset=None, verbose=_print):
+def FlagHilbertPoincareSeries(A=None, lattice_of_flats=None, int_poset=None, matroid=None, verbose=_print):
     from .LatticeFlats import LatticeOfFlats
 
     if lattice_of_flats == None:
-        if verbose:
-            print("{0}Building lattice of flats".format(_time()))
-        L = LatticeOfFlats(A, poset=int_poset)
+        if matroid == None:
+            if verbose:
+                print("{0}Building lattice of flats".format(_time()))
+            L = LatticeOfFlats(A, poset=int_poset)
+        else: 
+            L = LatticeOfFlats(matroid=matroid)
     else:
         L = lattice_of_flats
 
