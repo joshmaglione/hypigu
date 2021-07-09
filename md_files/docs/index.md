@@ -12,11 +12,17 @@ The goal of **HypIgu** (**HYP**erplane **IGU**sa) is to provide SageMath with th
 
 The simplest way to install HypIgu is to run the following 
 
-```
+```sh
 $ sage --pip install hypigu
 ```
 
 Alternatively, one can download the [latest release](https://github.com/joshmaglione/hypigu/releases/latest) and unzip it into a directory that SageMath can find for importing.
+
+To **update** an older version of HypIgu to the latest version, run the following 
+
+```sh 
+$ sage --pip install hypigu --upgrade 
+```
 
 HypIgu has no external dependencies and is compatible with SageMath 9.2.
 
