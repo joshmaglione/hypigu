@@ -572,14 +572,18 @@ class LatticeOfFlats():
                 return PR(1)
             if A.rank() == 1:
                 return PR(1 + len(A)*Y)
-        if self.hyperplane_arrangement == None:
-            chi = self.poset.characteristic_polynomial()
-            q = chi.variables()[0]
-            d = chi.degree(q)
-            return PR((-Y)**d*chi.subs({q : -Y**-1}))
-        D = self._lazy_deletion(1)
-        R = self._lazy_restriction(1)
-        return PR(D.Poincare_polynomial() + Y*R.Poincare_polynomial())
+        if self.hyperplane_arrangement != None:
+            try: # Some hyperplane arrangements are bugged in SageMath.
+                D = self._lazy_deletion(1)
+                R = self._lazy_restriction(1)
+                return PR(D.Poincare_polynomial() + Y*R.Poincare_polynomial())
+            except: 
+                pass 
+        chi = self.poset.characteristic_polynomial()
+        q = chi.variables()[0]
+        d = chi.degree(q)
+        return PR((-Y)**d*chi.subs({q : -Y**-1}))
+        
         
     @cached_method
     def _combinatorial_eq_elts(self):
