@@ -120,7 +120,7 @@ def _Igusa_zeta_function(L, DB=True, verbose=_print):
     # We can compute these *extremely* quickly.
     if _Coxeter_poset_data()['A']['hyperplanes'](P.rank()) == len(L.atoms()):
         if _Coxeter_poset_data()['A']['poset'](P.rank()) == len(P):
-            B = CoxeterArrangement("A", n=P.rank())
+            B = CoxeterArrangement("A" + str(P.rank()))
             if P.is_isomorphic(LatticeOfFlats(B).poset):
                 return BraidArrangementIgusa(P.rank())
 
