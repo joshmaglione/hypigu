@@ -2,7 +2,7 @@
 
 Author: [Joshua Maglione](https://www.math.uni-bielefeld.de/~jmaglione/).
 
-Documentation for the [HypIgu](https://github.com/joshmaglione/hypigu) package (v. 1.1) for [SageMath](https://www.sagemath.org/).
+Documentation for the [HypIgu](https://github.com/joshmaglione/hypigu) package (v. 1.2) for [SageMath](https://www.sagemath.org/).
 
 ## Purpose
 
@@ -24,7 +24,7 @@ To **update** an older version of HypIgu to the latest version, run the followin
 $ sage --pip install hypigu --upgrade 
 ```
 
-HypIgu has no external dependencies and is compatible with SageMath 9.2.
+HypIgu has no external dependencies and is compatible with SageMath 9.2 and later.
 
 ## Importing
 

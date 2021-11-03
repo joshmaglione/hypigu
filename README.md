@@ -1,6 +1,6 @@
 # HypIgu
 
-**HypIgu** (**HYP**erplane **IGU**sa) is a SageMath package that provides functions to compute the Igusa local zeta function associated with hyperplane arrangements. It further contains various constructions of hyperplane arrangements and functions to compute their flag Hilbert&ndash;Poincaré series and other zeta functions. 
+**HypIgu** (**HYP**erplane **IGU**sa) is a [SageMath](https://www.sagemath.org/) package that provides functions to compute the Igusa local zeta function associated with hyperplane arrangements. It further contains various constructions of hyperplane arrangements and functions to compute their flag Hilbert&ndash;Poincaré series and other zeta functions. 
 
 ## Installation & Setup
 
@@ -12,7 +12,7 @@ $ sage --pip install hypigu
 
 HypIgu source files can be downloaded here: [Latest version](https://github.com/joshmaglione/hypigu/releases/latest)
 
-This package is compatible with [SageMath 9.2](https://www.sagemath.org/) and has no external dependencies.
+This package is compatible with SageMath version 9.2 and later and has no external dependencies.
 
 ## Documentation
 
