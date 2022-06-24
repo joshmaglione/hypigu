@@ -10,7 +10,7 @@ The goal of **HypIgu** (**HYP**erplane **IGU**sa) is to provide SageMath with th
 
 ## Setup
 
-The simplest way to install HypIgu is to run the following 
+The simplest way to **install** HypIgu is to run the following 
 
 ```sh
 $ sage --pip install hypigu
@@ -24,7 +24,7 @@ To **update** an older version of HypIgu to the latest version, run the followin
 $ sage --pip install hypigu --upgrade 
 ```
 
-HypIgu has no external dependencies and is compatible with SageMath 9.2 and later.
+HypIgu has no external dependencies and is compatible with SageMath 9.6 and later. It may work just fine with earlier versions of SageMath, but these have not been tested.
 
 ## Importing
 

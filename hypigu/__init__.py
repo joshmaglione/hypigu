@@ -4,7 +4,7 @@
 #   Distributed under MIT License
 #
 
-__version__ = 1.1
+__version__ = 1.3
 
 from .src.Braid import BraidArrangementIgusa
 from .src.Constructors import CoxeterArrangement, LinialArrangement, ShiArrangement, CatalanArrangement, DirectSum, PolynomialToArrangement, ResonanceArrangement

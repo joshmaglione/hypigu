@@ -23,7 +23,7 @@ def _Poincare_polynomial(L, sub=None):
     return poincare
 
 # The complete solutions for small central arrangements of rank <= 2.
-def _small_central(A, style):
+def _small_central(A, style, numerator=False):
     from sage.all import var
 
     p = var('q')
@@ -34,13 +34,19 @@ def _small_central(A, style):
         if style == 'Igusa':
             return (1 - p**-1)/(1 - p**-1*t)
         if style == 'skele':
-            return (1 + Y)/(1 - T)
+            if numerator:
+                return 1 + Y 
+            else:
+                return (1 + Y)/(1 - T)
     # Now we assume the rank == 2.
     m = len(A)
     if style == 'Igusa':
         return (1 - p**-1)*(1 - (m - 1)*p**-1 + (m - 1)*p**-1*t - p**-2*t) / ((1 - p**-1*t)*(1 - p**-2*t**m))
     if style == 'skele':
-        return (1 + m*Y + (m-1)*Y**2 + (m-1 + m*Y + Y**2)*T)/((1 - T)**2)
+        if numerator:
+            return 1 + m*Y + (m-1)*Y**2 + (m-1 + m*Y + Y**2)*T
+        else:
+            return (1 + m*Y + (m-1)*Y**2 + (m-1 + m*Y + Y**2)*T)/((1 - T)**2)
 
 # The direct version of the universal generating function computation.
 def _universal(L, anayltic=False, atom=False):
@@ -313,7 +319,7 @@ def CoarseFlagHPSeries(A=None, lattice_of_flats=None, int_poset=None, matroid=No
     if matroid == None: 
         try:
             if A.is_central() and A.rank() <= 2:
-                return _small_central(A, 'skele')
+                return _small_central(A, 'skele', numerator=numerator)
         except AttributeError:
             raise TypeError("object is not a hyperplane arrangement.")
     if lattice_of_flats == None:
