@@ -1,5 +1,5 @@
 #
-#   Copyright 2021 Joshua Maglione 
+#   Copyright 2021 Joshua Maglione
 #
 #   Distributed under MIT License
 #
@@ -9,18 +9,21 @@ from .Globals import __PRINT as _print
 from .Globals import __TIME as _time
 from functools import reduce as _reduce
 
+
 # A function to return a poincare function.
 def _Poincare_polynomial(L, sub=None):
-    from sage.all import var 
-    if sub == None:
+    from sage.all import var
+    if sub is None:
         sub = var('Y')
+
     def poincare(x):
         pi = L.restriction(x).Poincare_polynomial()
         try:
-            return pi.subs({pi.variables()[0] : sub})
-        except AttributeError: # In case pi is a constant.
+            return pi.subs({pi.variables()[0]: sub})
+        except AttributeError:  # In case pi is a constant.
             return pi
     return poincare
+
 
 # The complete solutions for small central arrangements of rank <= 2.
 def _small_central(A, style, numerator=False):
@@ -35,7 +38,7 @@ def _small_central(A, style, numerator=False):
             return (1 - p**-1)/(1 - p**-1*t)
         if style == 'skele':
             if numerator:
-                return 1 + Y 
+                return 1 + Y
             else:
                 return (1 + Y)/(1 - T)
     # Now we assume the rank == 2.
@@ -47,6 +50,7 @@ def _small_central(A, style, numerator=False):
             return 1 + m*Y + (m-1)*Y**2 + (m-1 + m*Y + Y**2)*T
         else:
             return (1 + m*Y + (m-1)*Y**2 + (m-1 + m*Y + Y**2)*T)/((1 - T)**2)
+
 
 # The direct version of the universal generating function computation.
 def _universal(L, anayltic=False, atom=False):
@@ -61,6 +65,7 @@ def _universal(L, anayltic=False, atom=False):
         t_name = lambda x: var("t" + str(x))
         if atom:
             atoms = P.upper_covers(P.bottom())
+
             def T_data(x):
                 under_poset = _subposet(P, x, lambda z: P.lower_covers(z))
                 elts = filter(lambda y: y in under_poset, atoms)
@@ -73,12 +78,12 @@ def _universal(L, anayltic=False, atom=False):
                 elts.remove(P.bottom())
                 ts = map(t_name, elts)
                 return _reduce(lambda x, y: x*y, ts, q**(-P.rank(x)))
-    else: 
+    else:
         T_data = lambda x: var("T" + str(x))
         Y = var('Y')
 
-    T = {x : T_data(x) for x in L.poset._elements}
-    
+    T = {x: T_data(x) for x in L.poset._elements}
+
     # Base cases for recursion.
     if L.poset.has_top() and L.poset.rank() == 2:
         elts = L.proper_part_poset()._elements
@@ -89,7 +94,7 @@ def _universal(L, anayltic=False, atom=False):
         elts = list(L.poset._elements).remove(L.poset.bottom())
         merge = lambda x, y: x + (1 + Y)*T[y]/(1 - T[y])
         return _reduce(merge, elts, 1 + len(elts)*Y)
-    
+
     P = L.proper_part_poset()
     poincare = _Poincare_polynomial(L, sub=Y)
     recurse = lambda M: _universal(M, anayltic=anayltic, atom=atom)
@@ -99,6 +104,7 @@ def _universal(L, anayltic=False, atom=False):
     if L.poset.has_top():
         HP = HP/(1 - T[L.poset.top()])
     return HP
+
 
 def _Igusa_zeta_function(L, DB=True, verbose=_print):
     from sage.all import var
@@ -120,9 +126,9 @@ def _Igusa_zeta_function(L, DB=True, verbose=_print):
 
     if DB:
         zeta = _data.get_gen_func(P, 'Igusa')
-        if zeta != None:
+        if zeta is not None:
             return zeta
-    # We check to see if we have a type A braid arrangement. 
+    # We check to see if we have a type A braid arrangement.
     # We can compute these *extremely* quickly.
     if _Coxeter_poset_data()['A']['hyperplanes'](P.rank()) == len(L.atoms()):
         if _Coxeter_poset_data()['A']['poset'](P.rank()) == len(P):
@@ -140,7 +146,7 @@ def _Igusa_zeta_function(L, DB=True, verbose=_print):
     zeta = _reduce(lambda x, y: x + y[0]*y[1], zip(factors, integrals), 0) + pi
     if P.has_top():
         zeta = zeta/(1 - q**(-P.rank())*t**len(L.atoms()))
-    if DB and P.rank() > 2: 
+    if DB and P.rank() > 2:
         _data.save_gen_func(P, 'Igusa', zeta)
     return zeta
 
@@ -179,12 +185,13 @@ def _top_zeta_function_mul(L, DB=True, verbose=_print, atom=False):
     from .LatticeFlats import _subposet
 
     P = L.poset
-    C = 1*L.poset.has_top()
+    C = 1 * L.poset.has_top()
 
     s_name = lambda x: var("s" + str(x))
     if atom:
         if atom:
             atoms = P.upper_covers(P.bottom())
+
             def s_data(x):
                 under_poset = _subposet(P, x, lambda z: P.lower_covers(z))
                 elts = filter(lambda y: y in under_poset, atoms)
@@ -198,7 +205,7 @@ def _top_zeta_function_mul(L, DB=True, verbose=_print, atom=False):
             ts = map(s_name, elts)
             return _reduce(lambda x, y: x + y, ts, 0)
 
-    S = {x : s_data(x) for x in P._elements}
+    S = {x: s_data(x) for x in P._elements}
 
     # Base cases for recursion.
     add_em = lambda x, y: x + y
@@ -244,13 +251,13 @@ def _comb_skele(L, DB=True, verbose=_print):
         if verbose:
             print(_time() + "Checking database.")
         zeta = _data.get_gen_func(P, 'skele')
-        if zeta != None:
+        if zeta is not None:
             return zeta
         if verbose:
             print("\tDone.")
 
     poincare = _Poincare_polynomial(L)
-    if verbose: 
+    if verbose:
         print(_time() + "Gleaning structure from poset.")
     eq_elt_data = L._combinatorial_eq_elts()
     if verbose:
@@ -266,25 +273,26 @@ def _comb_skele(L, DB=True, verbose=_print):
     zeta = _reduce(lambda x, y: x + y[0]*y[1], zip(factors, integrals), 0) + pi
     if P.has_top():
         zeta = zeta/(1 - T)
-    if DB and P.rank() > 2: 
+    if DB and P.rank() > 2:
         _data.save_gen_func(P, 'skele', zeta)
-        
+
     return zeta
 
+
 # Given a polynomial, return a hyperplane arrangement equivalent to the linear
-# factors of f. 
-def _parse_poly(f): 
+# factors of f.
+def _parse_poly(f):
     from sage.all import SR, QQ, HyperplaneArrangements, Matrix
     if type(f) == str:
         f = SR(f)
     if f.base_ring() == SR:
         L = f.factor_list()
         K = QQ
-    else: 
+    else:
         L = list(f.factor())
         K = f.base_ring()
 
-    L = filter(lambda T: not T[0] in K, L) # Remove constant factors
+    L = filter(lambda T: not T[0] in K, L)  # Remove constant factors
     F, M = list(zip(*L))
 
     # Verify that each polynomial factor is linear
@@ -297,7 +305,7 @@ def _parse_poly(f):
     HH = HyperplaneArrangements(K, varbs_str)
 
     def poly_vec(g):
-        c = K(g.subs({x : 0 for x in g.variables()}))
+        c = K(g.subs({x: 0 for x in g.variables()}))
         return tuple([c] + [K(g.coefficient(x)) for x in varbs])
 
     F_vec = tuple(map(poly_vec, F))
@@ -311,21 +319,19 @@ def _parse_poly(f):
     return A, M_new
 
 
-
-
 def CoarseFlagHPSeries(A=None, lattice_of_flats=None, int_poset=None, matroid=None, numerator=False, verbose=_print):
     from .LatticeFlats import LatticeOfFlats
 
-    if matroid == None: 
+    if matroid is None:
         try:
             if A.is_central() and A.rank() <= 2:
                 return _small_central(A, 'skele', numerator=numerator)
         except AttributeError:
             raise TypeError("object is not a hyperplane arrangement.")
-    if lattice_of_flats == None:
+    if lattice_of_flats is None:
         if verbose:
             print("{0}Building lattice of flats".format(_time()))
-        if matroid == None:
+        if matroid is None:
             L = LatticeOfFlats(A, poset=int_poset)
         else:
             L = LatticeOfFlats(matroid=matroid)
@@ -335,40 +341,40 @@ def CoarseFlagHPSeries(A=None, lattice_of_flats=None, int_poset=None, matroid=No
     if verbose:
         print("{0}Computing coarse flag Hilbert--Poincare series".format(_time()))
     cfHP = _comb_skele(L)
-    
+
     if numerator:
         D = cfHP.numerator_denominator()[1]
         T = D.variables()[0]
-        if D == (T - 1)**(L.poset.rank()): 
+        if D == (T - 1)**(L.poset.rank()):
             e = -1
-        if D == (1 - T)**(L.poset.rank()): 
+        if D == (1 - T)**(L.poset.rank()):
             e = 1
         return e*(cfHP*D).factor()
-    else: 
-        return cfHP 
+    else:
+        return cfHP
 
 
 def IgusaZetaFunction(X=None, lattice_of_flats=None, int_poset=None, matroid=None, verbose=_print):
     from .LatticeFlats import LatticeOfFlats
     from sage.all import var
 
-    HPA = True 
-    if matroid == None:
+    HPA = True
+    if matroid is None:
         try:
-            # Check if a hyperplane arrangement. 
+            # Check if a hyperplane arrangement.
             _ = X.hyperplanes()
             A = X
         except AttributeError:
-            # Not an HPA; deal with polynomial input. 
+            # Not an HPA; deal with polynomial input.
             A, M = _parse_poly(X)
             if verbose:
                 print("{0}Constructed a hyperplane arrangement".format(_time()))
-            HPA = False 
+            HPA = False
 
-    if lattice_of_flats == None:
+    if lattice_of_flats is None:
         if verbose:
             print("{0}Building lattice of flats".format(_time()))
-        if matroid == None:
+        if matroid is None:
             L = LatticeOfFlats(A, poset=int_poset)
         else:
             L = LatticeOfFlats(matroid=matroid)
@@ -385,7 +391,7 @@ def IgusaZetaFunction(X=None, lattice_of_flats=None, int_poset=None, matroid=Non
                 print("{0}Computing the atom zeta function".format(_time()))
             Z = _universal(L, anayltic=True, atom=True)
             t = var('t')
-            SUB = {var('t' + str(k+1)) : t**(M[k]) for k in range(len(M))}
+            SUB = {var('t' + str(k+1)): t**(M[k]) for k in range(len(M))}
             return Z.subs(SUB)
 
     if verbose:
@@ -397,25 +403,25 @@ def TopologicalZetaFunction(X=None, lattice_of_flats=None, int_poset=None, verbo
     from .LatticeFlats import LatticeOfFlats
     from sage.all import var
 
-    HPA = True 
-    if matroid == None:
+    HPA = True
+    if matroid is None:
         try:
-            # Check if a hyperplane arrangement. 
+            # Check if a hyperplane arrangement.
             _ = X.hyperplanes()
             A = X
         except AttributeError:
-            # Not an HPA; deal with polynomial input. 
+            # Not an HPA; deal with polynomial input.
             A, M = _parse_poly(X)
             if verbose:
                 print("{0}Constructed a hyperplane arrangement".format(_time()))
-            HPA = False 
+            HPA = False
 
-    if lattice_of_flats == None:
-        if matroid == None:
+    if lattice_of_flats is None:
+        if matroid is None:
             if verbose:
                 print("{0}Building lattice of flats".format(_time()))
             L = LatticeOfFlats(A, poset=int_poset)
-        else: 
+        else:
             L = LatticeOfFlats(matroid=matroid)
     else:
         L = lattice_of_flats
@@ -424,12 +430,12 @@ def TopologicalZetaFunction(X=None, lattice_of_flats=None, int_poset=None, verbo
         print("{0}Computing the topological zeta function".format(_time()))
 
     if not HPA:
-        if list(M) == [1]*len(M):
+        if list(M) == [1] * len(M):
             return _top_zeta_function_uni(L)
         else:
             Z = _top_zeta_function_mul(L, atom=True)
             s = var('s')
-            SUB = {var('s' + str(k+1)) : M[k]*s for k in range(len(M))}
+            SUB = {var('s' + str(k+1)): M[k]*s for k in range(len(M))}
             return Z.subs(SUB)
 
     if not multivariate:
@@ -441,12 +447,12 @@ def TopologicalZetaFunction(X=None, lattice_of_flats=None, int_poset=None, verbo
 def AnalyticZetaFunction(A=None, lattice_of_flats=None, int_poset=None, matroid=None, verbose=_print):
     from .LatticeFlats import LatticeOfFlats
 
-    if lattice_of_flats == None:
-        if matroid == None:
+    if lattice_of_flats is None:
+        if matroid is None:
             if verbose:
                 print("{0}Building lattice of flats".format(_time()))
             L = LatticeOfFlats(A, poset=int_poset)
-        else: 
+        else:
             L = LatticeOfFlats(matroid=matroid)
     else:
         L = lattice_of_flats
@@ -459,12 +465,12 @@ def AnalyticZetaFunction(A=None, lattice_of_flats=None, int_poset=None, matroid=
 def AtomZetaFunction(A=None, lattice_of_flats=None, int_poset=None, matroid=None, verbose=_print):
     from .LatticeFlats import LatticeOfFlats
 
-    if lattice_of_flats == None:
-        if matroid == None:
+    if lattice_of_flats is None:
+        if matroid is None:
             if verbose:
                 print("{0}Building lattice of flats".format(_time()))
             L = LatticeOfFlats(A, poset=int_poset)
-        else: 
+        else:
             L = LatticeOfFlats(matroid=matroid)
     else:
         L = lattice_of_flats
@@ -477,12 +483,12 @@ def AtomZetaFunction(A=None, lattice_of_flats=None, int_poset=None, matroid=None
 def FlagHilbertPoincareSeries(A=None, lattice_of_flats=None, int_poset=None, matroid=None, verbose=_print):
     from .LatticeFlats import LatticeOfFlats
 
-    if lattice_of_flats == None:
-        if matroid == None:
+    if lattice_of_flats is None:
+        if matroid is None:
             if verbose:
                 print("{0}Building lattice of flats".format(_time()))
             L = LatticeOfFlats(A, poset=int_poset)
-        else: 
+        else:
             L = LatticeOfFlats(matroid=matroid)
     else:
         L = lattice_of_flats
