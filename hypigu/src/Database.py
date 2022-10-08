@@ -42,14 +42,14 @@ class IADatabase():
         if not isit:
             # New poset, so we save it.
             gen_dict = {
-                'Igusa' : None,
-                'skele' : None
+                'Igusa': None,
+                'skele': None
             }
             gen_dict[style] = F
             self.poset_list += [P]
             self.gen_func_list += [gen_dict]
         else:
-            if self.gen_func_list[k][style] == None:
+            if self.gen_func_list[k][style] is None:
                 GFL = self.gen_func_list
                 GFL[k][style] = F
                 self.gen_func_list = GFL
