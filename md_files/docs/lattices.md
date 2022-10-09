@@ -6,15 +6,17 @@ We include a class called `LatticeOfFlats`, which is associated with a hyperplan
 
 **Input**:
 
-- a hyperplane arrangement;
-- `poset=None` : the intersection poset of $\mathcal{A}$;
+- `A=None` : a hyperplane arrangement;
+- `poset=None` : a graded poset with a bottom element;
 - `flat_labels=None` : a dictionary from the elements of the poset to subsets of atoms;
 - `hyperplane_labels=None` : a dictionary from the atoms of the poset to the hyperplanes;
 - `matroid=None` : a matroid. 
 
 **Output**: 
 
-- the lattice of flats for the given hyperplane arrangement or matroid. 
+- the lattice of flats for the given hyperplane arrangement or matroid. If a poset is given, then the poset is returned. 
+
+Despite the name "lattice of flats" the underlying poset need not be a lattice. 
 
 Unless the poset and labels have been computed before, they should not be given as this function may compute the intersection poset of a hyperplane arrangement faster than the default in SageMath. It is not required to provide a hyperplane arrangement; in particular, one may instead only provide a matroid. 
 

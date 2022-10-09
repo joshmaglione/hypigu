@@ -170,107 +170,6 @@ def build_next(A, S, HYP, LIN):
     return list(zip(new_level, new_hypcont))
 
 
-# We expand on the function in sage, optimizing a little bit. This makes little
-# difference in small ranks but noticeable difference in larger ranks. This is
-# still quite slow.
-def _para_intersection_poset(A):
-    from sage.geometry.hyperplane_arrangement.affine_subspace import AffineSubspace
-    from sage.all import Set, VectorSpace, Poset
-    from .Globals import __SANITY
-
-    N = _N
-    K = A.base_ring()
-    whole_space = AffineSubspace(0, VectorSpace(K, A.dimension()))
-    # L is the ranked list of affine subspaces in L(A).
-    L = [[whole_space], list(map(lambda H: H._affine_subspace(), A))]
-    # hyp_cont is the ranked list describing which hyperplanes contain the
-    # corresponding intersection.
-    hyp_cont = [[Set([])], [Set([k]) for k in range(len(A))]]
-
-    c = A.is_central()*(-1)
-    for r in range(2, A.rank() + c + 1):
-        print("{1}Working on elements of rank {0}".format(r, _time()))
-        m = len(L[r-1])
-        pmax = lambda k: (k+1)*(m//N) + (k == N-1)*(m % N)
-        pmin = lambda k: k*(m//N)
-        all_input = lambda k: tuple([
-            A, range(pmin(k), pmax(k)),
-            hyp_cont[r - 1][pmin(k):pmax(k)], L[r - 1][pmin(k):pmax(k)]
-        ])
-        data = list(build_next(
-            [all_input(k) for k in range(N) if pmin(k) != pmax(k)]
-        ))
-        data = _reduce(lambda x, y: x + y[1], data, [])
-        new_lev, new_hyp = list(zip(*data))
-        new_lev = list(new_lev)
-        new_hyp = list(new_hyp)
-        i = 0
-        # Merge the lists down
-        print("{0}Merging the lists from the {1} workers".format(_time(), N))
-        # First we check the affine spaces
-        while i < len(new_lev):
-            U = new_lev[i]
-            B1 = U.linear_part().basis_matrix()
-            p1 = U.point()
-            j = i + 1
-            while j < len(new_lev):
-                V = new_lev[j]
-                B2 = V.linear_part().basis_matrix()
-                p2 = V.point()
-                if B1 == B2 and p1 == p2:
-                    new_lev = new_lev[:j] + new_lev[j+1:]
-                    new_hyp[i] = new_hyp[i].union(new_hyp[j])
-                    new_hyp = new_hyp[:j] + new_hyp[j+1:]
-                else:
-                    j += 1
-            i += 1
-        # Second we check the labels of intersection (don't want duplicates)
-        i = 0
-        while i < len(new_lev):
-            j = i + 1
-            while j < len(new_lev):
-                if new_hyp[i] == new_hyp[j]:
-                    new_lev = new_lev[:j] + new_lev[j+1:]
-                    new_hyp = new_hyp[:j] + new_hyp[j+1:]
-                else:
-                    j += 1
-            i += 1
-        L.append(new_lev)
-        hyp_cont.append(new_hyp)
-
-    # A silly optimization for centrals.
-    if A.is_central() and len(A) > 1:
-        inter = lambda X, Y: X.intersection(Y._affine_subspace())
-        L.append([_reduce(inter, A[1:], A[0]._affine_subspace())])
-        hyp_cont.append([Set(list(range(len(A))))])
-
-    L_flat = list(_reduce(lambda x, y: x + y, L, []))
-    hc_flat = list(_reduce(lambda x, y: x + y, hyp_cont, []))
-
-    # Sanity checks
-    if __SANITY:
-        print("{0}Running sanity check".format(_time()))
-        assert len(L_flat) == len(hc_flat)
-        for i in range(len(hc_flat)):
-            for j in range(i+1, len(hc_flat)):
-                assert hc_flat[i] != hc_flat[j], "{0} vs {1}".format(i, j)
-        for i in range(len(L_flat)):
-            I = list(map(lambda x: A[x], hc_flat[i]))
-            U = _reduce(lambda x, y: x.intersection(y._affine_subspace()), I, whole_space)
-            assert U == L_flat[i], "{0} vs {1}".format(U, L_flat[i])
-
-    print("{0}Constructing lattice of flats".format(_time()))
-    t = {}
-    for i in range(len(hc_flat)):
-        t[i] = Set(list(map(lambda x: x+1, hc_flat[i])))
-    cmp_fn = lambda p, q: t[p].issubset(t[q])
-    label_dict = {i: t[i] for i in range(len(hc_flat))}
-    get_hyp = lambda i: A[label_dict[i].an_element() - 1]
-    hyp_dict = {i + 1: get_hyp(i + 1) for i in range(len(A))}
-
-    return [Poset((t, cmp_fn)), label_dict, hyp_dict]
-
-
 # Default SageMath algorithm works well. However 'A.matroid()' seems to remove
 # ordering, which we depend on, so care is needed.
 def _lof_from_matroid(A=None, matroid=None):
@@ -558,8 +457,10 @@ class LatticeOfFlats():
         return LatticeOfFlats(HPA.parent()(HPA[:H-1] + HPA[H:]), lazy=True)
 
     @cached_method
-    def Poincare_polynomial(self):
+    def Poincare_polynomial(self, abs_val=False):
         from sage.all import QQ, PolynomialRing
+        if abs_val not in {True, False}:
+            raise ValueError("abs must be either True or False.")
         PR = PolynomialRing(QQ, 'Y')
         Y = PR.gens()[0]
         if self.poset is not None:
@@ -584,10 +485,22 @@ class LatticeOfFlats():
                 return PR(D.Poincare_polynomial() + Y*R.Poincare_polynomial())
             except Exception:
                 pass
-        chi = self.poset.characteristic_polynomial()
-        q = chi.variables()[0]
-        d = chi.degree(q)
-        return PR((-Y)**d*chi.subs({q: -Y**-1}))
+        if abs_val:
+            comb_elts = self._combinatorial_eq_elts()
+            rk = P.rank_function()
+            bot = P.bottom()
+            pi = PR(1) 
+            if P.has_top():
+                top = P.top()
+                pi += abs(P.moebius_function(bot, top))*Y**(rk(top))
+            for t in comb_elts:
+                pi += abs(P.moebius_function(bot, t[0]))*t[1]*Y**(rk(t[0]))
+            return pi 
+        else:
+            chi = P.characteristic_polynomial()
+            q = chi.variables()[0]
+            d = chi.degree(q)
+            return PR((-Y)**d*chi.subs({q: -Y**-1}))
 
     @cached_method
     def _combinatorial_eq_elts(self):
@@ -648,54 +561,3 @@ class LatticeOfFlats():
             prelim_elts = prelim_elts[1:]
         return equiv_elts
 
-
-def _Coxeter_poset_data():
-    # Bell numbers: A000110
-    def A_poset(n):
-        from sage.all import binomial
-        S = [1, 1, 2, 5, 15, 52, 203]
-        while len(S) <= n+1:
-            m = len(S) - 1
-            S.append(_reduce(
-                lambda x, y: x + y[0]*binomial(m, y[1]), zip(S, range(m+1)), 0
-            ))
-        return S[n+1]
-
-    def S(n, k, m):
-        if k > n or k < 0:
-            return 0
-        if n == 0 and k == 0:
-            return 1
-        return S(n-1, k-1, m) + (m*(k+1)-1)*S(n-1, k, m)
-
-    def A007405(n):
-        return sum(S(n, k, 2) for k in range(n + 1))  # Peter Luschny, May 20 2013
-    # D analog of Bell numbers: A039764
-    Dlist = [1, 1, 4, 15, 72, 403, 2546, 17867, 137528, 1149079, 10335766, 99425087, 1017259964, 11018905667, 125860969266, 1510764243699, 18999827156304, 249687992188015, 3420706820299374, 48751337014396167]
-    table = {
-        'A': {
-            'hyperplanes': lambda n: n*(n+1) // 2,
-            'poset': A_poset
-        },
-        'B': {
-            'hyperplanes': lambda n: n**2,
-            'poset': A007405
-        },
-        'D': {
-            'hyperplanes': lambda n: n**2 - n,
-            'poset': lambda n: Dlist[n]
-        }
-    }
-    return table
-
-
-def _possibly_Coxeter(P):
-    r = P.rank()
-    hypers = [x for x in P if P.covers(P.bottom(), x)]
-    m = len(hypers)
-    CPD = _Coxeter_poset_data()
-    for name in ['A', 'B', 'D']:
-        if CPD[name]['hyperplanes'](r) == m:
-            if CPD[name]['poset'](r) == len(P):
-                return [True, name]
-    return [False, None]

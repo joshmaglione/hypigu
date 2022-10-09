@@ -2,7 +2,7 @@
 
 Author: [Joshua Maglione](https://www.math.uni-bielefeld.de/~jmaglione/).
 
-Documentation for the [HypIgu](https://github.com/joshmaglione/hypigu) package (v. 1.2) for [SageMath](https://www.sagemath.org/).
+Documentation for the [HypIgu](https://github.com/joshmaglione/hypigu) package for [SageMath](https://www.sagemath.org/).
 
 ## Purpose
 
@@ -42,5 +42,5 @@ This work was supported in part by DFG-grant [373111162](https://gepris.dfg.de/g
 
 ## References 
 
-1. [Joshua Maglione](https://www.math.uni-bielefeld.de/~jmaglione/) and [Christopher Voll](https://www.math.uni-bielefeld.de/~voll/). Flag Hilbert&ndash;Poincar&#233; series of hyperplane arrangements and their Igusa zeta functions, 2021. [arXiv:2103:03640](https://arxiv.org/abs/2103.03640).
+1. [Joshua Maglione](https://www.math.uni-bielefeld.de/~jmaglione/) and [Christopher Voll](https://www.math.uni-bielefeld.de/~voll/). Flag Hilbert&ndash;Poincar&#233; series of hyperplane arrangements and Igusa zeta functions, 2021. [arXiv:2103:03640](https://arxiv.org/abs/2103.03640).
    

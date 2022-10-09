@@ -11,13 +11,13 @@ from functools import reduce as _reduce
 
 
 # A function to return a poincare function.
-def _Poincare_polynomial(L, sub=None):
+def _Poincare_polynomial(L, sub=None, abs_val=False):
     from sage.all import var
     if sub is None:
         sub = var('Y')
 
     def poincare(x):
-        pi = L.restriction(x).Poincare_polynomial()
+        pi = L.restriction(x).Poincare_polynomial(abs_val=abs_val)
         try:
             return pi.subs({pi.variables()[0]: sub})
         except AttributeError:  # In case pi is a constant.
@@ -235,18 +235,18 @@ def _top_zeta_function_mul(L, DB=True, verbose=_print, atom=False):
     return zeta
 
 
-def _comb_skele(L, DB=True, verbose=_print):
+def _comb_skele(L, abs_val=False, DB=True, verbose=_print):
     from sage.all import var
     P = L.poset
     Y = var('Y')
     T = var('T')
 
-    if P.has_top():
-        if P.rank() == 1:
-            return (1 + Y)/(1 - T)
-        if P.rank() == 2:
-            m = len(P) - 2
-            return (1 + m*Y + (m - 1)*Y**2 + (m - 1 + m*Y + Y**2)*T)/(1 - T)**2
+    if P.rank() == 1:
+        a = len(L.atoms())
+        return (1 + a*Y)/(1 - T)
+    if P.rank() == 2 and P.has_top():
+        m = len(P) - 2
+        return (1 + m*Y + (m - 1)*Y**2 + (m - 1 + m*Y + Y**2)*T)/(1 - T)**2
     if DB:
         if verbose:
             print(_time() + "Checking database.")
@@ -256,7 +256,7 @@ def _comb_skele(L, DB=True, verbose=_print):
         if verbose:
             print("\tDone.")
 
-    poincare = _Poincare_polynomial(L)
+    poincare = _Poincare_polynomial(L, abs_val=abs_val)
     if verbose:
         print(_time() + "Gleaning structure from poset.")
     eq_elt_data = L._combinatorial_eq_elts()
@@ -266,7 +266,7 @@ def _comb_skele(L, DB=True, verbose=_print):
     factors = map(lambda x: x[1]*T*poincare(x[0]), eq_elt_data)
     if verbose:
         print(_time() + "Recursing...")
-    integrals = map(lambda x: _comb_skele(x[2], DB=DB), eq_elt_data)
+    integrals = map(lambda x: _comb_skele(x[2], DB=DB, abs_val=abs_val, verbose=verbose), eq_elt_data)
     if verbose:
         print(_time() + "Putting everything together...")
     pi = poincare(P.bottom())
@@ -319,28 +319,25 @@ def _parse_poly(f):
     return A, M_new
 
 
-def CoarseFlagHPSeries(A=None, lattice_of_flats=None, int_poset=None, matroid=None, numerator=False, verbose=_print):
+def CoarseFlagHPSeries(A=None, lattice_of_flats=None, poset=None, matroid=None, numerator=False, abs_val=False, verbose=_print):
     from .LatticeFlats import LatticeOfFlats
 
-    if matroid is None:
-        try:
-            if A.is_central() and A.rank() <= 2:
-                return _small_central(A, 'skele', numerator=numerator)
-        except AttributeError:
-            raise TypeError("object is not a hyperplane arrangement.")
     if lattice_of_flats is None:
         if verbose:
             print("{0}Building lattice of flats".format(_time()))
-        if matroid is None:
-            L = LatticeOfFlats(A, poset=int_poset)
+        if matroid is None and poset is None:
+            L = LatticeOfFlats(A=A)
         else:
-            L = LatticeOfFlats(matroid=matroid)
+            if poset is None:
+                L = LatticeOfFlats(matroid=matroid)
+            else:
+                L = LatticeOfFlats(poset=poset)
     else:
         L = lattice_of_flats
 
     if verbose:
         print("{0}Computing coarse flag Hilbert--Poincare series".format(_time()))
-    cfHP = _comb_skele(L)
+    cfHP = _comb_skele(L, abs_val=abs_val)
 
     if numerator:
         D = cfHP.numerator_denominator()[1]
