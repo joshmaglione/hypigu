@@ -252,9 +252,13 @@ def _comb_skele(L, abs_val=False, DB=True, verbose=_print):
             print(_time() + "Checking database.")
         zeta = _data.get_gen_func(P, 'skele')
         if zeta is not None:
+            if verbose:
+                print("\tFound it.")
             return zeta
-        if verbose:
-            print("\tDone.")
+        else:
+            if verbose:
+                print("\tDid not find it.")
+        
 
     poincare = _Poincare_polynomial(L, abs_val=abs_val)
     if verbose:
@@ -337,9 +341,11 @@ def CoarseFlagHPSeries(A=None, lattice_of_flats=None, poset=None, matroid=None, 
 
     if verbose:
         print("{0}Computing coarse flag Hilbert--Poincare series".format(_time()))
-    cfHP = _comb_skele(L, abs_val=abs_val)
+    cfHP = _comb_skele(L, abs_val=abs_val, verbose=verbose)
 
     if numerator:
+        if verbose:
+            print(_time() + "Constructing numerator.")
         D = cfHP.numerator_denominator()[1]
         T = D.variables()[0]
         if D == (T - 1)**(L.poset.rank()):

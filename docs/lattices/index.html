@@ -153,16 +153,17 @@
 <h2 id="latticeofflats">LatticeOfFlats</h2>
 <p><strong>Input</strong>:</p>
 <ul>
-<li>a hyperplane arrangement;</li>
-<li><code>poset=None</code> : the intersection poset of $\mathcal{A}$;</li>
+<li><code>A=None</code> : a hyperplane arrangement;</li>
+<li><code>poset=None</code> : a graded poset with a bottom element;</li>
 <li><code>flat_labels=None</code> : a dictionary from the elements of the poset to subsets of atoms;</li>
 <li><code>hyperplane_labels=None</code> : a dictionary from the atoms of the poset to the hyperplanes;</li>
 <li><code>matroid=None</code> : a matroid. </li>
 </ul>
 <p><strong>Output</strong>: </p>
 <ul>
-<li>the lattice of flats for the given hyperplane arrangement or matroid. </li>
+<li>the lattice of flats for the given hyperplane arrangement or matroid. If a poset is given, then the poset is returned. </li>
 </ul>
+<p>Despite the name "lattice of flats" the underlying poset need not be a lattice. </p>
 <p>Unless the poset and labels have been computed before, they should not be given as this function may compute the intersection poset of a hyperplane arrangement faster than the default in SageMath. It is not required to provide a hyperplane arrangement; in particular, one may instead only provide a matroid. </p>
 <h3 id="attributes">Attributes</h3>
 <p>The lattice of flats has four attributes:</p>
@@ -322,16 +323,13 @@ Finite poset containing 5 elements
                 <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
             </div>
             <div class="modal-body">
-                <p>
-                    From here you can search these documents. Enter
-                    your search terms below.
-                </p>
+                <p>From here you can search these documents. Enter your search terms below.</p>
                 <form>
                     <div class="form-group">
                         <input type="search" class="form-control" placeholder="Search..." id="mkdocs-search-query" title="Type search term here">
                     </div>
                 </form>
-                <div id="mkdocs-search-results"></div>
+                <div id="mkdocs-search-results" data-no-results-text="No results found"></div>
             </div>
             <div class="modal-footer">
             </div>
