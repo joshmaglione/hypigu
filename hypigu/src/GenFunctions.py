@@ -3,6 +3,7 @@
 #
 #   Distributed under MIT License
 #
+from sage.all import var
 
 from .Database import internal_database as _data
 from .Globals import __PRINT as _print
@@ -10,9 +11,8 @@ from .Globals import __TIME as _time
 from functools import reduce as _reduce
 
 
-# A function to return a poincare function.
+# A function to return a Poincaré function.
 def _Poincare_polynomial(L, sub=None, abs_val=False):
-    from sage.all import var
     if sub is None:
         sub = var('Y')
 
@@ -27,8 +27,6 @@ def _Poincare_polynomial(L, sub=None, abs_val=False):
 
 # The complete solutions for small central arrangements of rank <= 2.
 def _small_central(A, style, numerator=False):
-    from sage.all import var
-
     p = var('q')
     t = var('t')
     Y = var('Y')
@@ -53,12 +51,11 @@ def _small_central(A, style, numerator=False):
 
 
 # The direct version of the universal generating function computation.
-def _universal(L, anayltic=False, atom=False):
-    from sage.all import var
+def _universal(L, analytic=False, atom=False):
     from .LatticeFlats import _subposet
 
     # Set up the potential substitutions for T -- as defined in Maglione--Voll.
-    if anayltic:
+    if analytic:
         q = var('q')
         Y = -q**(-1)
         P = L.poset
@@ -67,13 +64,13 @@ def _universal(L, anayltic=False, atom=False):
             atoms = P.upper_covers(P.bottom())
 
             def T_data(x):
-                under_poset = _subposet(P, x, lambda z: P.lower_covers(z))
-                elts = filter(lambda y: y in under_poset, atoms)
+                under_poset = _subposet(P, x, P.lower_covers)
+                elts = (y for y in atoms if y in under_poset)
                 ts = map(t_name, elts)
                 return _reduce(lambda x, y: x*y, ts, q**(-P.rank(x)))
         else:
             def T_data(x):
-                under_poset = _subposet(P, x, lambda z: P.lower_covers(z))
+                under_poset = _subposet(P, x, P.lower_covers)
                 elts = list(under_poset._elements)
                 elts.remove(P.bottom())
                 ts = map(t_name, elts)
@@ -97,7 +94,7 @@ def _universal(L, anayltic=False, atom=False):
 
     P = L.proper_part_poset()
     poincare = _Poincare_polynomial(L, sub=Y)
-    recurse = lambda M: _universal(M, anayltic=anayltic, atom=atom)
+    recurse = lambda M: _universal(M, analytic=analytic, atom=atom)
     num_dat = lambda x: poincare(x)*T[x]*recurse(L.subarrangement(x))
     factors = map(num_dat, P._elements)
     HP = _reduce(lambda x, y: x + y, factors, poincare(L.poset.bottom()))
@@ -107,7 +104,6 @@ def _universal(L, anayltic=False, atom=False):
 
 
 def _Igusa_zeta_function(L, DB=True, verbose=_print):
-    from sage.all import var
     from .Constructors import CoxeterArrangement
     from .Braid import BraidArrangementIgusa
     from .LatticeFlats import LatticeOfFlats, _Coxeter_poset_data
@@ -152,8 +148,6 @@ def _Igusa_zeta_function(L, DB=True, verbose=_print):
 
 
 def _top_zeta_function_uni(L, DB=True, verbose=_print):
-    from sage.all import var
-
     P = L.poset
     s = var('s')
     C = 1*L.poset.has_top()
@@ -181,7 +175,6 @@ def _top_zeta_function_uni(L, DB=True, verbose=_print):
 
 
 def _top_zeta_function_mul(L, DB=True, verbose=_print, atom=False):
-    from sage.all import var
     from .LatticeFlats import _subposet
 
     P = L.poset
@@ -193,13 +186,13 @@ def _top_zeta_function_mul(L, DB=True, verbose=_print, atom=False):
             atoms = P.upper_covers(P.bottom())
 
             def s_data(x):
-                under_poset = _subposet(P, x, lambda z: P.lower_covers(z))
-                elts = filter(lambda y: y in under_poset, atoms)
+                under_poset = _subposet(P, x, P.lower_covers)
+                elts = (y for y in atoms if y in under_poset)
                 ts = map(s_name, elts)
                 return _reduce(lambda x, y: x + y, ts, 0)
     else:
         def s_data(x):
-            under_poset = _subposet(P, x, lambda z: P.lower_covers(z))
+            under_poset = _subposet(P, x, P.lower_covers)
             elts = list(under_poset._elements)
             elts.remove(P.bottom())
             ts = map(s_name, elts)
@@ -223,7 +216,7 @@ def _top_zeta_function_mul(L, DB=True, verbose=_print, atom=False):
     poincare = _Poincare_polynomial(L)
     Y = poincare(P.bottom()).variables()[0]
     pi_circ = lambda x: (poincare(x)/(1 + Y)**C).factor().simplify().subs({Y: -1})
-    x_factor = lambda x: pi_circ(x)
+    x_factor = pi_circ
     prop_elts = L.proper_part_poset()._elements
     factors = map(lambda x: x_factor(x), prop_elts)
     integrals = map(lambda x: _top_zeta_function_mul(L.subarrangement(x), DB=DB, atom=atom), prop_elts)
@@ -236,7 +229,6 @@ def _top_zeta_function_mul(L, DB=True, verbose=_print, atom=False):
 
 
 def _comb_skele(L, abs_val=False, DB=True, verbose=_print):
-    from sage.all import var
     P = L.poset
     Y = var('Y')
     T = var('T')
@@ -258,7 +250,6 @@ def _comb_skele(L, abs_val=False, DB=True, verbose=_print):
         else:
             if verbose:
                 print("\tDid not find it.")
-        
 
     poincare = _Poincare_polynomial(L, abs_val=abs_val)
     if verbose:
@@ -287,7 +278,7 @@ def _comb_skele(L, abs_val=False, DB=True, verbose=_print):
 # factors of f.
 def _parse_poly(f):
     from sage.all import SR, QQ, HyperplaneArrangements, Matrix
-    if type(f) == str:
+    if isinstance(f, str):
         f = SR(f)
     if f.base_ring() == SR:
         L = f.factor_list()
@@ -300,12 +291,12 @@ def _parse_poly(f):
     F, M = list(zip(*L))
 
     # Verify that each polynomial factor is linear
-    is_lin = lambda g: all(map(lambda x: g.degree(x) <= 1, g.variables()))
+    is_lin = lambda g: all(g.degree(x) <= 1 for x in g.variables())
     if not all(map(is_lin, F)):
         raise ValueError("Expected product of linear factors.")
 
     varbs = f.variables()
-    varbs_str = tuple(map(lambda x: str(x), varbs))
+    varbs_str = tuple(str(x) for x in varbs)
     HH = HyperplaneArrangements(K, varbs_str)
 
     def poly_vec(g):
@@ -317,7 +308,7 @@ def _parse_poly(f):
 
     # This scrambles the hyperplanes, so we need to scramble M in the same way.
     A_vec = tuple(map(lambda H: tuple(H.coefficients()), A.hyperplanes()))
-    perm = tuple([F_vec.index(v) for v in A_vec])
+    perm = (F_vec.index(v) for v in A_vec)
     M_new = tuple([M[i] for i in perm])
 
     return A, M_new
@@ -359,7 +350,6 @@ def CoarseFlagHPSeries(A=None, lattice_of_flats=None, poset=None, matroid=None, 
 
 def IgusaZetaFunction(X=None, lattice_of_flats=None, int_poset=None, matroid=None, verbose=_print):
     from .LatticeFlats import LatticeOfFlats
-    from sage.all import var
 
     HPA = True
     if matroid is None:
@@ -392,7 +382,7 @@ def IgusaZetaFunction(X=None, lattice_of_flats=None, int_poset=None, matroid=Non
         else:
             if verbose:
                 print("{0}Computing the atom zeta function".format(_time()))
-            Z = _universal(L, anayltic=True, atom=True)
+            Z = _universal(L, analytic=True, atom=True)
             t = var('t')
             SUB = {var('t' + str(k+1)): t**(M[k]) for k in range(len(M))}
             return Z.subs(SUB)
@@ -404,7 +394,6 @@ def IgusaZetaFunction(X=None, lattice_of_flats=None, int_poset=None, matroid=Non
 
 def TopologicalZetaFunction(X=None, lattice_of_flats=None, int_poset=None, verbose=_print, multivariate=False, atom=False, matroid=None):
     from .LatticeFlats import LatticeOfFlats
-    from sage.all import var
 
     HPA = True
     if matroid is None:
@@ -433,7 +422,7 @@ def TopologicalZetaFunction(X=None, lattice_of_flats=None, int_poset=None, verbo
         print("{0}Computing the topological zeta function".format(_time()))
 
     if not HPA:
-        if list(M) == [1] * len(M):
+        if all(m == 1 for m in M):
             return _top_zeta_function_uni(L)
         else:
             Z = _top_zeta_function_mul(L, atom=True)
@@ -462,7 +451,7 @@ def AnalyticZetaFunction(A=None, lattice_of_flats=None, int_poset=None, matroid=
 
     if verbose:
         print("{0}Computing the analytic zeta function".format(_time()))
-    return _universal(L, anayltic=True)
+    return _universal(L, analytic=True)
 
 
 def AtomZetaFunction(A=None, lattice_of_flats=None, int_poset=None, matroid=None, verbose=_print):
@@ -480,7 +469,7 @@ def AtomZetaFunction(A=None, lattice_of_flats=None, int_poset=None, matroid=None
 
     if verbose:
         print("{0}Computing the atom zeta function".format(_time()))
-    return _universal(L, anayltic=True, atom=True)
+    return _universal(L, analytic=True, atom=True)
 
 
 def FlagHilbertPoincareSeries(A=None, lattice_of_flats=None, int_poset=None, matroid=None, verbose=_print):
@@ -497,5 +486,5 @@ def FlagHilbertPoincareSeries(A=None, lattice_of_flats=None, int_poset=None, mat
         L = lattice_of_flats
 
     if verbose:
-        print("{0}Computing the flag Hilbert--Poincare series".format(_time()))
+        print("{0}Computing the flag Hilbert--Poincaré series".format(_time()))
     return _universal(L)

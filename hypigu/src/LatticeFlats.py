@@ -4,7 +4,7 @@
 #   Distributed under MIT License
 #
 
-from functools import reduce as _reduce
+from functools import reduce
 from sage.misc.cachefunc import cached_method
 from .Globals import __TIME as _time
 from .Globals import __NCPUS as _N
@@ -101,32 +101,31 @@ def _parse_poset(P):
     @para.parallel(N)
     def atom_set(k, shift):
         S = list(POS._elements[1+shift::k])
-        m = lambda x: [x, Set(list(filter(lambda a: POS.le(a, x), atoms)))]
+        m = lambda x: [x, Set(filter(lambda a: POS.le(a, x), atoms))]
         return list(map(m, S))
 
     labs = list(atom_set([(N, k) for k in range(N)]))
-    labs = [[P.bottom(), Set([])]] + _reduce(lambda x, y: x + y[1], labs, [])
+    labs = [[P.bottom(), Set([])]] + reduce(lambda x, y: x + y[1], labs, [])
     label_dict = {T[0]: T[1] for T in labs}
 
     return label_dict
 
 
 # Can return the subarrangement A_x or restriction A^x simply based on the
-# function F given. For subarrangement use 'lambda z: P.lower_covers(z)' and for
-# restriction use 'lambda z: P.upper_covers(z)'.
+# function F given. For subarrangement use 'P.lower_covers' and for
+# restriction use 'P.upper_covers'.
 def _subposet(P, x, F):
     from sage.all import Set
-    elts = Set([])
+    elts = Set()
     new_level = Set([x])
     while len(elts.union(new_level)) > len(elts):
         elts = elts.union(new_level)
-        new_level = Set(_reduce(
+        new_level = Set(reduce(
             lambda x, y: x+y,
             map(F, new_level),
             []
         ))
-    new_P = P.subposet(elts)
-    return new_P
+    return P.subposet(elts)
 
 
 # Parallel function to build the intersection lattice.
@@ -174,7 +173,6 @@ def build_next(A, S, HYP, LIN):
 # ordering, which we depend on, so care is needed.
 def _lof_from_matroid(A=None, matroid=None):
     from sage.all import Set, Matrix, Matroid, Poset
-    from functools import reduce
     if A is not None:
         rows = list(map(lambda H: H.coefficients()[1:], A.hyperplanes()))
         mat = Matrix(A.base_ring(), rows).transpose()
@@ -212,7 +210,6 @@ def _lof_from_matroid(A=None, matroid=None):
 
 def _lof_from_affine_matroid(A):
     from sage.all import Poset, Set
-    from functools import reduce
     A_coned = A.cone()
     hyps = list(map(lambda H: H.coefficients(), A_coned.hyperplanes()))
     extra = [0, 1] + [0]*(A.dimension())
@@ -325,9 +322,9 @@ class LatticeOfFlats():
 
     def subarrangement(self, x):
         P = self.poset
-        if type(x) != set:
+        if not isinstance(x, set):
             assert x in P, "Expected element to be in poset."
-            new_P = _subposet(P, x, lambda z: P.lower_covers(z))
+            new_P = _subposet(P, x, P.lower_covers)
             new_A = None
             new_FL = None
             new_HL = None
@@ -353,9 +350,9 @@ class LatticeOfFlats():
     def restriction(self, x):
         from sage.all import Matrix, HyperplaneArrangements
         P = self.poset
-        if type(x) != set:
+        if not isinstance(x, set):
             assert x in P, "Expected element to be in poset."
-            new_P = _subposet(P, x, lambda z: P.upper_covers(z))
+            new_P = _subposet(P, x, P.upper_covers)
             new_A = None
             new_HL = None
             if self.hyperplane_arrangement:
@@ -394,9 +391,9 @@ class LatticeOfFlats():
         P = self.poset
         L = self.flat_labels
 
-        if type(H) == set:
+        if isinstance(H, set):
             L = self.flat_labels
-            X = list(filter(lambda y: L[y] == H, P._elements))
+            X = [y for y in P._elements if L[y] == H]
             try:
                 return self.deletion(X[0])
             except IndexError:
@@ -414,11 +411,12 @@ class LatticeOfFlats():
 
         def check(C):
             S = L[C]
-            return bool(len(S) == m and H not in S)
+            return len(S) == m and H not in S
+
         new_top = list(filter(check, coatoms))
 
         if len(new_top) == 1:
-            new_P = _subposet(P, new_top[0], lambda z: P.lower_covers(z))
+            new_P = _subposet(P, new_top[0], P.lower_covers)
             new_FL = {y: L[y] for y in new_P._elements}
         else:
             def good_flats(F):
@@ -489,13 +487,13 @@ class LatticeOfFlats():
             comb_elts = self._combinatorial_eq_elts()
             rk = P.rank_function()
             bot = P.bottom()
-            pi = PR(1) 
+            pi = PR(1)
             if P.has_top():
                 top = P.top()
                 pi += abs(P.moebius_function(bot, top))*Y**(rk(top))
             for t in comb_elts:
                 pi += abs(P.moebius_function(bot, t[0]))*t[1]*Y**(rk(t[0]))
-            return pi 
+            return pi
         else:
             chi = P.characteristic_polynomial()
             q = chi.variables()[0]
@@ -541,11 +539,11 @@ class LatticeOfFlats():
 
         # Get the preliminary set of inequivalent elements
         prelim_elts = list(match_elts([(N, k) for k in range(N)]))
-        prelim_elts = _reduce(lambda x, y: x + y[1], prelim_elts, [])
+        prelim_elts = reduce(lambda x, y: x + y[1], prelim_elts, [])
 
         # Test further to minimize the size.
         equiv_elts = []
-        while len(prelim_elts) > 0:
+        while prelim_elts:
             x = prelim_elts[0]
             match = False
             i = 0
@@ -560,4 +558,3 @@ class LatticeOfFlats():
                 equiv_elts.append(list(x))
             prelim_elts = prelim_elts[1:]
         return equiv_elts
-

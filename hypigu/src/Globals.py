@@ -9,7 +9,8 @@ from os import cpu_count as _cpu_count
 
 __PRINT = False
 __SANITY = False
-__NCPUS = max(1, _cpu_count()-1)
+__NCPUS = max(1, _cpu_count() - 1)
 
-def __TIME(): 
+
+def __TIME():
     return "[{0}] ".format(_dt.now().strftime("%b %d %H:%M:%S"))
