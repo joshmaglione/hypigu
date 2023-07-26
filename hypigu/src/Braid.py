@@ -50,33 +50,44 @@ def _P(L):
             return _binomial(n, P[0])
         else:
             return _binomial(n, P[0]) * binom(n - P[0], P[1:])
-    n = _reduce(lambda x, y: x + y, L)
-    count = lambda n: len(list(filter(lambda x: x == n, L)))
-    S = list(Set(list(L)))
-    d = _reduce(lambda x, y: x*y, map(lambda z: _factorial(count(z)), S))
+    n = sum(L)
+    count = lambda n: len([1 for x in L if x == n])
+    S = list(Set(L))
+    d = _reduce(lambda x, y: x*y, (_factorial(count(z)) for z in S))
     return binom(n, L) // d
 
 
 # Counts the number of edges in a subgraph of the complete graph determined by L
 def _binom_sum(L):
-    binomials = map(lambda z: _binomial(z, 2), L)
-    return _reduce(lambda x, y: x + y, binomials)
+    return sum(_binomial(z, 2) for z in L)
 
 
-# Constructs the Poincare polynomial (in Y) of the braid arrangement in |L|-1
-# affine space.
 def _Poincare(L):
+    """
+    Construct the Poincaré polynomial (in Y) of the braid arrangement
+    in ``|L|-1`` affine space.
+
+    EXAMPLES::
+
+        sage: from hypigu.Braid import _Poincare
+        sage: _Poincare(4)
+    """
     from sage.all import var
     Y = var('Y')
-    factors= map(lambda z: 1 + z*Y, range(1, len(L)))
-    return _reduce(lambda x, y: x*y, factors, 1)
+    factors = (1 + z * Y for z in range(1, len(L)))
+    return _reduce(lambda x, y: x * y, factors, 1)
+
+    # better code using polynomials
+    # from sage.all import PolynomialRing, ZZ
+    # A = PolynomialRing(ZZ, 'Y')
+    # return A.prod(A([1, z]) for z in range(1, len(L)))
 
 
 # Constructs the Igusa integral for the braid arrangement with little repetition
 # of work.
 def _recursive_crank(p, t, n, known=[], style="standard"):
     from sage.all import Partitions
-    if known == []:
+    if not known:
         known = [_Igusa_braid_table(p, t, k, style=style)
             for k in range(_TABLE_CUTOFF + 1)]
     k = len(known) + 1
@@ -87,7 +98,7 @@ def _recursive_crank(p, t, n, known=[], style="standard"):
                 L_factors = [_P(L), 1, t**(_binom_sum(L)), _factorial(len(L))]
             else:
                 L_factors = [
-                    _P(L), p**(1-_reduce(lambda x, y: x + y - 1, L)),
+                    _P(L), p**(1 - _reduce(lambda x, y: x + y - 1, L)),
                     t**(_binom_sum(L)), _Poincare(L)(Y=-p**-1)
                 ]
             lower_integrals = list(map(lambda z: known[z - 1], list(L)))
@@ -122,7 +133,6 @@ def BraidArrangementIgusa(n):
         sage: Z = BraidArrangementIgusa(2)
         sage: Z
         -(2*t/q - 2/q - t/q^2 + 1)*(1/q - 1)/((t^3/q^2 - 1)*(t/q - 1))
-
     """
     from sage.all import var
     p = var('q')
