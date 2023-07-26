@@ -1,6 +1,6 @@
 site_name: HypIgu Documentation
 site_author: Joshua Maglione
-copyright: "&copy; 2021 J. Maglione"
+copyright: "&copy; 2020&ndash;2023 J. Maglione"
 nav:
     - Home: index.md
     - Constructors: constructors.md
