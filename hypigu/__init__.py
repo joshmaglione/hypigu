@@ -1,10 +1,10 @@
 #
-#   Copyright 2021 Joshua Maglione 
+#   Copyright 2021--2023 Joshua Maglione 
 #
 #   Distributed under MIT License
 #
 
-__version__ = 1.3
+__version__ = 1.4
 
 from .src.Braid import BraidArrangementIgusa
 from .src.Constructors import CoxeterArrangement, LinialArrangement, ShiArrangement, CatalanArrangement, DirectSum, PolynomialToArrangement, ResonanceArrangement
