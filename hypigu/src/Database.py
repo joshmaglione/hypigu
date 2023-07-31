@@ -1,5 +1,5 @@
 #
-#   Copyright 2020 Joshua Maglione 
+#   Copyright 2020 Joshua Maglione
 #
 #   Distributed under MIT License
 #
@@ -13,7 +13,7 @@ def _check(L, P, n):
         return False, None
     if L[n].is_isomorphic(P):
         return True, n
-    return _check(L, P, n+1) 
+    return _check(L, P, n+1)
 
 
 class IADatabase():
@@ -64,20 +64,20 @@ def _initialize_main_DB():
     T = var('T')
     DB = IADatabase()
 
-    # A3 arrangement 
+    # A3 arrangement
     A3 = Poset(DiGraph(init_data.A3_rels))
     A3_Igusa = q**-6*(1-q**-1)*(q**4*(6-5*q+q**2)-4*q**4*(2-q)*t-q**2*(3-7*q+2*q**2)*t**2+q**2*(2-7*q+3*q**2)*t**3-4*q*(1-2*q)*t**4-(1-5*q+6*q**2)*t**5)/((1-q**-1*t)**2*(1-q**-2*t**3)*(1-q**-3*t**6))
     A3_skele = ((1 + 6*Y + 11*Y**2 + 6*Y**3) + (11 + 37*Y + 37*Y**2 + 11*Y**3)*T + (6 + 11*Y + 6*Y**2 + Y**3)*T**2)/((1 - T)**3)
     DB.save_gen_func(A3, 'Igusa', A3_Igusa)
     DB.save_gen_func(A3, 'skele', A3_skele)
 
-    # A4 arrangement 
+    # A4 arrangement
     A4 = Poset(DiGraph(init_data.A4_rels))
     A4_skele = ((1 + 10*Y + 35*Y**2 + 50*Y**3 + 24*Y**4) + (47 + 260*Y + 505*Y**2 + 400*Y**3 + 108*Y**4)*T + (108 + 400*Y + 505*Y**2 + 260*Y**3 + 47*Y**4)*T**2 + (24 + 50*Y + 35*Y**2 + 10*Y**3 + Y**4)*T**3)/((1 - T)**4)
     A4_Igusa = init_data.A4_Igusa_n(q, t) / init_data.A4_Igusa_d(q, t)
     DB.save_gen_func(A4, 'skele', A4_skele)
     DB.save_gen_func(A4, 'Igusa', A4_Igusa)
-    
+
     # A5 arrangement
     A5 = Poset(DiGraph(init_data.A5_rels))
     A5_skele = (Y**5*T**4 + 197*Y**5*T**3 + 15*Y**4*T**4 + 1268*Y**5*T**2 + 1546*Y**4*T**3 + 85*Y**3*T**4 + 1114*Y**5*T + 7172*Y**4*T**2 + 4670*Y**3*T**3 + 225*Y**2*T**4 + 120*Y**5 + 4493*Y**4*T + 15320*Y**3*T**2 + 6700*Y**2*T**3 + 274*Y*T**4 + 274*Y**4 + 6700*Y**3*T + 15320*Y**2*T**2 + 4493*Y*T**3 + 120*T**4 + 225*Y**3 + 4670*Y**2*T + 7172*Y*T**2 + 1114*T**3 + 85*Y**2 + 1546*Y*T + 1268*T**2 + 15*Y + 197*T + 1)/((1 - T)**5)
@@ -93,6 +93,7 @@ def _initialize_main_DB():
     DB.save_gen_func(B3, 'Igusa', B3_Igusa)
 
     return DB
+
 
 global internal_database
 internal_database = _initialize_main_DB()

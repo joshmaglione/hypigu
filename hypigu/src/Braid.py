@@ -3,17 +3,20 @@
 #
 #   Distributed under MIT License
 #
+from functools import reduce
 
-from sage.all import binomial as _binomial
-from sage.all import factorial as _factorial
-from functools import reduce as _reduce
+from sage.arith.all import factorial, binomial
+from sage.all import Partitions, Set, prod
+from sage.all import QQ, polygens, PolynomialRing, ZZ
+from sage.arith.misc import multinomial
+
 
 _TABLE_CUTOFF = 3
 
 
 def _Igusa_braid_table(p, t, n, style="standard"):
     if n <= 0:
-        return 1
+        return p.parent().one()
     if n == 1:
         if style == "reduced":
             return 2/(1 - t)
@@ -35,31 +38,38 @@ def _Igusa_braid_table(p, t, n, style="standard"):
             return ((1 + 6*p + 11*p**2 + 6*p**3) + (11 + 37*p + 37*p**2 + 11*p**3)*t + (6 + 11*p + 6*p**2 + p**3)*t**2)/((1 - t)**3)
         else:
             return p**-6*(1-p**-1)*(p**4*(6-5*p+p**2)-4*p**4*(2-p)*t-p**2*(3-7*p+2*p**2)*t**2+p**2*(2-7*p+3*p**2)*t**3-4*p*(1-2*p)*t**4-(1-5*p+6*p**2)*t**5)/((1-p**-1*t)**2*(1-p**-2*t**3)*(1-p**-3*t**6))
-    raise ValueError("Bad n-value.")
+    raise ValueError("bad n-value")
 
 
-# Counts the number of set partitions of [L[0] + ... + L[-1]]. So instead of
-# running through all *labeled* partitions, we just run through the partition
-# "shape" and count the number of different labelings.
 def _P(L):
-    from sage.all import Set
-    # Compute binom(n, p_1)*binom(n - p_1, p_2)*binom(n - p_1 - p_2, p_3)*...
+    """
+    Counts the number of set partitions of [L[0] + ... + L[-1]].
 
-    def binom(n, P):
-        if len(P) == 1:
-            return _binomial(n, P[0])
-        else:
-            return _binomial(n, P[0]) * binom(n - P[0], P[1:])
-    n = sum(L)
-    count = lambda n: len([1 for x in L if x == n])
-    S = list(Set(L))
-    d = _reduce(lambda x, y: x*y, (_factorial(count(z)) for z in S))
-    return binom(n, L) // d
+    So instead of running through all *labeled* partitions, we just
+    run through the partition "shape" and count the number of
+    different labelings.
+
+    EXAMPLES::
+
+        sage: from hypigu.Braid import _P
+        sage: _P([4,5,6])
+        ?
+    """
+    return multinomial(L) // prod(factorial(L.count(z)) for z in Set(L))
 
 
-# Counts the number of edges in a subgraph of the complete graph determined by L
 def _binom_sum(L):
-    return sum(_binomial(z, 2) for z in L)
+    """
+    Counts the number of edges in a subgraph of the complete graph
+    determined by L.
+
+    EXAMPLES::
+
+        sage: from hypigu.Braid import _binom_sum
+        sage: _binom_sum([4,5,6])
+        ?
+    """
+    return sum(binomial(z, 2) for z in L)
 
 
 def _Poincare(L):
@@ -71,22 +81,17 @@ def _Poincare(L):
 
         sage: from hypigu.Braid import _Poincare
         sage: _Poincare(4)
+        ?
     """
-    from sage.all import var
-    Y = var('Y')
-    factors = (1 + z * Y for z in range(1, len(L)))
-    return _reduce(lambda x, y: x * y, factors, 1)
-
-    # better code using polynomials
-    # from sage.all import PolynomialRing, ZZ
-    # A = PolynomialRing(ZZ, 'Y')
-    # return A.prod(A([1, z]) for z in range(1, len(L)))
+    A = PolynomialRing(ZZ, 'Y')
+    return A.prod(A([1, z]) for z in range(1, len(L)))
 
 
-# Constructs the Igusa integral for the braid arrangement with little repetition
-# of work.
 def _recursive_crank(p, t, n, known=[], style="standard"):
-    from sage.all import Partitions
+    """
+    Constructs the Igusa integral for the braid arrangement
+    with little repetition of work.
+    """
     if not known:
         known = [_Igusa_braid_table(p, t, k, style=style)
             for k in range(_TABLE_CUTOFF + 1)]
@@ -95,19 +100,19 @@ def _recursive_crank(p, t, n, known=[], style="standard"):
     for L in Partitions(k):
         if len(L) > 1:
             if style == "reduced":
-                L_factors = [_P(L), 1, t**(_binom_sum(L)), _factorial(len(L))]
+                L_factors = [_P(L), 1, t**_binom_sum(L), factorial(len(L))]
             else:
                 L_factors = [
-                    _P(L), p**(1 - _reduce(lambda x, y: x + y - 1, L)),
-                    t**(_binom_sum(L)), _Poincare(L)(Y=-p**-1)
+                    _P(L), p**(1 - reduce(lambda x, y: x + y - 1, L)),
+                    t**_binom_sum(L), _Poincare(L)(Y=-p**-1)
                 ]
-            lower_integrals = list(map(lambda z: known[z - 1], list(L)))
-            L_term = _reduce(lambda x, y: x*y, L_factors + lower_integrals, 1)
+            lower_integrals = [known[z - 1] for z in list(L)]
+            L_term = prod(L_factors + lower_integrals)
             Zk += L_term
     if style == "reduced":
-        Zk = Zk/(1 - t**(_binomial(k, 2)))
+        Zk /= (1 - t**binomial(k, 2))
     else:
-        Zk = Zk/(1 - p**(-k + 1)*t**(_binomial(k, 2)))
+        Zk /= (1 - p**(-k + 1) * t**binomial(k, 2))
     known += [Zk]
     if k - 1 < n:
         return _recursive_crank(p, t, n, known=known, style=style)
@@ -134,9 +139,7 @@ def BraidArrangementIgusa(n):
         sage: Z
         -(2*t/q - 2/q - t/q^2 + 1)*(1/q - 1)/((t^3/q^2 - 1)*(t/q - 1))
     """
-    from sage.all import var
-    p = var('q')
-    t = var('t')
+    p, t = polygens(QQ, 'q,t')
     if n <= _TABLE_CUTOFF:
         return _Igusa_braid_table(p, t, n, style="standard")
     return _recursive_crank(p, t, n, style="standard")
