@@ -44,5 +44,5 @@ HypIgu is distributed with the MIT License.
 
 ## References 
 
-1. [Joshua Maglione](https://joshmaglione.com/) and [Christopher Voll](https://www.math.uni-bielefeld.de/~voll/). Flag Hilbert&ndash;Poincar&#233; series of hyperplane arrangements and Igusa zeta functions, 2021. [arXiv:2103:03640](https://arxiv.org/abs/2103.03640).
+1. [Joshua Maglione](https://joshmaglione.com/) and [Christopher Voll](https://www.math.uni-bielefeld.de/~voll/). Flag Hilbert&ndash;Poincar&#233; series of hyperplane arrangements and Igusa zeta functions, to appear in Israel J. Math. 2021. [arXiv:2103:03640](https://arxiv.org/abs/2103.03640).
    
