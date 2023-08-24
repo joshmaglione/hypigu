@@ -106,7 +106,7 @@ def _universal(L, analytic=False, atom=False):
 def _Igusa_zeta_function(L, DB=True, verbose=_print):
     from .Constructors import CoxeterArrangement
     from .Braid import BraidArrangementIgusa
-    from .LatticeFlats import LatticeOfFlats, _Coxeter_poset_data
+    from .LatticeFlats import LatticeOfFlats 
 
     P = L.poset
     q = var('q')
@@ -124,13 +124,6 @@ def _Igusa_zeta_function(L, DB=True, verbose=_print):
         zeta = _data.get_gen_func(P, 'Igusa')
         if zeta is not None:
             return zeta
-    # We check to see if we have a type A braid arrangement.
-    # We can compute these *extremely* quickly.
-    if _Coxeter_poset_data()['A']['hyperplanes'](P.rank()) == len(L.atoms()):
-        if _Coxeter_poset_data()['A']['poset'](P.rank()) == len(P):
-            B = CoxeterArrangement("A" + str(P.rank()))
-            if P.is_isomorphic(LatticeOfFlats(B).poset):
-                return BraidArrangementIgusa(P.rank())
 
     poincare = _Poincare_polynomial(L, sub=-q**(-1))
     t_factor = lambda X: t**len(L.flat_labels[X])
