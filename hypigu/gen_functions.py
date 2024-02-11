@@ -5,9 +5,9 @@
 #
 from sage.all import var
 
-from .Database import internal_database as _data
-from .Globals import __PRINT as _print
-from .Globals import __TIME as _time
+from .database import internal_database as _data
+from .globals import __PRINT as _print
+from .globals import __TIME as _time
 from functools import reduce as _reduce
 
 
@@ -52,7 +52,7 @@ def _small_central(A, style, numerator=False):
 
 # The direct version of the universal generating function computation.
 def _universal(L, analytic=False, atom=False):
-    from .LatticeFlats import _subposet
+    from .lattice_flats import _subposet
 
     # Set up the potential substitutions for T -- as defined in Maglione--Voll.
     if analytic:
@@ -104,9 +104,9 @@ def _universal(L, analytic=False, atom=False):
 
 
 def _Igusa_zeta_function(L, DB=True, verbose=_print):
-    from .Constructors import CoxeterArrangement
-    from .Braid import BraidArrangementIgusa
-    from .LatticeFlats import LatticeOfFlats 
+    from .constructors import CoxeterArrangement
+    from .braid import BraidArrangementIgusa
+    from .lattice_flats import LatticeOfFlats 
 
     P = L.poset
     q = var('q')
@@ -168,7 +168,7 @@ def _top_zeta_function_uni(L, DB=True, verbose=_print):
 
 
 def _top_zeta_function_mul(L, DB=True, verbose=_print, atom=False):
-    from .LatticeFlats import _subposet
+    from .lattice_flats import _subposet
 
     P = L.poset
     C = 1 * L.poset.has_top()
@@ -308,7 +308,7 @@ def _parse_poly(f):
 
 
 def CoarseFlagHPSeries(A=None, lattice_of_flats=None, poset=None, matroid=None, numerator=False, abs_val=False, verbose=_print):
-    from .LatticeFlats import LatticeOfFlats
+    from .lattice_flats import LatticeOfFlats
 
     if lattice_of_flats is None:
         if verbose:
@@ -342,7 +342,7 @@ def CoarseFlagHPSeries(A=None, lattice_of_flats=None, poset=None, matroid=None, 
 
 
 def IgusaZetaFunction(X=None, lattice_of_flats=None, int_poset=None, matroid=None, verbose=_print):
-    from .LatticeFlats import LatticeOfFlats
+    from .lattice_flats import LatticeOfFlats
 
     HPA = True
     if matroid is None:
@@ -386,7 +386,7 @@ def IgusaZetaFunction(X=None, lattice_of_flats=None, int_poset=None, matroid=Non
 
 
 def TopologicalZetaFunction(X=None, lattice_of_flats=None, int_poset=None, verbose=_print, multivariate=False, atom=False, matroid=None):
-    from .LatticeFlats import LatticeOfFlats
+    from .lattice_flats import LatticeOfFlats
 
     HPA = True
     if matroid is None:
@@ -430,7 +430,7 @@ def TopologicalZetaFunction(X=None, lattice_of_flats=None, int_poset=None, verbo
 
 
 def AnalyticZetaFunction(A=None, lattice_of_flats=None, int_poset=None, matroid=None, verbose=_print):
-    from .LatticeFlats import LatticeOfFlats
+    from .lattice_flats import LatticeOfFlats
 
     if lattice_of_flats is None:
         if matroid is None:
@@ -448,7 +448,7 @@ def AnalyticZetaFunction(A=None, lattice_of_flats=None, int_poset=None, matroid=
 
 
 def AtomZetaFunction(A=None, lattice_of_flats=None, int_poset=None, matroid=None, verbose=_print):
-    from .LatticeFlats import LatticeOfFlats
+    from .lattice_flats import LatticeOfFlats
 
     if lattice_of_flats is None:
         if matroid is None:
@@ -466,7 +466,7 @@ def AtomZetaFunction(A=None, lattice_of_flats=None, int_poset=None, matroid=None
 
 
 def FlagHilbertPoincareSeries(A=None, lattice_of_flats=None, int_poset=None, matroid=None, verbose=_print):
-    from .LatticeFlats import LatticeOfFlats
+    from .lattice_flats import LatticeOfFlats
 
     if lattice_of_flats is None:
         if matroid is None:

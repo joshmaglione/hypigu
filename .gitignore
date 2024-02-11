@@ -4,3 +4,4 @@ build/
 dist/
 hypigu.egg-info/
 build/
+__pycache__

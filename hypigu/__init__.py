@@ -4,10 +4,12 @@
 #   Distributed under MIT License
 #
 
-__version__ = 1.4
+__version__ = 1.5
 
-from .src.Braid import BraidArrangementIgusa
-from .src.Constructors import CoxeterArrangement, LinialArrangement, ShiArrangement, CatalanArrangement, DirectSum, PolynomialToArrangement, ResonanceArrangement
-from .src.LatticeFlats import LatticeOfFlats
-from .src.GenFunctions import FlagHilbertPoincareSeries, IgusaZetaFunction, CoarseFlagHPSeries, AnalyticZetaFunction, AtomZetaFunction, TopologicalZetaFunction
-from .src.Database import internal_database
+from .braid import BraidArrangementIgusa
+from .constructors import CoxeterArrangement, LinialArrangement, ShiArrangement, CatalanArrangement, DirectSum, PolynomialToArrangement, ResonanceArrangement
+from .lattice_flats import LatticeOfFlats
+from .gen_functions import FlagHilbertPoincareSeries, IgusaZetaFunction, CoarseFlagHPSeries, AnalyticZetaFunction, AtomZetaFunction, TopologicalZetaFunction
+from .database import internal_database
+
+from .braid import *

@@ -325,6 +325,6 @@ def PolynomialToArrangement(f):
         sage: hi.PolynomialToArrangement(f)
         Arrangement of 7 hyperplanes of dimension 4 and rank 4
     """
-    from .GenFunctions import _parse_poly
+    from .gen_functions import _parse_poly
     A, _ = _parse_poly(f)
     return A

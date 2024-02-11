@@ -6,8 +6,8 @@
 
 from functools import reduce
 from sage.misc.cachefunc import cached_method
-from .Globals import __TIME as _time
-from .Globals import __NCPUS as _N
+from .globals import __TIME as _time
+from .globals import __NCPUS as _N
 import sage.parallel.decorate as _para
 
 
