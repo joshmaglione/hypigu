@@ -180,7 +180,7 @@ def CoxeterArrangement(name):
 
     INPUT:
 
-    - ``name`` -- an interable container of strings; the Coxeter group
+    - ``name`` -- an iterable container of strings; the Coxeter group
         name. The string must include a letter from {A, ..., H} and a
         nonnegative integer.
 
@@ -206,7 +206,7 @@ def ShiArrangement(name):
 
     INPUT:
 
-    - ``name`` -- an interable container of strings; the Coxeter group
+    - ``name`` -- an iterable container of strings; the Coxeter group
         name. The string must include a letter from {A, ..., H} and a
         nonnegative integer.
 
@@ -232,7 +232,7 @@ def LinialArrangement(name):
 
     INPUT:
 
-    - ``name`` -- an interable container of strings; the Coxeter group
+    - ``name`` -- an iterable container of strings; the Coxeter group
         name. The string must include a letter from {A, ..., H} and a
         nonnegative integer.
 
@@ -258,7 +258,7 @@ def CatalanArrangement(name):
 
     INPUT:
 
-    - ``name`` -- an interable container of strings; the Coxeter group
+    - ``name`` -- an iterable container of strings; the Coxeter group
         name. The string must include a letter from {A, ..., H} and a
         nonnegative integer.
 

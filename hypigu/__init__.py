@@ -12,4 +12,21 @@ from .lattice_flats import LatticeOfFlats
 from .gen_functions import FlagHilbertPoincareSeries, IgusaZetaFunction, CoarseFlagHPSeries, AnalyticZetaFunction, AtomZetaFunction, TopologicalZetaFunction
 from .database import internal_database
 
-from .braid import *
+__all__ = [
+	'BraidArrangementIgusa',
+	'CoxeterArrangement',
+	'LinialArrangement',
+	'ShiArrangement',
+	'CatalanArrangement',
+	'DirectSum',
+	'PolynomialToArrangement',
+	'ResonanceArrangement',
+	'LatticeOfFlats',
+	'FlagHilbertPoincareSeries',
+	'IgusaZetaFunction',
+	'CoarseFlagHPSeries',
+	'AnalyticZetaFunction',
+	'AtomZetaFunction',
+	'TopologicalZetaFunction',
+	'internal_database'
+]
