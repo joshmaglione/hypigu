@@ -4,36 +4,35 @@
 #   Distributed under MIT License
 #
 
-def _non_Weyl_arrangements(X, n, shift=[0]):
-    from functools import reduce
-    from sage.all import HyperplaneArrangements, QQ, CoxeterGroup
+from functools import reduce
+from sage.all import HyperplaneArrangements, QQ, CoxeterGroup, RootSystem, Subsets, Matrix
+from .gen_functions import _parse_poly
 
-    def add_shift(x):
-        return list(map(lambda k: [k] + list(x), shift))
+def _non_Weyl_arrangements(X, n, shift=[0]):
     if X == 'I':
         # Not expecting n <= 2 for type I.
         if n == 3:
             return _arrangements_from_roots("A", 2, shift=shift)
         if n == 4:
             return _arrangements_from_roots("B", 2, shift=shift)
-        H = HyperplaneArrangements(QQ, tuple(['x0', 'x1']))
-        norms = [tuple([1, 0]), tuple([0, 1]), tuple([1, 1]), tuple([1, -1])]
-        cval = 2
-        for k in range(n - 4):
-            norms.append(tuple([(-1)**(k % 2), cval + (k // 2)]))
+        H = HyperplaneArrangements(QQ, ('x0', 'x1'))
+        norms = [(1, 0), (0, 1), (1, 1), (1, -1)]
+        norms += [((-1)**(k % 2), 2 + (k // 2)) for k in range(n - 4)]
     else:
         if n == 2:
             return _non_Weyl_arrangements("I", 5, shift=shift)
         W = CoxeterGroup([X, n])
-        H = HyperplaneArrangements(W.base_ring(), tuple(['x' + str(k) for k in range(n)]))
+        H = HyperplaneArrangements(
+            W.base_ring(), tuple(['x' + str(k) for k in range(n)])
+        )
         norms = W.positive_roots()
-    aff_norms = reduce(lambda x, y: x+y, map(lambda x: add_shift(x), norms), [])
+    def add_shift(x):
+        return [[k] + list(x) for k in shift]
+    aff_norms = reduce(lambda x, y: x + add_shift(y), norms, [])
     return H(aff_norms)
 
 
 def _arrangements_from_roots(X, n, shift=[0]):
-    from functools import reduce
-    from sage.all import HyperplaneArrangements, QQ, RootSystem
     Phi = RootSystem([X, n]).ambient_space()
     d = Phi.dimension()
     H = HyperplaneArrangements(QQ, tuple(['x' + str(i) for i in range(d)]))
@@ -41,8 +40,8 @@ def _arrangements_from_roots(X, n, shift=[0]):
 
     def add_shift(x):
         norm = tuple(map(lambda i: QQ(i), x._vector_().list()))
-        return list(map(lambda k: [norm, k], shift))
-    aff_norms = reduce(lambda x, y: x+y, map(lambda x: add_shift(x), norms), [])
+        return [[norm, k] for k in shift]
+    aff_norms = reduce(lambda x, y: x + add_shift(y), norms, [])
     return H(aff_norms)
 
 
@@ -89,25 +88,24 @@ def _parse_Coxeter_input(name):
 
     def convert(s):
         if len(s) <= 1:
-            raise ValueError("Cannot parse input: {0}".format(s))
+            raise ValueError(f"Cannot parse input: {s}")
         try:
             n = int(s[1:])
         except ValueError:
-            raise ValueError("Cannot parse as integer: {0}".format(s[1:]))
-        return tuple([s[0].upper(), n])
-    Cox_facts = list(map(convert, factors))
+            raise ValueError(f"Cannot parse as integer: {s[1:]}")
+        return (s[0].upper(), n)
+    Cox_facts = [convert(s) for s in factors]
     assert all(map(lambda X: _Coxeter_check(X[0], X[1]), Cox_facts))
     return Cox_facts
 
 
 # Builds the direct sum arrangement of arrangements A and B.
 def _direct_sum(A, B):
-    from sage.all import HyperplaneArrangements as HA
     K = A.base_ring()
     d = A.dimension() + B.dimension()
     A_H = map(lambda H: H.coefficients(), A.hyperplanes())
     B_H = map(lambda H: H.coefficients(), B.hyperplanes())
-    HH = HA(K, tuple(['x' + str(k) for k in range(d)]))
+    HH = HyperplaneArrangements(K, tuple(['x' + str(k) for k in range(d)]))
     A_emb = map(lambda L: L + [0]*(B.dimension()), A_H)
     B_emb = map(lambda L: L[0:1] + [0]*(A.dimension()) + L[1:], B_H)
     return HH(list(A_emb) + list(B_emb))
@@ -115,21 +113,18 @@ def _direct_sum(A, B):
 
 def _basic_wrapper(name, s):
     factors = _parse_Coxeter_input(name)
-
     def irr_facts(X):
         if X[0] in {'I', 'H'}:
             return _non_Weyl_arrangements(X[0], X[1], shift=s)
         if X == ['D', 1]:
             X = ['A', 1]
         return _arrangements_from_roots(X[0], X[1], shift=s)
-    irr_arr = list(map(irr_facts, factors))
+    irr_arr = [irr_facts(X) for X in factors]
     return DirectSum(irr_arr)
 
 
 def _res_arr(n):
-    from sage.all import Subsets, HyperplaneArrangements, QQ, Matrix
     Subs = Subsets(range(1, n + 1))
-
     def S_vec(S):
         v = [QQ(0)]*(n+1)
         for s in S:
@@ -161,8 +156,6 @@ def DirectSum(*args):
         sage: Bool64
         Arrangement of 64 hyperplanes of dimension 128 and rank 64
     """
-
-    from functools import reduce
     if len(args) == 1:
         HPAs = args[0]
     else:
@@ -325,6 +318,5 @@ def PolynomialToArrangement(f):
         sage: hi.PolynomialToArrangement(f)
         Arrangement of 7 hyperplanes of dimension 4 and rank 4
     """
-    from .gen_functions import _parse_poly
     A, _ = _parse_poly(f)
     return A
