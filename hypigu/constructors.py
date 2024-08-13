@@ -5,8 +5,45 @@
 #
 
 from functools import reduce
-from sage.all import HyperplaneArrangements, QQ, CoxeterGroup, RootSystem, Subsets, Matrix
-from .gen_functions import _parse_poly
+from sage.all import HyperplaneArrangements, QQ, CoxeterGroup, RootSystem, Subsets, Matrix, SR
+
+# Given a polynomial, return a hyperplane arrangement equivalent to the linear
+# factors of f.
+def _parse_poly(f):
+    if isinstance(f, str):
+        f = SR(f)
+    if f.base_ring() == SR:
+        L = f.factor_list()
+        K = QQ
+    else:
+        L = list(f.factor())
+        K = f.base_ring()
+
+    L = filter(lambda T: not T[0] in K, L)  # Remove constant factors
+    F, M = list(zip(*L))
+
+    # Verify that each polynomial factor is linear
+    is_lin = lambda g: all(g.degree(x) <= 1 for x in g.variables())
+    if not all(map(is_lin, F)):
+        raise ValueError("Expected product of linear factors.")
+
+    varbs = f.variables()
+    varbs_str = tuple(str(x) for x in varbs)
+    HH = HyperplaneArrangements(K, varbs_str)
+
+    def poly_vec(g):
+        c = K(g.subs({x: 0 for x in g.variables()}))
+        return tuple([c] + [K(g.coefficient(x)) for x in varbs])
+
+    F_vec = tuple(map(poly_vec, F))
+    A = HH(Matrix(K, F_vec))
+
+    # This scrambles the hyperplanes, so we need to scramble M in the same way.
+    A_vec = tuple(map(lambda H: tuple(H.coefficients()), A.hyperplanes()))
+    perm = (F_vec.index(v) for v in A_vec)
+    M_new = tuple([M[i] for i in perm])
+
+    return A, M_new
 
 def _non_Weyl_arrangements(X, n, shift=[0]):
     if X == 'I':
