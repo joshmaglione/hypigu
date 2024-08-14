@@ -8,8 +8,10 @@ __version__ = 1.5
 
 from .braid import BraidArrangementIgusa
 from .constructors import CoxeterArrangement, LinialArrangement, ShiArrangement, CatalanArrangement, DirectSum, PolynomialToArrangement, ResonanceArrangement
-from .graded_poset import GradedPoset, _combinatorial_eq_classes
-from .gen_functions import FlagHilbertPoincareSeries, CoarseFlagHilbertPoincareSeries
+from .gen_functions import FlagHilbertPoincareSeries, CoarseFlagHilbertPoincareSeries, IgusaZetaFunction
+from .globals import verbose, ncpus
+from .graded_poset import GradedPoset
+
 
 __all__ = [
 	'BraidArrangementIgusa',
@@ -20,11 +22,10 @@ __all__ = [
 	'DirectSum',
 	'PolynomialToArrangement',
 	'ResonanceArrangement',
-	'LatticeOfFlats',
+	'GradedPoset',
 	'FlagHilbertPoincareSeries',
+	'CoarseFlagHilbertPoincareSeries',
 	'IgusaZetaFunction',
-	'CoarseFlagHPSeries',
-	'AnalyticZetaFunction',
-	'AtomZetaFunction',
-	'TopologicalZetaFunction'
-]
+	'verbose',
+	'ncpus',
+].sort()

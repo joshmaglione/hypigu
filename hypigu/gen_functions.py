@@ -5,9 +5,31 @@
 #
 from sage.all import QQ, reduce, PolynomialRing, prod, Subsets
 
-from .globals import _PRINT as _print
-from .globals import _TIME as _time
-from .graded_poset import GradedPoset, _combinatorial_eq_classes
+from .globals import my_print, verbose, ncpus
+from .graded_poset import GradedPoset, proper_part
+
+def combinatorial_eq_classes(GP:GradedPoset):
+    def classes(P, elts):
+        top = lambda x: P.subposet(P.principal_order_filter(x))
+        bot = lambda x: P.subposet(P.principal_order_ideal(x))
+        cl = []
+        for x in elts:
+            matched = False
+            for c in cl:
+                if P.rank_function()(x) != P.rank_function()(c[0]):
+                    continue
+                if len(P.upper_covers(x)) != len(P.upper_covers(c[0])):
+                    continue
+                if len(P.lower_covers(x)) != len(P.lower_covers(c[0])):
+                    continue
+                if top(x).is_isomorphic(top(c[0])) and bot(x).is_isomorphic(bot(c[0])):
+                    c.append(x)
+                    matched = True
+                    break
+            if not matched:
+                cl.append([x])
+        return cl
+    return classes(GP.poset, proper_part(GP.poset))
 
 # Construct fHP directly from the definition. 
 def _fHP_chains(GP:GradedPoset):
@@ -29,10 +51,7 @@ def _fHP_chains(GP:GradedPoset):
         tups = [(None, F[0])] + list(zip(F, F[1:])) + [(F[-1], None)]
         Poincares = [GP.interval(*t).Poincare_polynomial()(Y=Y) for t in tups]
         return reduce(lambda x, y: x*y, Poincares, PR.one())
-    if P.has_top():
-        PP = P.subposet(ord_elts[:-1])
-    else:
-        PP = P
+    PP = proper_part(P)
     terms = [chain_Poincare(F) * reduce(
         lambda x, y: x*y, map(geoprog, F), PR.one()
     ) for F in PP.chains()]
@@ -61,10 +80,7 @@ def _fHP_numerator(GP:GradedPoset):
         tups = [(None, F[0])] + list(zip(F, F[1:])) + [(F[-1], None)]
         Poincares = [GP.interval(*t).Poincare_polynomial()(Y=Y) for t in tups]
         return reduce(lambda x, y: x*y, Poincares, PR.one())
-    if P.has_top():
-        PP = P.subposet(ord_elts[:-1])
-    else:
-        PP = P
+    PP = proper_part(P)
     PP_set = frozenset(PP)
     numer = lambda F: (-1)**(len(F) % 2) * prod(
         Ts[S] for S in F
@@ -91,7 +107,7 @@ def _fHP_recursion(GP:GradedPoset, varbs=None):
         Ts = {x: PR.gens()[i + 1] for i, x in enumerate(ord_elts)}
     else: 
         Y, Ts = varbs
-    # End recursion
+    # Base cases
     if P.rank() == 1: # Proposition 4.1 of Maglione--Voll.
         m = len(GP.atoms())
         return 1 + m*Y + (1 + Y)*sum(Ts[S]/(1 - Ts[S]) for S in GP.atoms())
@@ -103,10 +119,7 @@ def _fHP_recursion(GP:GradedPoset, varbs=None):
     # Determine if seen before
     # 
     # Recursion
-    if P.has_top():
-        PP = P[1:-1]
-    else:
-        PP = P[1:]
+    PP = proper_part(P)
     fHP = GP.Poincare_polynomial()(Y=Y)
     for x in PP:
         fHP += GP.interval(bottom=x).Poincare_polynomial()(Y=Y) * Ts[x] * _fHP_recursion(GP.interval(top=x), varbs=(Y, Ts))
@@ -114,10 +127,35 @@ def _fHP_recursion(GP:GradedPoset, varbs=None):
         fHP = fHP/(1 - Ts[P.top()])
     return fHP
 
-def _cfHP_no_R_label(GP:GradedPoset, numerator=False):
-    pass
+def _cfHP_no_R_label(GP:GradedPoset, varbs=None):
+    # Initial Setup
+    P = GP.poset
+    if varbs is None:
+        PR = PolynomialRing(QQ, 'Y,T')
+        Y, T = PR.gens()
+    else:
+        Y, T = varbs
+    # Base cases
+    if P.rank() == 1: # Proposition 4.1 of Maglione--Voll.
+        m = len(GP.atoms())
+        return (1 + m*Y + (m - 1)*T) / (1 - T)
+    if P.rank() == 2 and P.has_top(): # Proposition 4.2 of Maglione--Voll.
+        m = len(GP.atoms())
+        return (1 + m*Y + (m - 1)*Y**2 + (m - 1 + m*Y + Y**2)*T) / (1 - T)**2
+    # Determine if seen before
+    # 
+    # Recursion
+    Classes = combinatorial_eq_classes(GP)
+    fHP = GP.Poincare_polynomial()(Y=Y)
+    for C in Classes:
+        x = C[0]
+        M = len(C)
+        fHP += M * GP.interval(bottom=x).Poincare_polynomial()(Y=Y) * T * _fHP_recursion(GP.interval(top=x), varbs=(Y, T))
+    if P.has_top():
+        fHP = fHP/(1 - T)
+    return fHP
 
-# Use Theorem 2.7 of Dorpalen-Barry, Maglione, and Stump.
+# Use Theorem 2.7 & Corollary 2.22 of Dorpalen-Barry, Maglione, and Stump.
 def _cfHP_R_label(GP:GradedPoset, numerator=False):
     Lambda = GP.R_label
     def stat(M, E):
@@ -126,7 +164,7 @@ def _cfHP_R_label(GP:GradedPoset, numerator=False):
         U = [False] + [tup[0] > tup[1] for tup in zip(labels, labels[1:])]
         stat = 0
         for i, u in enumerate(U):
-            if i == 0:
+            if i == 0: # iota substitution
                 continue
             if (not u and i in E) or (u and i - 1 not in E):
                 stat += 1
@@ -142,37 +180,81 @@ def _cfHP_R_label(GP:GradedPoset, numerator=False):
         return numer
     return numer / (1 - T)**r
 
+def _IZF_recursion(GP:GradedPoset, varbs=None):
+    # Initial Setup
+    P = GP.poset
+    # y = q^{-1} and t = q^{-s}
+    if varbs is None:
+        PR = PolynomialRing(QQ, 'y, t')
+        y, t = PR.gens()
+    else:
+        y, t = varbs
+    # Base cases
+    if P.rank() == 1: # Proposition 4.1 of Maglione--Voll.
+        m = len(GP.atoms())
+        return (1 - m*y + (m - 1)*y*t) / (1 - y*t)
+    if P.rank() == 2 and P.has_top(): # Proposition 4.2 of Maglione--Voll.
+        m = len(GP.atoms())
+        return (1 - m*y + (m - 1)*y**2 + (m - 1 - m*y + y**2)*y*t) / ((1 - y*t) * (1 - y**2*t**m))
+    # Determine if seen before
+    # 
+    # Recursion
+    Classes = combinatorial_eq_classes(GP)
+    Z = GP.Poincare_polynomial()(Y=-y)
+    for C in Classes:
+        x = C[0]
+        M = len(C)
+        l = len([a for a in GP.atoms() if P.le(a, x)])
+        r = P.rank_function()(x)
+        Z += M * GP.interval(bottom=x).Poincare_polynomial()(Y=-y) * y**r * t**l * _IZF_recursion(GP.interval(top=x), varbs=(y, t))
+    if P.has_top():
+        R = P.rank()
+        A = len(GP.atoms())
+        Z = Z/(1 - y**R * t**A)
+    return Z
+
+
+
 def FlagHilbertPoincareSeries(
-        arrangement=None,
-        matroid=None,
-        poset=None,
-        verbose=_print
-    ):
-    GP = GradedPoset(
-        arrangement=arrangement,
-        matroid=matroid,
-        poset=poset
-    )
-    if verbose:
-        print(f"{_time()}Computing the flag Hilbert--Poincaré series")
+    arrangement=None,
+    matroid=None,
+    poset=None,
+    verbose=verbose
+):
+    GP = GradedPoset(arrangement=arrangement, matroid=matroid, poset=poset)
+    my_print(verbose, "Computing the flag Hilbert--Poincaré series.")
     return _fHP_recursion(GP)
 
 def CoarseFlagHilbertPoincareSeries(
-        arrangement=None,
-        matroid=None,
-        poset=None,
-        R_label=None,
-        verbose=_print,
-        numerator=False
-    ):
+    arrangement=None,
+    matroid=None,
+    poset=None,
+    R_label=None,
+    verbose=verbose,
+    numerator=False
+):
     GP = GradedPoset(
         arrangement=arrangement,
         matroid=matroid,
         poset=poset,
         R_label=R_label
     )
-    if verbose:
-        print(f"{_time()}Computing the coarse flag Hilbert--Poincaré series")
+    my_print(verbose, "Computing the coarse flag Hilbert--Poincaré series.")
     if R_label is not None or GP.R_label is not None:
+        my_print(verbose, "Using the R-label.", level=1)
         return _cfHP_R_label(GP, numerator=numerator)
-    return _cfHP_no_R_label(GP, numerator=numerator)
+    cfHP = _cfHP_no_R_label(GP)
+    if numerator:
+        _, T = cfHP.parent().gens()
+        cfHP = cfHP.numerator()*((1 - T)**GP.poset.rank() / cfHP.denominator())
+    return cfHP
+
+def IgusaZetaFunction(
+    arrangement=None,
+    matroid=None,
+    poset=None,
+    verbose=verbose
+):
+    GP = GradedPoset(arrangement=arrangement, matroid=matroid, poset=poset)
+    my_print(verbose, "Computing the Igusa zeta function.")
+    return _IZF_recursion(GP)

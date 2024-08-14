@@ -6,3 +6,5 @@ hypigu.egg-info/
 build/
 __pycache__
 .DS_Store
+.venv
+.pytest_cache

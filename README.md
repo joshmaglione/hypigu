@@ -38,7 +38,7 @@ This package was funded in part by DFG grant [373111162](https://gepris.dfg.de/g
 
 ## Copyright & License
 
-Copyright 2020&ndash;2023 Joshua Maglione.
+Copyright 2020&ndash;2024 Joshua Maglione.
 
 HypIgu is distributed with the MIT License.
 

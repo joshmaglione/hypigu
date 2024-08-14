@@ -6,6 +6,16 @@
 from sage.all import Matrix, Poset, Matroid, QQ, PolynomialRing, DiGraph
 from sage.misc.cachefunc import cached_method
 
+def proper_part(P, poset=True):
+    L = list(P)
+    i = L.index(P.bottom())
+    j = len(L)
+    if P.has_top():
+        j = L.index(P.top())
+    L_prop = L[:i] + L[i + 1:j] + L[j + 1:]
+    if not poset:
+        return L_prop
+    return P.subposet(L_prop)
 
 class GradedPoset():
 
@@ -97,27 +107,3 @@ class GradedPoset():
         else:
             M = lambda x: P.moebius_function(P.bottom(), x)
         return sum([M(x)*Y**P.rank_function()(x) for x in P])
-
-
-def _combinatorial_eq_classes(GP:GradedPoset):
-    def classes(P, elts):
-        top = lambda x: P.subposet(P.principal_order_filter(x))
-        bot = lambda x: P.subposet(P.principal_order_ideal(x))
-        cl = []
-        for x in elts:
-            matched = False
-            for c in cl:
-                if P.rank_function()(x) != P.rank_function()(c[0]):
-                    continue
-                if len(P.upper_covers(x)) != len(P.upper_covers(c[0])):
-                    continue
-                if len(P.lower_covers(x)) != len(P.lower_covers(c[0])):
-                    continue
-                if top(x).is_isomorphic(top(c[0])) and bot(x).is_isomorphic(bot(c[0])):
-                    c.append(x)
-                    matched = True
-                    break
-            if not matched:
-                cl.append([x])
-        return cl
-    return classes(GP.poset, GP.poset)

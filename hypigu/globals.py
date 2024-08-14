@@ -3,14 +3,16 @@
 #
 #   Distributed under MIT License
 #
-
-from datetime import datetime as dt
 from os import cpu_count 
 
-_PRINT = False
-_SANITY_CHECK = False
-_NCPUS = max(1, cpu_count() - 1)
+verbose = False
+ncpus = max(1, cpu_count())
 
+def my_time():
+    from datetime import datetime as dt
+    return f"[{dt.now().strftime("%b %d %H:%M:%S")}]"
 
-def _TIME():
-    return f"[{dt.now().strftime("%b %d %H:%M:%S")}] "
+def my_print(verbose:bool, s:str, level:int=0):
+    if verbose:
+        print(f"{my_time()}{' ' + '\t'*level}{s}")
+    return None
