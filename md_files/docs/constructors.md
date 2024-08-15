@@ -23,12 +23,12 @@ If $\mathcal{A}$ is a Coxeter arrangement of type $\mathsf{X}_n$, then the *Cata
     \mathcal{C} = \\{L - 1 ~|~ L\in\mathcal{A} \\} \cup \mathcal{A} \cup \\{L + 1 ~|~ L\in\mathcal{A} \\}.
 \]
 
-#### Example (*The* Catalan arrangement)
+#### Example (The Catalan arrangement)
 
 The Catalan arrangement is defined as 
 
 \[
-    \\{X_i - X_j + \varepsilon ~|~ 1\leq i < j \leq n+1,\; \varepsilon\in\\{-1, 0, 1\\} \\}.
+    \\{X_i - X_j + \varepsilon ~|~ 1\leqslant i < j \leqslant n+1,\; \varepsilon\in\\{-1, 0, 1\\} \\}.
 \]
 
 We can quickly construct this as a type $\mathsf{A}_n$ Catalan arrangement for $n=2$. 
@@ -78,7 +78,7 @@ If just one string is provided, it should be formatted like `'Xn'`, where `X` is
 The braid arrangement with $n+1$ hyperplanes is equivalent to the type $\mathsf{A}_n$ Coxeter arrangement:
 
 \[
-    \\{X_i - X_j ~|~ 1\leq i < j \leq n+1\\}.
+    \\{X_i - X_j ~|~ 1\leqslant i < j \leqslant n+1\\}.
 \]
 
 We construct the braid arrangement with $3$ hyperplanes.
@@ -183,7 +183,7 @@ If $\mathcal{A}$ is a Coxeter arrangement of type $\mathsf{X}_n$, then the *Lini
     \mathcal{L} = \\{L - 1 ~|~ L\in\mathcal{A} \\} .
 \]
 
-#### Example (*The* Linial arrangement)
+#### Example (The Linial arrangement)
 
 Usually the Linial arrangement is defined without reference to a Coxeter type and is given as the type-$\mathsf{A}$ version above. We construct the Linial arrangement of type $\mathsf{A}_2$.
 
@@ -290,7 +290,7 @@ If $\mathcal{A}$ is a Coxeter arrangement of type $\mathsf{X}_n$, then the *Shi 
     \mathcal{S} = \mathcal{A} \cup \\{L - 1 ~|~ L\in\mathcal{A} \\} .
 \]
 
-#### Example (*The* Shi arrangement)
+#### Example (The Shi arrangement)
 
 Like with some of our other constructors, the usual definition makes no reference to Coxeter types, so the Shi arrangement is equal to the type-$\mathsf{A}$ Shi arrangement defined above. We can easily construct this for $\mathsf{A}_2$.
 

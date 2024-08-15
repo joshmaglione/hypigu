@@ -8,12 +8,12 @@ __version__ = 1.5
 
 from .braid import BraidArrangementIgusa
 from .constructors import CoxeterArrangement, LinialArrangement, ShiArrangement, CatalanArrangement, DirectSum, PolynomialToArrangement, ResonanceArrangement
-from .gen_functions import FlagHilbertPoincareSeries, CoarseFlagHilbertPoincareSeries, IgusaZetaFunction
-from .globals import verbose, ncpus
+from .gen_functions import FlagHilbertPoincareSeries, CoarseFHPSeries, IgusaZetaFunction, TopologicalZetaFunction
+from .globals import verbose
 from .graded_poset import GradedPoset
 
 
-__all__ = [
+__all__ = sorted([
 	'BraidArrangementIgusa',
 	'CoxeterArrangement',
 	'LinialArrangement',
@@ -24,8 +24,8 @@ __all__ = [
 	'ResonanceArrangement',
 	'GradedPoset',
 	'FlagHilbertPoincareSeries',
-	'CoarseFlagHilbertPoincareSeries',
+	'CoarseFHPSeries',
 	'IgusaZetaFunction',
 	'verbose',
-	'ncpus',
-].sort()
+	'TopologicalZetaFunction',
+])

@@ -3,10 +3,10 @@
 #
 #   Distributed under MIT License
 #
-from os import cpu_count 
+# from os import cpu_count 
 
 verbose = False
-ncpus = max(1, cpu_count())
+# ncpus = max(1, cpu_count())
 
 def my_time():
     from datetime import datetime as dt

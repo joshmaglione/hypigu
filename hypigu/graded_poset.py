@@ -3,7 +3,7 @@
 #
 #   Distributed under MIT License
 #
-from sage.all import Matrix, Poset, Matroid, QQ, PolynomialRing, DiGraph
+from sage.all import Matrix, Poset, Matroid, QQ, PolynomialRing, DiGraph, vector
 from sage.misc.cachefunc import cached_method
 
 def proper_part(P, poset=True):
@@ -41,9 +41,9 @@ class GradedPoset():
             self.poset = matroid.lattice_of_flats()
             self.R_label = lambda e: min(e[1].difference(e[0]))
         if arrangement is not None:
-            M = Matrix([H.normal() for H in arrangement])
             self.R_label = lambda e: min(e[1].difference(e[0]))
-            if arrangement.is_central(): 
+            if arrangement.is_central():
+                M = Matrix([H.normal() for H in arrangement])
                 self.matroid = Matroid(M.transpose())
                 self.poset = self.matroid.lattice_of_flats()
             else:
@@ -55,9 +55,12 @@ class GradedPoset():
                 L = MT.lattice_of_flats()
                 P = L.subposet(list(filter(lambda x: not i in x, L)))
                 bij = [None for _ in range(len(A_cone))]
+                vects = [
+                    vector([H.b()] + list(H.normal())) for H in arrangement
+                ]
                 for j, H in enumerate(A_cone):
                     if i != j:
-                        bij[j] = list(M).index(H.normal()[1:])  
+                        bij[j] = vects.index(H.normal())  
                     else:
                         bij[j] = None
                 set_bij = lambda S: frozenset([bij[s] for s in S])
@@ -95,7 +98,10 @@ class GradedPoset():
         return GradedPoset(poset=PP, R_label=self.R_label)
 
     def show(self):
-        self.poset.show()
+        elt_labs = {
+            x: ''.join(map(str, sorted(list(x)))) for x in self.poset
+        }
+        self.poset.show(element_labels=elt_labs)
 
     @cached_method
     def Poincare_polynomial(self, abs_val=True):

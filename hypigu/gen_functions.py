@@ -3,9 +3,9 @@
 #
 #   Distributed under MIT License
 #
-from sage.all import QQ, reduce, PolynomialRing, prod, Subsets
+from sage.all import QQ, reduce, PolynomialRing, prod, Subsets, ZZ, polygens
 
-from .globals import my_print, verbose, ncpus
+from .globals import my_print, verbose
 from .graded_poset import GradedPoset, proper_part
 
 def combinatorial_eq_classes(GP:GradedPoset):
@@ -213,6 +213,63 @@ def _IZF_recursion(GP:GradedPoset, varbs=None):
         Z = Z/(1 - y**R * t**A)
     return Z
 
+def _TZF_chains(GP:GradedPoset):
+    P = GP.poset
+    s = polygens(ZZ, 's')[0]
+    def chain_Poincare_circ(F):
+        if len(F) == 0:
+            pi = GP.Poincare_polynomial()
+        else:
+            tups = [(None, F[0])] + list(zip(F, F[1:])) + [(F[-1], None)]
+            Poincares = [GP.interval(*t).Poincare_polynomial() for t in tups]
+            pi = reduce(lambda x, y: x*y, Poincares, 1)
+        Y = pi.parent().gens()[0]
+        pi = pi/(1 + Y)**(len(F) + int(P.has_top()))
+        return pi(Y=-1)
+    gx = lambda x: P.rank_function()(x) + len([a for a in GP.atoms() if P.le(a, x)])*s
+    PP = proper_part(P)
+    Z = sum(
+        chain_Poincare_circ(F) * prod(1/gx(S) for S in F) for F in PP.chains()
+    )
+    if P.has_top():
+        Z = Z/(P.rank() + len(GP.atoms())*s)
+    return Z
+
+def _TZF_recursion(GP:GradedPoset, varbs=None):
+    # Initial Setup
+    P = GP.poset
+    if varbs is None:
+        PR = PolynomialRing(ZZ, 's')
+        s = PR.gens()[0]
+    else:
+        s = varbs[0]
+    def Poin_circ(x):
+        pi = GP.interval(bottom=x).Poincare_polynomial()
+        if P.has_top():
+            Y = pi.parent().gens()[0]
+            return pi/(1 + Y)
+        return pi
+    # Base cases
+    if P.rank() == 1: # Proposition 4.1 of Maglione--Voll.
+        m = len(GP.atoms())
+        return (1 - (m - 1)*s) / (1 + s)
+    if P.rank() == 2 and P.has_top(): # Proposition 4.2 of Maglione--Voll.
+        m = len(GP.atoms())
+        return (2 - (m - 2)*s) / ((1 + s) * (2 + m*s))
+    # Determine if seen before
+    # 
+    # Recursion
+    Classes = combinatorial_eq_classes(GP)
+    Z = Poin_circ(P.bottom())(Y=-1)
+    for C in Classes:
+        x = C[0]
+        M = len(C)
+        Z += M * Poin_circ(x)(Y=-1) * _TZF_recursion(GP.interval(top=x), varbs=(s,))
+    if P.has_top():
+        R = P.rank()
+        A = len(GP.atoms())
+        Z = Z/(R + A*s)
+    return Z
 
 
 def FlagHilbertPoincareSeries(
@@ -225,7 +282,7 @@ def FlagHilbertPoincareSeries(
     my_print(verbose, "Computing the flag Hilbert--Poincaré series.")
     return _fHP_recursion(GP)
 
-def CoarseFlagHilbertPoincareSeries(
+def CoarseFHPSeries(
     arrangement=None,
     matroid=None,
     poset=None,
@@ -258,3 +315,13 @@ def IgusaZetaFunction(
     GP = GradedPoset(arrangement=arrangement, matroid=matroid, poset=poset)
     my_print(verbose, "Computing the Igusa zeta function.")
     return _IZF_recursion(GP)
+
+def TopologicalZetaFunction(
+    arrangement=None,
+    matroid=None,
+    poset=None,
+    verbose=verbose
+):
+    GP = GradedPoset(arrangement=arrangement, matroid=matroid, poset=poset)
+    my_print(verbose, "Computing the Igusa zeta function.")
+    return _TZF_recursion(GP)
