@@ -150,7 +150,7 @@ def _cfHP_no_R_label(GP:GradedPoset, varbs=None):
     for C in Classes:
         x = C[0]
         M = len(C)
-        fHP += M * GP.interval(bottom=x).Poincare_polynomial()(Y=Y) * T * _fHP_recursion(GP.interval(top=x), varbs=(Y, T))
+        fHP += M * GP.interval(bottom=x).Poincare_polynomial()(Y=Y) * T * _cfHP_no_R_label(GP.interval(top=x), varbs=(Y, T))
     if P.has_top():
         fHP = fHP/(1 - T)
     return fHP
@@ -288,7 +288,8 @@ def CoarseFHPSeries(
     poset=None,
     R_label=None,
     verbose=verbose,
-    numerator=False
+    numerator=False,
+    method='recursion',
 ):
     GP = GradedPoset(
         arrangement=arrangement,
@@ -297,7 +298,7 @@ def CoarseFHPSeries(
         R_label=R_label
     )
     my_print(verbose, "Computing the coarse flag Hilbert--Poincaré series.")
-    if R_label is not None or GP.R_label is not None:
+    if (R_label is not None or GP.R_label is not None) and method.lower() == 'r-label':
         my_print(verbose, "Using the R-label.", level=1)
         return _cfHP_R_label(GP, numerator=numerator)
     cfHP = _cfHP_no_R_label(GP)

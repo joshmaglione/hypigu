@@ -49,10 +49,13 @@ Using a program to rewrite the finite geometric progressions in the denominator 
 - `R_label`: a function from pairs of elements of a poset into the integers. Default `None`.
 - `numerator`: return only the numerator. Default `False`.
 - `verbose`: turn on print statements. Default `False`.
+- `method`: a string stating which method to use. Default `recursion`.
 
 **Output**:
 
-- the coarse flag Hilbert&ndash;Poincar&#233; series associated to the graded poset determined by the input. (See the [GradedPoset](graded_posets.md#gradedposet) class.) If `R_label` is given, it is not verified to be an $R$-label, and the algorithm used will be .......
+- the coarse flag Hilbert&ndash;Poincar&#233; series associated to the graded poset determined by the input. 
+
+If `R_label` is given, it is not verified to be an $R$-label. To use the $R$-label, set `method='R-label'`. This will use the formula developed in [Dorpalen-Barry et al.](https://arxiv.org/abs/2301.05904) from Corollary 2.22. In testing, this method seems to be about two times slower than the default recursion.
 
 The coarse flag Hilbert&ndash;Poincar&#233; series associated with a graded poset $P$ is defined to be:
 
@@ -83,7 +86,7 @@ sage: cfHP.factor()
 
 #### Example (Coxeter at ${\footnotesize Y=1}$)
 
-We verify Theorem D of Maglione--Voll for the Coxeter arrangement of type $\mathsf{D}_5$. Thus, we will show that 
+We verify Theorem D of Maglione&ndash;Voll for the Coxeter arrangement of type $\mathsf{D}_5$. Thus, we will show that 
 
 \[
     \\mathsf{cfHP}\_{\\mathsf{D}\_5} (1, T) = 1920\\cdot \\dfrac{1 + 26T + 66T^2 + 26T^3 + T^4}{(1 - T)^5}, 
@@ -103,6 +106,16 @@ So we get exactly what we expect:
 ```python
 sage: (cfHP(Y=1)).factor()
 (-1920) * (T - 1)^-5 * (T^4 + 26*T^3 + 66*T^2 + 26*T + 1)
+```
+
+#### Example (The path poset)
+
+We define the path poset $P\_4 = \\{1,\dots, 4\\}$ with the usual order $<$ of natural numbers. This is a graded poset with an $R$-label. We then compute the corresponding coarse flag Hilbert&ndash;Poincar&#233; series. We note that there is no matroid whose lattice of flats is isomorphic to $P_n$. 
+
+```python
+sage: P = Poset(DiGraph([(i, i+1) for i in range(1, 5)]))
+sage: hi.CoarseFHPSeries(poset=P).factor()
+(T - 1)^-4 * (Y + 1) * (Y*T + 1)^3
 ```
 
 ## FlagHilbertPoincareSeries
@@ -173,44 +186,34 @@ For data not represented by such a hyperplane arrangement, we define the Igusa z
 \]
 where $g_x(s) = \mathrm{rank}(x) + \\#\\{a\in P \mid a\leqslant x \text{ and $a$ is an atom} \\} \cdot s$. When $P$ is the intersection poset of a hyperplane arrangement $\\mathcal{A}$, then $Z\_P(s)=Z\_{Q\_{\\mathcal{A}}}(s)$, which follows from Theorem B of Maglione&ndash;Voll.
 
-#### Example (Polynomial vs. hyperplane arrangement input)
+#### Example (Uniform matroid)
 
-We demonstrate the two different inputs while showing that polynomials need not have distinct linear factors as is the case with hyperplane arrangements. Let $f(x,y,z) = xy^2z^3$, so that the associated hyperplane arrangement is the Boolean arrangement of rank $3$.
-
-```python 
-sage: f = 'x*y^2*z^3'
-sage: A = hi.PolynomialToArrangement(f)
-sage: A
-Arrangement <z | y | x>
-```
-
-Now we compare their Igusa zeta functions. The Igusa zeta function associated with $f$ is
+We compute the Igusa zeta function associated with the uniform matroid $U_{3,5}$.
 
 ```python
-sage: Z_f = hi.IgusaZetaFunction(f)
-sage: Z_f.factor()
-(q - 1)^3/((t^3 - q)*(t^2 - q)*(q - t))
+sage: M = matroids.Uniform(3, 5)
+sage: M
+U(3, 5): Matroid of rank 3 on 5 elements with circuit-closures
+{3: {{0, 1, 2, 3, 4}}}
+sage: hi.IgusaZetaFunction(matroid=M).factor()
+(y - 1) * (y*t - 1)^-2 * (y^4*t^2 - 4*y^3*t^2 + 3*y^3*t + 6*y^2*t^2 - 12*y^2*t + 6*y^2 + 3*y*t - 4*y + 1) * (y^3*t^5 - 1)^-1
 ```
 
-which is 
+#### Example (coordinate hyperplanes)
 
-\[
-    \dfrac{(1 - q^{-1})^3}{(1 - q^{-1}t) (1 - q^{-1}t^2) (1 - q^{-1}t^3)}.
-\]
-
-The Igusa zeta function associated with $\mathcal{A}$ is 
+We show that the Igusa zeta function of $f=x_1\cdots x_{5}$ factors in the expected way.
 
 ```python
-sage: Z_A = hi.IgusaZetaFunction(A)
-sage: Z_A.factor()
-(q - 1)^3/(q - t)^3
+sage: A = hi.PolynomialToArrangement('*'.join(f'x{i}' for i in range(1, 6)))
+sage: A.hyperplanes()
+(Hyperplane 0*x1 + 0*x2 + 0*x3 + 0*x4 + x5 + 0,
+ Hyperplane 0*x1 + 0*x2 + 0*x3 + x4 + 0*x5 + 0,
+ Hyperplane 0*x1 + 0*x2 + x3 + 0*x4 + 0*x5 + 0,
+ Hyperplane 0*x1 + x2 + 0*x3 + 0*x4 + 0*x5 + 0,
+ Hyperplane x1 + 0*x2 + 0*x3 + 0*x4 + 0*x5 + 0)
+sage: hi.IgusaZetaFunction(A).factor()
+(y - 1)^5 * (y*t - 1)^-5
 ```
-
-which is equal to
-
-\[
-    \dfrac{(1 - q^{-1})^3}{(1 - q^{-1}t)^3} .
-\]
 
 ## TopologicalZetaFuncion
 

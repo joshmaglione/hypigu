@@ -119,7 +119,7 @@
                         {%- endif %}
                       {%- endblock %}
 
-                      {%- block next_prev %}
+                      <!-- {%- block next_prev %}
                         {%- if page and (page.next_page or page.previous_page) %}
                             <li class="nav-item">
                                 <a rel="prev" {% if page.previous_page %}href="{{ page.previous_page.url|url }}" class="nav-link"{% else %}class="nav-link disabled"{% endif %}>
@@ -132,7 +132,7 @@
                                 </a>
                             </li>
                         {%- endif %}
-                      {%- endblock %}
+                      {%- endblock %} -->
 
                       {%- block repo %}
                         {%- if page and page.edit_url %}
