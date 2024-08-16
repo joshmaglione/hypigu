@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        <meta name="author" content="Joshua Maglione">
+        
+        <link rel="shortcut icon" href="../img/favicon.ico">
+        <title>Rational Functions - HypIgu Documentation</title>
+        <link href="../css/bootstrap.min.css" rel="stylesheet">
+        <link href="../css/font-awesome.min.css" rel="stylesheet">
+        <link href="../css/base.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css">
+
+        <script src="../js/jquery-3.7.0.min.js" defer></script>
+        <script src="../js/bootstrap.min.js" defer></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
+        <script>hljs.initHighlightingOnLoad();</script> 
+    </head>
+
+    <body>
+        <div class="navbar fixed-top navbar-expand-lg navbar-dark bg-primary">
+            <div class="container">
+                <a class="navbar-brand" href="..">HypIgu Documentation</a>
+                <!-- Expander button -->
+                <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbar-collapse">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <!-- Expanded navigation -->
+                <div id="navbar-collapse" class="navbar-collapse collapse">
+                        <!-- Main navigation -->
+                        <ul class="nav navbar-nav">
+                            <li class="navitem">
+                                <a href=".." class="nav-link">Home</a>
+                            </li>
+                            <li class="navitem">
+                                <a href="../constructors/" class="nav-link">Constructors</a>
+                            </li>
+                            <li class="navitem">
+                                <a href="../graded_posets/" class="nav-link">Graded Posets</a>
+                            </li>
+                            <li class="navitem active">
+                                <a href="./" class="nav-link">Rational Functions</a>
+                            </li>
+                        </ul>
+
+                    <ul class="nav navbar-nav ml-auto">
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" data-toggle="modal" data-target="#mkdocs_search_modal">
+                                <i class="fa fa-search"></i> Search
+                            </a>
+                        </li>
+
+                      <!--
+                            <li class="nav-item">
+                                <a rel="prev" href="../graded_posets/" class="nav-link">
+                                    <i class="fa fa-arrow-left"></i> Previous
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a rel="next" class="nav-link disabled">
+                                    Next <i class="fa fa-arrow-right"></i>
+                                </a>
+                            </li> -->
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="row">
+                    <div class="col-md-3"><div class="navbar-light navbar-expand-md bs-sidebar hidden-print affix" role="complementary">
+    <div class="navbar-header">
+        <button type="button" class="navbar-toggler collapsed" data-toggle="collapse" data-target="#toc-collapse" title="Table of Contents">
+            <span class="fa fa-angle-down"></span>
+        </button>
+    </div>
+
+    
+    <div id="toc-collapse" class="navbar-collapse collapse card bg-secondary">
+        <ul class="nav flex-column">
+            
+            <li class="nav-item" data-level="1"><a href="#rational-functions" class="nav-link">Rational Functions</a>
+              <ul class="nav flex-column">
+            <li class="nav-item" data-level="2"><a href="#braidarrangementigusa" class="nav-link">BraidArrangementIgusa</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#coarsefhpseries" class="nav-link">CoarseFHPSeries</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#flaghilbertpoincareseries" class="nav-link">FlagHilbertPoincareSeries</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#igusazetafunction" class="nav-link">IgusaZetaFunction</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#topologicalzetafuncion" class="nav-link">TopologicalZetaFuncion</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+              </ul>
+            </li>
+        </ul>
+    </div>
+</div></div>
+                    <div class="col-md-9" role="main">
+
+<h1 id="rational-functions">Rational Functions</h1>
+<p>The main purpose of this package is to explicitly compute the flag Hilbert&ndash;Poincar&#233; series and its specializations like Igusa'a local zeta function. We defer to Maglione&ndash;Voll for the details on the rational functions. </p>
+<h2 id="braidarrangementigusa">BraidArrangementIgusa</h2>
+<p><strong>Input</strong>:</p>
+<ul>
+<li>a positive integer.</li>
+</ul>
+<p><strong>Output</strong>:</p>
+<ul>
+<li>the Igusa zeta function associated with the braid arrangement. </li>
+</ul>
+<p>This is a specialized algorithm for the braid arrangement and is significantly faster than <code>IgusaZetaFunction</code> on the braid arrangement. This is based off of Lemma 5.14 of Maglione&ndash;Voll.</p>
+<h4 id="example-time-comparison">Example (Time comparison)</h4>
+<p>We compute the Igusa zeta function associated with $\mathsf{A}_6$ and record the time (on the same machine).</p>
+<pre><code class="language-python">sage: %timeit _ = hi.BraidArrangementIgusa(6)
+5.55 ms ± 7.58 μs per loop (mean ± std. dev. of 7 runs, 100 loops each)
+sage: %timeit _ = hi.IgusaZetaFunction(hi.CoxeterArrangement(&quot;A6&quot;))
+4.76 s ± 28 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+</code></pre>
+<p>Thus for $\mathsf{A}_6$ <code>BraidArrangementIgusa</code> is about 1000 times faster than <code>IgusaZetaFunction</code>&mdash;of course the latter is also general purpose.</p>
+<h4 id="example-large-example">Example (Large example)</h4>
+<p>We compute a factorization of the denominator of the Igusa zeta function associated with $\mathsf{A}_{10}$.</p>
+<pre><code class="language-python">sage: hi.BraidArrangementIgusa(10).denominator().factor()
+(y*t - 1)^5 * (y*t^2 - 1)^2 * (y*t^3 - 1) * (y*t^4 - 1) * (y^2*t^3 - 1)^3 * (y*t^5 - 1) * (y^2*t^4 + y*t^2 + 1)^2 * (y^2*t^5 - 1)^2 * (y^2*t^5 + 1)^2 * (y^2*t^7 - 1) * (y^2*t^9 - 1) * (y^2*t^9 + 1) * (y^2*t^10 + y*t^5 + 1) * (y^2*t^11 - 1) * (y^4*t^12 + y^3*t^9 + y^2*t^6 + y*t^3 + 1) * (y^4*t^14 + y^2*t^7 + 1) * (y^4*t^18 + 1) * (y^6*t^24 + y^5*t^20 + y^4*t^16 + y^3*t^12 + y^2*t^8 + y*t^4 + 1) * (y^6*t^30 + y^3*t^15 + 1) * (y^8*t^44 + y^6*t^33 + y^4*t^22 + y^2*t^11 + 1)
+</code></pre>
+<p>Using a program to rewrite the finite geometric progressions in the denominator (like <a href="https://joshmaglione.com/BRational/">BRational</a>), the denominator takes the following form:</p>
+<pre><code class="language-python">(1 - y*t)^5*(1 - y^2*t^3)^3*(1 - y^3*t^6)^2*(1 - y^4*t^10)^2*(1 - y^5*t^15)*(1 - y^6*t^21)*(1 - y^7*t^28)*(1 - y^8*t^36)*(1 - y^9*t^45)*(1 - y^10*t^55)
+</code></pre>
+<h2 id="coarsefhpseries">CoarseFHPSeries</h2>
+<p><strong>Input</strong>:</p>
+<ul>
+<li><code>arrangement</code>: a hyperplane arrangement. Default <code>None</code>.</li>
+<li><code>matroid</code>: a matroid. Default <code>None</code>.</li>
+<li><code>poset</code>: a poset. Default <code>None</code>.</li>
+<li><code>R_label</code>: a function from pairs of elements of a poset into the integers. Default <code>None</code>.</li>
+<li><code>numerator</code>: return only the numerator. Default <code>False</code>.</li>
+<li><code>verbose</code>: turn on print statements. Default <code>False</code>.</li>
+<li><code>method</code>: a string stating which method to use. Default <code>recursion</code>.</li>
+</ul>
+<p><strong>Output</strong>:</p>
+<ul>
+<li>the coarse flag Hilbert&ndash;Poincar&#233; series associated to the graded poset determined by the input. </li>
+</ul>
+<p>If <code>R_label</code> is given, it is not verified to be an $R$-label. To use the $R$-label, set <code>method='R-label'</code>. This will use the formula developed in <a href="https://arxiv.org/abs/2301.05904">Dorpalen-Barry et al.</a> from Corollary 2.22. In testing, this method seems to be about two times slower than the default recursion.</p>
+<p>The coarse flag Hilbert&ndash;Poincar&#233; series associated with a graded poset $P$ is defined to be:</p>
+<p>[
+    \mathsf{cfHP}_{P} (Y, T) 
+    = \sum_{F\in\Delta(P \setminus \{\hat{0}\})} \pi_F(Y) \left(\dfrac{T}{1 - T}\right)^{|F|} 
+    = \dfrac{\mathcal{N}_{P}(Y, T)}{(1 - T)^{\mathrm{rk}(P)}}.
+]</p>
+<h4 id="example-boolean-arrangement">Example (Boolean arrangement)</h4>
+<p>We verify that the Boolean arrangement, $\mathcal{A}$, of rank $n$ satisfies the equation</p>
+<p>[
+    \mathsf{cfHP}_{\mathcal{A}}(Y, T) = \dfrac{(1+ Y)^n E_n(T)}{(1 - T)^n},
+]</p>
+<p>where $E_n(T)$ is the $n$th Eulerian polynomial. We set $n=6$ for this example.</p>
+<pre><code class="language-python">sage: A = hi.CoxeterArrangement([&quot;A1&quot;]*6)
+sage: A
+Arrangement of 6 hyperplanes of dimension 12 and rank 6
+sage: cfHP = hi.CoarseFHPSeries(A)
+sage: cfHP.factor()
+(T - 1)^-6 * (T + 1) * (Y + 1)^6 * (T^4 + 56*T^3 + 246*T^2 + 56*T + 1)
+</code></pre>
+<h4 id="example-coxeter-at-footnotesize-y1">Example (Coxeter at ${\footnotesize Y=1}$)</h4>
+<p>We verify Theorem D of Maglione&ndash;Voll for the Coxeter arrangement of type $\mathsf{D}_5$. Thus, we will show that </p>
+<p>[
+    \mathsf{cfHP}_{\mathsf{D}_5} (1, T) = 1920\cdot \dfrac{1 + 26T + 66T^2 + 26T^3 + T^4}{(1 - T)^5}, 
+]</p>
+<pre><code class="language-python">sage: A = hi.CoxeterArrangement(&quot;D5&quot;)
+sage: A
+Arrangement of 20 hyperplanes of dimension 5 and rank 5
+sage: cfHP = hi.CoarseFHPSeries(A)
+sage: cfHP.factor()
+(-1) * (T - 1)^-5 * (Y + 1) * (Y^4*T^4 + 397*Y^4*T^3 + 19*Y^3*T^4 + 3143*Y^4*T^2 + 3074*Y^3*T^3 + 131*Y^2*T^4 + 3239*Y^4*T + 15624*Y^3*T^2 + 8556*Y^2*T^3 + 389*Y*T^4 + 420*Y^4 + 9694*Y^3*T + 25826*Y^2*T^2 + 9694*Y*T^3 + 420*T^4 + 389*Y^3 + 8556*Y^2*T + 15624*Y*T^2 + 3239*T^3 + 131*Y^2 + 3074*Y*T + 3143*T^2 + 19*Y + 397*T + 1)
+</code></pre>
+<p>So we get exactly what we expect:</p>
+<pre><code class="language-python">sage: (cfHP(Y=1)).factor()
+(-1920) * (T - 1)^-5 * (T^4 + 26*T^3 + 66*T^2 + 26*T + 1)
+</code></pre>
+<h4 id="example-the-path-poset">Example (The path poset)</h4>
+<p>We define the path poset $P_4 = \{1,\dots, 4\}$ with the usual order $&lt;$ of natural numbers. This is a graded poset with an $R$-label. We then compute the corresponding coarse flag Hilbert&ndash;Poincar&#233; series. We note that there is no matroid whose lattice of flats is isomorphic to $P_n$. </p>
+<pre><code class="language-python">sage: P = Poset(DiGraph([(i, i+1) for i in range(1, 5)]))
+sage: hi.CoarseFHPSeries(poset=P).factor()
+(T - 1)^-4 * (Y + 1) * (Y*T + 1)^3
+</code></pre>
+<h2 id="flaghilbertpoincareseries">FlagHilbertPoincareSeries</h2>
+<p><strong>Input</strong>:</p>
+<ul>
+<li><code>arrangement</code>: a hyperplane arrangement. Default <code>None</code>.</li>
+<li><code>matroid</code>: a matroid. Default <code>None</code>.</li>
+<li><code>poset</code>: a poset. Default <code>None</code>.</li>
+<li><code>verbose</code>: turn on print statements. Default <code>False</code>.</li>
+</ul>
+<p><strong>Output</strong>:</p>
+<ul>
+<li>the flag Hilbert&ndash;Poincar&#233; series associated to the graded poset determined by the input data. </li>
+</ul>
+<p>The flag Hilbert&ndash;Poincar&#233; series of a graded poset $P$ is defined to be:</p>
+<p>[
+    \mathsf{fHP}_{P} (Y, \bm{T}) 
+    = \sum_{F\in\Delta(P \setminus \{\hat{0}\})} \pi_F(Y) \prod_{x\in F} \frac{T_x}{1 - T_x}.
+]</p>
+<h4 id="example-lines-through-the-origin-again">Example (Lines through the origin again)</h4>
+<p>Because of the massive amount of variables in this function, we keep the number of hyperplanes small in this example. We compute the flag Hilbert&ndash;Poincar&#233; series of the arrangement given by 5 lines passes through the origin in a $2$-dimensional vector space. </p>
+<pre><code class="language-python">sage: K = CyclotomicField(5)
+sage: R.&lt;X, Y&gt; = PolynomialRing(K)
+sage: f = X**5 - Y**5
+sage: A = hi.PolynomialToArrangement(f)
+sage: A
+Arrangement of 5 hyperplanes of dimension 2 and rank 2
+sage: hi.FlagHilbertPoincareSeries(A).factor()
+(T6 - 1)^-1 * (T5 - 1)^-1 * (T4 - 1)^-1 * (T3 - 1)^-1 * (T2 - 1)^-1 * (T1 - 1)^-1 * (Y + 1) * (Y*T1*T2*T3*T4*T5 + 4*T1*T2*T3*T4*T5 - Y*T1*T2*T3 - Y*T1*T2*T4 - Y*T1*T3*T4 - Y*T2*T3*T4 - 3*T1*T2*T3*T4 - Y*T1*T2*T5 - Y*T1*T3*T5 - Y*T2*T3*T5 - 3*T1*T2*T3*T5 - Y*T1*T4*T5 - Y*T2*T4*T5 - 3*T1*T2*T4*T5 - Y*T3*T4*T5 - 3*T1*T3*T4*T5 - 3*T2*T3*T4*T5 + 2*Y*T1*T2 + 2*Y*T1*T3 + 2*Y*T2*T3 + 2*T1*T2*T3 + 2*Y*T1*T4 + 2*Y*T2*T4 + 2*T1*T2*T4 + 2*Y*T3*T4 + 2*T1*T3*T4 + 2*T2*T3*T4 + 2*Y*T1*T5 + 2*Y*T2*T5 + 2*T1*T2*T5 + 2*Y*T3*T5 + 2*T1*T3*T5 + 2*T2*T3*T5 + 2*Y*T4*T5 + 2*T1*T4*T5 + 2*T2*T4*T5 + 2*T3*T4*T5 - 3*Y*T1 - 3*Y*T2 - T1*T2 - 3*Y*T3 - T1*T3 - T2*T3 - 3*Y*T4 - T1*T4 - T2*T4 - T3*T4 - 3*Y*T5 - T1*T5 - T2*T5 - T3*T5 - T4*T5 + 4*Y + 1)
+</code></pre>
+<p>This is, indeed, equal to </p>
+<p>[
+    \dfrac{1 + Y}{1 - T_6}\left(1 + 4Y + (1 + Y)\sum_{i=1}\dfrac{T_i}{1 - T_i}\right).
+]</p>
+<h2 id="igusazetafunction">IgusaZetaFunction</h2>
+<p><strong>Input</strong>:</p>
+<ul>
+<li><code>arrangement</code>: a hyperplane arrangement. Default <code>None</code>.</li>
+<li><code>matroid</code>: a matroid. Default <code>None</code>.</li>
+<li><code>poset</code>: a poset. Default <code>None</code>.</li>
+<li><code>verbose</code>: turn on print statements. Default <code>False</code>.</li>
+</ul>
+<p><strong>Output</strong>:</p>
+<ul>
+<li>the Igusa zeta function associated to the graded poset determined by the input data. </li>
+</ul>
+<p>For a compact discrete valuation ring $\mathfrak{o}$ and a polynomial $f\in \mathfrak{o}[X_1,\dots, X_d]$, Igusa's local zeta function associated with $f$ is </p>
+<p>[
+    Z_f(s) = \int_{\mathfrak{o}^d} |f(\bm{X})|^s\, |\mathrm{d}\bm{X}|.
+]</p>
+<p>If $Q_\mathcal{A}$ is the defining polynomial of a hyperplane arrangement, then Igusa's local zeta function associated $\mathcal{A}$ is $Z_{Q_\mathcal{A}}(s)$. The output to <code>IgusaZetaFunction</code> is a bivariate function in $y = q^{-1}$ and $t = q^{-s}$, where $q$ is the cardinality of the residue field of $\mathfrak{o}$. This assumes <em>good reduction</em>; see Section 1.1 of Maglione&ndash;Voll. </p>
+<p>For data not represented by such a hyperplane arrangement, we define the Igusa zeta function associated with a graded poset $P$ to be 
+[
+    Z_P(s) = \mathsf{fHP}_P\left(-q^{-1}, \left(q^{-g_x(s)}\right)_{x\in P\setminus \{\hat{0}\}}\right) ,
+]
+where $g_x(s) = \mathrm{rank}(x) + \#\{a\in P \mid a\leqslant x \text{ and $a$ is an atom} \} \cdot s$. When $P$ is the intersection poset of a hyperplane arrangement $\mathcal{A}$, then $Z_P(s)=Z_{Q_{\mathcal{A}}}(s)$, which follows from Theorem B of Maglione&ndash;Voll.</p>
+<h4 id="example-uniform-matroid">Example (Uniform matroid)</h4>
+<p>We compute the Igusa zeta function associated with the uniform matroid $U_{3,5}$.</p>
+<pre><code class="language-python">sage: M = matroids.Uniform(3, 5)
+sage: M
+U(3, 5): Matroid of rank 3 on 5 elements with circuit-closures
+{3: {{0, 1, 2, 3, 4}}}
+sage: hi.IgusaZetaFunction(matroid=M).factor()
+(y - 1) * (y*t - 1)^-2 * (y^4*t^2 - 4*y^3*t^2 + 3*y^3*t + 6*y^2*t^2 - 12*y^2*t + 6*y^2 + 3*y*t - 4*y + 1) * (y^3*t^5 - 1)^-1
+</code></pre>
+<h4 id="example-coordinate-hyperplanes">Example (coordinate hyperplanes)</h4>
+<p>We show that the Igusa zeta function of $f=x_1\cdots x_{5}$ factors in the expected way.</p>
+<pre><code class="language-python">sage: A = hi.PolynomialToArrangement('*'.join(f'x{i}' for i in range(1, 6)))
+sage: A.hyperplanes()
+(Hyperplane 0*x1 + 0*x2 + 0*x3 + 0*x4 + x5 + 0,
+ Hyperplane 0*x1 + 0*x2 + 0*x3 + x4 + 0*x5 + 0,
+ Hyperplane 0*x1 + 0*x2 + x3 + 0*x4 + 0*x5 + 0,
+ Hyperplane 0*x1 + x2 + 0*x3 + 0*x4 + 0*x5 + 0,
+ Hyperplane x1 + 0*x2 + 0*x3 + 0*x4 + 0*x5 + 0)
+sage: hi.IgusaZetaFunction(A).factor()
+(y - 1)^5 * (y*t - 1)^-5
+</code></pre>
+<h2 id="topologicalzetafuncion">TopologicalZetaFuncion</h2>
+<p><strong>Input</strong>:</p>
+<ul>
+<li><code>arrangement</code>: a hyperplane arrangement. Default <code>None</code>.</li>
+<li><code>matroid</code>: a matroid. Default <code>None</code>.</li>
+<li><code>poset</code>: a poset. Default <code>None</code>.</li>
+<li><code>verbose</code>: turn on print statements. Default <code>False</code>.</li>
+</ul>
+<p><strong>Output</strong>:</p>
+<ul>
+<li>the topological zeta function associated with the graded poset determined by the input data.</li>
+</ul>
+<p>For a graded poset $P$, the topological zeta function associated with $P$ is 
+[
+    Z_{P}^{\mathrm{top}}(s) = \sum_{F\in \Delta(P\setminus\{\hat{0}\})} \pi_{P,F}^\circ(-1) \prod_{x\in F} \dfrac{1}{g_x(s)} ,
+]</p>
+<p>where $g_x(s) = \mathrm{rank}(x) + \#\{a\in P \mid a\leqslant x \text{ and $a$ is an atom} \} \cdot s$ and
+[
+    \pi^{\circ}_{P, F}(Y) = \dfrac{\pi_F(Y)}{(1 + Y)^{\# F}}.
+]
+When $P$ is the intersection poset associated with a hyperplane arrangement $\mathcal{A}$, then $Z_{P}^{\mathrm{top}}(s) = Z_{Q_{\mathcal{A}}}^{\mathrm{top}}(s)$, which follows from Corollaery 1.5 of Maglione&ndash;Voll.</p>
+<h4 id="example-shi-arrangement">Example (Shi arrangement)</h4>
+<p>We consider the Shi $\mathsf{A}_2$ arrangement and compute its topological zeta function. The Shi $\mathsf{A}_2$ arrangement is defined to be 
+[
+    \mathcal{S} \mathsf{A}_2 = \left\{X_i - X_j - k ~\middle|~ 1\leqslant i &lt; j\leqslant 3,\; k\in \{0,1\}\right\}.
+]</p>
+<pre><code class="language-python">sage: A = hi.ShiArrangement(&quot;A2&quot;)
+sage: A
+Arrangement of 6 hyperplanes of dimension 3 and rank 2
+</code></pre>
+<p>The topological zeta function is </p>
+<pre><code class="language-python">sage: Z = hi.TopologicalZetaFunction(A)
+sage: Z.factor()
+(s + 1)^-2 * (3*s + 2)^-1 * (12*s^3 + 2*s^2 - 5*s + 2)
+</code></pre>
+<p>which is 
+[
+    Z_{\mathcal{S}\mathsf{A}_2}^{\mathrm{top}}(s) = \dfrac{2 - 5s + 2s^2 + 12s^3}{(s+1)^2(3s+2)} .
+]</p></div>
+            </div>
+        </div>
+
+        <footer class="col-md-12">
+            <hr>
+                <p>&copy; 2020&ndash;2024 J. Maglione</p>
+            <p>Documentation built with <a href="https://www.mkdocs.org/">MkDocs</a>.</p>
+        </footer>
+        <script>
+            var base_url = "..",
+                shortcuts = {"help": 191, "next": 78, "previous": 80, "search": 83};
+        </script>
+        <script src="../js/base.js" defer></script>
+        <script src="../search/main.js" defer></script>
+        <!-- Load KaTeX -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
+
+        <!-- The loading of KaTeX is deferred to speed up page rendering -->
+        <script defer src="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.js" integrity="sha384-g7c+Jr9ZivxKLnZTDUhnkOnsh30B4H0rpLUpJ4jAIKs4fnJI+sEnkvrMWph2EDg4" crossorigin="anonymous"></script>
+
+        <!-- To automatically render math in text elements, include the auto-render extension: -->
+        <script defer src="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/contrib/auto-render.min.js" integrity="sha384-mll67QQFJfxn0IYznZYonOWZ644AWYC+Pt2cHqMaRhXVrursRwvLnLaebdGIlYNa" crossorigin="anonymous"
+        onload="renderMathInElement(document.body, {
+            delimiters: [
+            {left: '$\n', right: '$', display: false},
+            {left: '$', right: '$', display: false}, 
+            {left: '\[\n', right: '\]', display: true},
+            {left: '\[', right: '\]', display: true}
+            ]
+        });"></script>
+
+        <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="searchModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="searchModalLabel">Search</h4>
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            </div>
+            <div class="modal-body">
+                <p>From here you can search these documents. Enter your search terms below.</p>
+                <form>
+                    <div class="form-group">
+                        <input type="search" class="form-control" placeholder="Search..." id="mkdocs-search-query" title="Type search term here">
+                    </div>
+                </form>
+                <div id="mkdocs-search-results" data-no-results-text="No results found"></div>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div><div class="modal" id="mkdocs_keyboard_modal" tabindex="-1" role="dialog" aria-labelledby="keyboardModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="keyboardModalLabel">Keyboard Shortcuts</h4>
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            </div>
+            <div class="modal-body">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th style="width: 20%;">Keys</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="help shortcut"><kbd>?</kbd></td>
+                    <td>Open this help</td>
+                  </tr>
+                  <tr>
+                    <td class="next shortcut"><kbd>n</kbd></td>
+                    <td>Next page</td>
+                  </tr>
+                  <tr>
+                    <td class="prev shortcut"><kbd>p</kbd></td>
+                    <td>Previous page</td>
+                  </tr>
+                  <tr>
+                    <td class="search shortcut"><kbd>s</kbd></td>
+                    <td>Search</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>
+
+    </body>
+</html>

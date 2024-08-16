@@ -40,10 +40,10 @@
                                 <a href="./" class="nav-link">Constructors</a>
                             </li>
                             <li class="navitem">
-                                <a href="../lattices/" class="nav-link">Lattices</a>
+                                <a href="../graded_posets/" class="nav-link">Graded Posets</a>
                             </li>
                             <li class="navitem">
-                                <a href="../rational-functions/" class="nav-link">Rational Functions</a>
+                                <a href="../rational_functions/" class="nav-link">Rational Functions</a>
                             </li>
                         </ul>
 
@@ -53,16 +53,18 @@
                                 <i class="fa fa-search"></i> Search
                             </a>
                         </li>
+
+                      <!--
                             <li class="nav-item">
                                 <a rel="prev" href=".." class="nav-link">
                                     <i class="fa fa-arrow-left"></i> Previous
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a rel="next" href="../lattices/" class="nav-link">
+                                <a rel="next" href="../graded_posets/" class="nav-link">
                                     Next <i class="fa fa-arrow-right"></i>
                                 </a>
-                            </li>
+                            </li> -->
                     </ul>
                 </div>
             </div>
@@ -135,10 +137,10 @@
 <p>[ 
     \mathcal{C} = \{L - 1 ~|~ L\in\mathcal{A} \} \cup \mathcal{A} \cup \{L + 1 ~|~ L\in\mathcal{A} \}.
 ]</p>
-<h4 id="example-the-catalan-arrangement">Example (<em>The</em> Catalan arrangement)</h4>
+<h4 id="example-the-catalan-arrangement">Example (The Catalan arrangement)</h4>
 <p>The Catalan arrangement is defined as </p>
 <p>[
-    \{X_i - X_j + \varepsilon ~|~ 1\leq i &lt; j \leq n+1,\; \varepsilon\in\{-1, 0, 1\} \}.
+    \{X_i - X_j + \varepsilon ~|~ 1\leqslant i &lt; j \leqslant n+1,\; \varepsilon\in\{-1, 0, 1\} \}.
 ]</p>
 <p>We can quickly construct this as a type $\mathsf{A}_n$ Catalan arrangement for $n=2$. </p>
 <pre><code class="language-python">sage: A = hi.CatalanArrangement(&quot;A2&quot;)
@@ -176,7 +178,7 @@ False
 <h4 id="example-braid-arrangement">Example (Braid arrangement)</h4>
 <p>The braid arrangement with $n+1$ hyperplanes is equivalent to the type $\mathsf{A}_n$ Coxeter arrangement:</p>
 <p>[
-    \{X_i - X_j ~|~ 1\leq i &lt; j \leq n+1\}.
+    \{X_i - X_j ~|~ 1\leqslant i &lt; j \leqslant n+1\}.
 ]</p>
 <p>We construct the braid arrangement with $3$ hyperplanes.</p>
 <pre><code class="language-python">sage: hi.CoxeterArrangement(&quot;A2&quot;)
@@ -250,7 +252,7 @@ Arrangement of 256 hyperplanes of dimension 256 and rank 256
 <p>[ 
     \mathcal{L} = \{L - 1 ~|~ L\in\mathcal{A} \} .
 ]</p>
-<h4 id="example-the-linial-arrangement">Example (<em>The</em> Linial arrangement)</h4>
+<h4 id="example-the-linial-arrangement">Example (The Linial arrangement)</h4>
 <p>Usually the Linial arrangement is defined without reference to a Coxeter type and is given as the type-$\mathsf{A}$ version above. We construct the Linial arrangement of type $\mathsf{A}_2$.</p>
 <pre><code class="language-pyhton">sage: A = hi.LinialArrangement(&quot;A2&quot;)
 sage: A
@@ -328,7 +330,7 @@ Arrangement of 15 hyperplanes of dimension 4 and rank 4
 <p>[ 
     \mathcal{S} = \mathcal{A} \cup \{L - 1 ~|~ L\in\mathcal{A} \} .
 ]</p>
-<h4 id="example-the-shi-arrangement">Example (<em>The</em> Shi arrangement)</h4>
+<h4 id="example-the-shi-arrangement">Example (The Shi arrangement)</h4>
 <p>Like with some of our other constructors, the usual definition makes no reference to Coxeter types, so the Shi arrangement is equal to the type-$\mathsf{A}$ Shi arrangement defined above. We can easily construct this for $\mathsf{A}_2$.</p>
 <pre><code class="language-python">sage: A = hi.ShiArrangement(&quot;A2&quot;)
 sage: A
@@ -339,7 +341,7 @@ Arrangement of 6 hyperplanes of dimension 3 and rank 2
 
         <footer class="col-md-12">
             <hr>
-                <p>&copy; 2020&ndash;2023 J. Maglione</p>
+                <p>&copy; 2020&ndash;2024 J. Maglione</p>
             <p>Documentation built with <a href="https://www.mkdocs.org/">MkDocs</a>.</p>
         </footer>
         <script>
