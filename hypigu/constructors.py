@@ -5,7 +5,13 @@
 #
 
 from functools import reduce
-from sage.all import HyperplaneArrangements, QQ, CoxeterGroup, RootSystem, Subsets, Matrix, SR
+from sage.geometry.hyperplane_arrangement.arrangement import HyperplaneArrangements
+from sage.rings.rational_field import Q as QQ
+from sage.combinat.root_system.coxeter_group import CoxeterGroup
+from sage.combinat.root_system.root_system import RootSystem
+from sage.combinat.subset import Subsets
+from sage.matrix.constructor import Matrix
+from sage.symbolic.ring import SR
 
 # Given a polynomial, return a hyperplane arrangement equivalent to the linear
 # factors of f.
