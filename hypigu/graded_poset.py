@@ -3,7 +3,13 @@
 #
 #   Distributed under MIT License
 #
-from sage.all import Matrix, Poset, Matroid, QQ, PolynomialRing, DiGraph, vector
+from sage.matrix.constructor import Matrix
+from sage.combinat.posets.posets import Poset
+from sage.matroids.constructor import Matroid
+from sage.rings.rational_field import Q as QQ
+from sage.rings.polynomial.polynomial_ring_constructor import PolynomialRing
+from sage.graphs.digraph import DiGraph
+from sage.modules.free_module_element import free_module_element as vector
 from sage.misc.cachefunc import cached_method
 
 def proper_part(P, poset=True):
