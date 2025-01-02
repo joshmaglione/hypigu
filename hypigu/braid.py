@@ -77,7 +77,7 @@ def BraidArrangementIgusa(n:int):
 
     This example illustrates what to expect ::
 
-        sage: Z = BraidArrangementIgusa(2)
+        sage: Z = hi.BraidArrangementIgusa(2)
         sage: Z
         -(2*t/q - 2/q - t/q^2 + 1)*(1/q - 1)/((t^3/q^2 - 1)*(t/q - 1))
     """
