@@ -10,9 +10,10 @@ verbose = False
 
 def my_time():
     from datetime import datetime as dt
-    return f"[{dt.now().strftime("%b %d %H:%M:%S")}]"
+    return f"[{dt.now().strftime('%b %d %H:%M:%S')}]"
 
 def my_print(verbose:bool, s:str, level:int=0):
     if verbose:
-        print(f"{my_time()}{' ' + '\t'*level}{s}")
+        space = ' ' + '\t'*level
+        print(f"{my_time()}{space}{s}")
     return None
