@@ -3,7 +3,13 @@
 #
 #   Distributed under MIT License
 #
-from sage.all import QQ, reduce, PolynomialRing, prod, Subsets, ZZ, polygens
+from sage.rings.rational_field import Q as QQ
+from _functools import reduce
+from sage.rings.polynomial.polynomial_ring_constructor import PolynomialRing
+from sage.misc.misc_c import prod
+from sage.combinat.subset import Subsets
+from sage.rings.integer_ring import Z as ZZ
+from sage.rings.polynomial.polynomial_ring import polygens
 
 from .globals import my_print, verbose
 from .graded_poset import GradedPoset, proper_part

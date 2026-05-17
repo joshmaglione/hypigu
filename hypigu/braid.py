@@ -3,7 +3,15 @@
 #
 #   Distributed under MIT License
 #
-from sage.all import Partitions, prod, QQ, polygens, PolynomialRing, ZZ, multinomial, factorial, binomial
+from sage.combinat.partition import Partitions
+from sage.misc.misc_c import prod
+from sage.rings.rational_field import Q as QQ
+from sage.rings.polynomial.polynomial_ring import polygens
+from sage.rings.polynomial.polynomial_ring_constructor import PolynomialRing
+from sage.rings.integer_ring import Z as ZZ
+from sage.arith.misc import multinomial
+from sage.functions.other import factorial
+from sage.functions.other import binomial
 
 _TABLE_CUTOFF = 5
 _BRAID_TABLE = [
@@ -69,7 +77,7 @@ def BraidArrangementIgusa(n:int):
 
     This example illustrates what to expect ::
 
-        sage: Z = BraidArrangementIgusa(2)
+        sage: Z = hi.BraidArrangementIgusa(2)
         sage: Z
         -(2*t/q - 2/q - t/q^2 + 1)*(1/q - 1)/((t^3/q^2 - 1)*(t/q - 1))
     """
